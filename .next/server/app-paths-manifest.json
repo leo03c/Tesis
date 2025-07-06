@@ -1,8 +1,7 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/juego/page": "app/juego/page.js",
-  "/login/page": "app/login/page.js",
-  "/page": "app/page.js"
+  "/(autentificacion)/login/page": "app/(autentificacion)/login/page.js",
+  "/(autentificacion)/registrar/page": "app/(autentificacion)/registrar/page.js",
+  "/(main)/page": "app/(main)/page.js",
+  "/(media)/juego/page": "app/(media)/juego/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js"
 }
