@@ -45,12 +45,15 @@ export default function RootLayout({
               </div>
               
               {/* Contenido principal */}
-              <main className="flex-1">
+              <main className="flex-1 p-2">
                 {children}
               </main>
               
               {/* Footer */}
+              <div className="p-2">
               <Footer />
+              </div>
+
             </div>
           </div>
         </div>

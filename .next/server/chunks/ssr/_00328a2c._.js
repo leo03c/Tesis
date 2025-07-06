@@ -23,114 +23,6 @@ var { g: global, __dirname } = __turbopack_context__;
 {
 __turbopack_context__.n(__turbopack_context__.i("[project]/src/app/(main)/layout.tsx [app-rsc] (ecmascript)"));
 }}),
-"[project]/src/Components/home/ProgressCard/Card.tsx [app-rsc] (ecmascript)": ((__turbopack_context__) => {
-"use strict";
-
-var { g: global, __dirname } = __turbopack_context__;
-{
-__turbopack_context__.s({
-    "default": (()=>__TURBOPACK__default__export__)
-});
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/rsc/react-jsx-dev-runtime.js [app-rsc] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [app-rsc] (ecmascript)");
-;
-;
-const Card = ({ srcimg, texto })=>{
-    const srcImag = srcimg;
-    const textodesc = texto;
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "w-[263] h-[84] flex justify-start items-center gap-5 text-white p-2 bg-[#1C2C3B] rounded-4xl",
-        children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                is: "cardimg",
-                children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
-                        src: srcImag,
-                        alt: "LOL",
-                        width: 67,
-                        height: 70
-                    }, void 0, false, {
-                        fileName: "[project]/src/Components/home/ProgressCard/Card.tsx",
-                        lineNumber: 15,
-                        columnNumber: 31
-                    }, this),
-                    " "
-                ]
-            }, void 0, true, {
-                fileName: "[project]/src/Components/home/ProgressCard/Card.tsx",
-                lineNumber: 15,
-                columnNumber: 13
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
-                htmlFor: "cardimg",
-                children: textodesc
-            }, void 0, false, {
-                fileName: "[project]/src/Components/home/ProgressCard/Card.tsx",
-                lineNumber: 16,
-                columnNumber: 13
-            }, this)
-        ]
-    }, void 0, true, {
-        fileName: "[project]/src/Components/home/ProgressCard/Card.tsx",
-        lineNumber: 14,
-        columnNumber: 9
-    }, this);
-};
-const __TURBOPACK__default__export__ = Card;
-}}),
-"[project]/src/Components/home/ProgressCard/ProgressCard.tsx [app-rsc] (ecmascript)": ((__turbopack_context__) => {
-"use strict";
-
-var { g: global, __dirname } = __turbopack_context__;
-{
-__turbopack_context__.s({
-    "default": (()=>__TURBOPACK__default__export__)
-});
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/rsc/react-jsx-dev-runtime.js [app-rsc] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$Components$2f$home$2f$ProgressCard$2f$Card$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/Components/home/ProgressCard/Card.tsx [app-rsc] (ecmascript)");
-;
-;
-const listGame = [
-    {
-        src: '/carruselimg/LOL.svg',
-        texto: 'LEAGUE OF LEGENDS'
-    },
-    {
-        src: '/carruselimg/GOW.svg',
-        texto: 'GOD OF WAR'
-    },
-    {
-        src: '/carruselimg/CBP.svg',
-        texto: 'CYBERPUNK 2077'
-    },
-    {
-        src: '/carruselimg/Control.svg',
-        texto: 'CONTROL'
-    },
-    {
-        src: '/carruselimg/HL.svg',
-        texto: 'HOGWARTS LEGACY'
-    }
-];
-const ProgressCard = ()=>{
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "flex flex-col gap-4",
-        children: listGame.map(({ src, texto }, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$Components$2f$home$2f$ProgressCard$2f$Card$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
-                srcimg: src,
-                texto: texto
-            }, index, false, {
-                fileName: "[project]/src/Components/home/ProgressCard/ProgressCard.tsx",
-                lineNumber: 31,
-                columnNumber: 21
-            }, this))
-    }, void 0, false, {
-        fileName: "[project]/src/Components/home/ProgressCard/ProgressCard.tsx",
-        lineNumber: 28,
-        columnNumber: 9
-    }, this);
-};
-const __TURBOPACK__default__export__ = ProgressCard;
-}}),
 "[project]/src/Components/home/Carrusel.tsx [app-rsc] (ecmascript)": ((__turbopack_context__) => {
 "use strict";
 
@@ -141,11 +33,8 @@ __turbopack_context__.s({
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/rsc/react-jsx-dev-runtime.js [app-rsc] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/image.js [app-rsc] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$Components$2f$home$2f$ProgressCard$2f$ProgressCard$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/Components/home/ProgressCard/ProgressCard.tsx [app-rsc] (ecmascript)");
 ;
 ;
-;
-// import Card from "./Card"
 const listGame = [
     {
         src: '/carruselimg/LOL.svg',
@@ -168,6 +57,43 @@ const listGame = [
         texto: 'HOGWARTS LEGACY'
     }
 ];
+const Card = ({ srcimg, texto })=>{
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+        className: "w-full min-w-[200px] max-w-[263px] h-[70px] md:h-[84px] flex items-center gap-3 md:gap-4 p-2 md:p-3 bg-[#1C2C3B] rounded-2xl md:rounded-3xl text-white hover:bg-[#283B4C] transition-colors",
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "relative w-[50px] h-[50px] md:w-[67px] md:h-[70px] flex-shrink-0",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {
+                    src: srcimg,
+                    alt: texto,
+                    fill: true,
+                    className: "object-cover rounded-lg md:rounded-xl",
+                    sizes: "(max-width: 768px) 50px, 67px"
+                }, void 0, false, {
+                    fileName: "[project]/src/Components/home/Carrusel.tsx",
+                    lineNumber: 35,
+                    columnNumber: 9
+                }, this)
+            }, void 0, false, {
+                fileName: "[project]/src/Components/home/Carrusel.tsx",
+                lineNumber: 34,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                className: "text-xs md:text-sm font-medium truncate pr-2",
+                children: texto
+            }, void 0, false, {
+                fileName: "[project]/src/Components/home/Carrusel.tsx",
+                lineNumber: 43,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
+        fileName: "[project]/src/Components/home/Carrusel.tsx",
+        lineNumber: 33,
+        columnNumber: 5
+    }, this);
+};
 const Carrusel = ()=>{
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "flex flex-col lg:flex-row  gap-4 lg:gap-5 w-full",
@@ -186,7 +112,7 @@ const Carrusel = ()=>{
                                         children: "AVENTURA"
                                     }, void 0, false, {
                                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                        lineNumber: 33,
+                                        lineNumber: 54,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -194,13 +120,13 @@ const Carrusel = ()=>{
                                         children: "RPG"
                                     }, void 0, false, {
                                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                        lineNumber: 34,
+                                        lineNumber: 55,
                                         columnNumber: 25
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                lineNumber: 32,
+                                lineNumber: 53,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -212,18 +138,18 @@ const Carrusel = ()=>{
                                     height: 24
                                 }, void 0, false, {
                                     fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                    lineNumber: 37,
+                                    lineNumber: 58,
                                     columnNumber: 25
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                lineNumber: 36,
+                                lineNumber: 57,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                        lineNumber: 31,
+                        lineNumber: 52,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -234,7 +160,7 @@ const Carrusel = ()=>{
                                 children: "LEAGUE OF LEGENDS"
                             }, void 0, false, {
                                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                lineNumber: 41,
+                                lineNumber: 62,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -242,7 +168,7 @@ const Carrusel = ()=>{
                                 children: "Conviértete en una leyenda. Encuentra a tu campeón, domina sus habilidades y supera a tus oponentes en una épica batalla de 5 contra 5 para destruir la base enemiga."
                             }, void 0, false, {
                                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                lineNumber: 42,
+                                lineNumber: 63,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -250,19 +176,19 @@ const Carrusel = ()=>{
                                 children: "DESCARGAR"
                             }, void 0, false, {
                                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                lineNumber: 47,
+                                lineNumber: 68,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                        lineNumber: 40,
+                        lineNumber: 61,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                lineNumber: 30,
+                lineNumber: 51,
                 columnNumber: 13
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -279,7 +205,7 @@ const Carrusel = ()=>{
                                         children: "Detalles de funcionalidad del videojuego en cuestión, así como requisitos mínimos de funcionamiento e información complementaria del sistema en el que opera..."
                                     }, void 0, false, {
                                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                        lineNumber: 58,
+                                        lineNumber: 79,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -292,7 +218,7 @@ const Carrusel = ()=>{
                                                     alt: "star"
                                                 }, i, false, {
                                                     fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                                    lineNumber: 66,
+                                                    lineNumber: 87,
                                                     columnNumber: 33
                                                 }, this)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -300,13 +226,13 @@ const Carrusel = ()=>{
                                                 children: "5.0"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                                lineNumber: 68,
+                                                lineNumber: 89,
                                                 columnNumber: 29
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                        lineNumber: 64,
+                                        lineNumber: 85,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -317,7 +243,7 @@ const Carrusel = ()=>{
                                                 children: "$44.99"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                                lineNumber: 71,
+                                                lineNumber: 92,
                                                 columnNumber: 29
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -325,19 +251,19 @@ const Carrusel = ()=>{
                                                 children: "$59.99"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                                lineNumber: 72,
+                                                lineNumber: 93,
                                                 columnNumber: 29
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                        lineNumber: 70,
+                                        lineNumber: 91,
                                         columnNumber: 25
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                lineNumber: 57,
+                                lineNumber: 78,
                                 columnNumber: 21
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -352,12 +278,12 @@ const Carrusel = ()=>{
                                             alt: "Mini Card 1"
                                         }, void 0, false, {
                                             fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                            lineNumber: 78,
+                                            lineNumber: 99,
                                             columnNumber: 29
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                        lineNumber: 77,
+                                        lineNumber: 98,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -369,48 +295,58 @@ const Carrusel = ()=>{
                                             alt: "Mini Card 2"
                                         }, void 0, false, {
                                             fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                            lineNumber: 86,
+                                            lineNumber: 107,
                                             columnNumber: 29
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                        lineNumber: 85,
+                                        lineNumber: 106,
                                         columnNumber: 25
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                                lineNumber: 76,
+                                lineNumber: 97,
                                 columnNumber: 21
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                        lineNumber: 56,
+                        lineNumber: 77,
                         columnNumber: 17
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "w-full lg:w-[15%]",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$Components$2f$home$2f$ProgressCard$2f$ProgressCard$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
+                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex flex-col gap-3 w-full",
+                            children: listGame.map(({ src, texto }, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(Card, {
+                                    srcimg: src,
+                                    texto: texto
+                                }, index, false, {
+                                    fileName: "[project]/src/Components/home/Carrusel.tsx",
+                                    lineNumber: 121,
+                                    columnNumber: 21
+                                }, this))
+                        }, void 0, false, {
                             fileName: "[project]/src/Components/home/Carrusel.tsx",
-                            lineNumber: 98,
+                            lineNumber: 119,
                             columnNumber: 21
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/src/Components/home/Carrusel.tsx",
-                        lineNumber: 97,
+                        lineNumber: 118,
                         columnNumber: 17
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/Components/home/Carrusel.tsx",
-                lineNumber: 54,
+                lineNumber: 75,
                 columnNumber: 13
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/Components/home/Carrusel.tsx",
-        lineNumber: 28,
+        lineNumber: 49,
         columnNumber: 9
     }, this);
 };
@@ -917,4 +853,4 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 
 };
 
-//# sourceMappingURL=_2fb3dbe2._.js.map
+//# sourceMappingURL=_00328a2c._.js.map

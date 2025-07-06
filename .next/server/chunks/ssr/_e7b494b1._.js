@@ -549,7 +549,7 @@ const Footer = ()=>{
 };
 const __TURBOPACK__default__export__ = Footer;
 }}),
-"[project]/src/app/(main)/layout.tsx [app-rsc] (ecmascript)": ((__turbopack_context__) => {
+"[project]/src/app/(media)/layout.tsx [app-rsc] (ecmascript)": ((__turbopack_context__) => {
 "use strict";
 
 var { g: global, __dirname } = __turbopack_context__;
@@ -588,12 +588,12 @@ function RootLayout({ children }) {
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "sticky top-0 h-screen",
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$Components$2f$sideBar$2f$Sidebar$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
-                                fileName: "[project]/src/app/(main)/layout.tsx",
+                                fileName: "[project]/src/app/(media)/layout.tsx",
                                 lineNumber: 37,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
-                            fileName: "[project]/src/app/(main)/layout.tsx",
+                            fileName: "[project]/src/app/(media)/layout.tsx",
                             lineNumber: 36,
                             columnNumber: 13
                         }, this),
@@ -603,12 +603,12 @@ function RootLayout({ children }) {
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "sticky top-0 z-10",
                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$Components$2f$navBar$2f$Navbar$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
-                                        fileName: "[project]/src/app/(main)/layout.tsx",
+                                        fileName: "[project]/src/app/(media)/layout.tsx",
                                         lineNumber: 44,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
-                                    fileName: "[project]/src/app/(main)/layout.tsx",
+                                    fileName: "[project]/src/app/(media)/layout.tsx",
                                     lineNumber: 43,
                                     columnNumber: 15
                                 }, this),
@@ -616,46 +616,46 @@ function RootLayout({ children }) {
                                     className: "flex-1 p-2",
                                     children: children
                                 }, void 0, false, {
-                                    fileName: "[project]/src/app/(main)/layout.tsx",
+                                    fileName: "[project]/src/app/(media)/layout.tsx",
                                     lineNumber: 48,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "p-2",
                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$rsc$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$Components$2f$footer$2f$Footer$2e$tsx__$5b$app$2d$rsc$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
-                                        fileName: "[project]/src/app/(main)/layout.tsx",
+                                        fileName: "[project]/src/app/(media)/layout.tsx",
                                         lineNumber: 54,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
-                                    fileName: "[project]/src/app/(main)/layout.tsx",
+                                    fileName: "[project]/src/app/(media)/layout.tsx",
                                     lineNumber: 53,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
-                            fileName: "[project]/src/app/(main)/layout.tsx",
+                            fileName: "[project]/src/app/(media)/layout.tsx",
                             lineNumber: 41,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
-                    fileName: "[project]/src/app/(main)/layout.tsx",
+                    fileName: "[project]/src/app/(media)/layout.tsx",
                     lineNumber: 34,
                     columnNumber: 11
                 }, this)
             }, void 0, false, {
-                fileName: "[project]/src/app/(main)/layout.tsx",
+                fileName: "[project]/src/app/(media)/layout.tsx",
                 lineNumber: 32,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
-            fileName: "[project]/src/app/(main)/layout.tsx",
+            fileName: "[project]/src/app/(media)/layout.tsx",
             lineNumber: 30,
             columnNumber: 7
         }, this)
     }, void 0, false, {
-        fileName: "[project]/src/app/(main)/layout.tsx",
+        fileName: "[project]/src/app/(media)/layout.tsx",
         lineNumber: 29,
         columnNumber: 5
     }, this);
@@ -3221,4 +3221,4 @@ __turbopack_context__.n(__TURBOPACK__imported__module__$5b$project$5d2f$node_mod
 
 };
 
-//# sourceMappingURL=_3d031d25._.js.map
+//# sourceMappingURL=_e7b494b1._.js.map
