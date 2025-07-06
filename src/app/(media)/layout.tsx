@@ -27,36 +27,45 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0D171F]`}>
-        {/* Contenedor principal flex */}
-        <div className="flex flex-col min-h-screen">
-          {/* Fila superior con Sidebar y Navbar */}
-          <div className="flex flex-row">
-            {/* Sidebar que llega al top */}
-            <div className="sticky top-0 h-screen">
-              <Sidebar />
-            </div>
-            
-            {/* Contenedor del contenido principal */}
-            <div className="flex-1 flex flex-col">
-              {/* Navbar al lado del Sidebar */}
-              <div className="sticky top-0 z-10">
-                <Navbar />
-              </div>
-              
-              {/* Contenido principal */}
-              <main className="flex-1 p-2">
-                {children}
-              </main>
-              
-              {/* Footer */}
-              <div className="p-2">
-              <Footer />
-              </div>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-dark`}>
+        <div className="min-h-screen flex flex-col md:flex-row">
 
-            </div>
-          </div>
-        </div>
+         <div className="min-h-screen flex flex-col md:flex-row">
+  {/* ====== Sidebar Escritorio (sticky) ====== */}
+  <div className="hidden md:block w-64 sticky top-0 h-screen">
+    <Sidebar />
+  </div>
+
+  {/* ====== Contenido principal ====== */}
+  <div className="flex-1 flex flex-col">
+    {/* ====== Mobile Sidebar + Navbar ====== */}
+    <div className="md:hidden">
+      <div className="p-6">
+        <Sidebar />
+      </div>
+      <div className="p-2 mb-3">
+        <Navbar />
+      </div>
+    </div>
+
+    {/* ====== Desktop Navbar (sticky) ====== */}
+    <div className="hidden md:block sticky top-0 z-40 bg-dark">
+      <Navbar />
+    </div>
+
+    {/* ====== Contenido principal ====== */}
+    <main className="flex-1 p-2">
+      {children}
+    </main>
+
+    {/* ====== Footer ====== */}
+    <div className="p-2">
+      <Footer />
+    </div>
+  </div>
+</div>
+
+</div>
       </body>
     </html>
   );

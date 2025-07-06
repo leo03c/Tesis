@@ -2,14 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { FiSearch, FiUser, FiMenu, FiX } from 'react-icons/fi';
+import { FiSearch, FiUser} from 'react-icons/fi';
 import Image from 'next/image';
 
 const Navbar = () => {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [mobileMenuOpen] = useState(false);
 
     return (
-        <header className={`bg-[#0D171F] shadow-sm ${mobileMenuOpen ? 'relative' : 'sticky top-0 z-50'}`}>
+        <header className={`bg-[#0D171F] shadow-sm ${mobileMenuOpen ? 'relative' : 'sticky top-0 z-40'}`}>
             <div className="container mx-auto px-4 sm:px-6">
                 {/* Desktop Navbar */}
                 <div className="hidden md:flex items-center justify-between py-3">
@@ -67,63 +67,29 @@ const Navbar = () => {
                 </div>
 
                 {/* Mobile Navbar */}
-                <div className="md:hidden flex items-center justify-between py-3">
+                <div className="md:hidden flex items-center justify-between py-6 px-6 bg-deep rounded-3xl">
+                {/* Barra de búsqueda y configuración */}
+                <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiSearch className="text-gray-400" size={30} />
+                    </div>
+                    <input
+                    type="text"
+                    placeholder="  Buscar..."
+                    className="block w-full pl-10 pr-14 py-2 border border-gray-300 rounded-md leading-5 bg-deep placeholder-gray-500 focus:outline-none  sm:text-sm border-none"
+                    />
                     <button
-                        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="p-2 rounded-md text-white hover:bg-gray-700 transition-colors"
-                        aria-label="Toggle menu"
+                    onClick={() => console.log('Abrir configuración')}
+                    className="absolute inset-y-0 right-0  flex items-center"
                     >
-                        {mobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+                    <Image width={  80} height={70} alt="setting" src="setting-2.svg" />
                     </button>
-                    
-                    <Link
-                        href="/login"
-                        className="flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-800 hover:bg-gray-700 transition-colors"
-                    >
-                        <FiUser className="mr-1" />
-                        Login
-                    </Link>
+                </div>
                 </div>
 
-                {/* Mobile Menu Dropdown */}
-                {mobileMenuOpen && (
-                    <div className="md:hidden pb-3 space-y-3">
-                        <nav className="space-y-1">
-                            <Link
-                                href="/descubrir"
-                                className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                Descubrir
-                            </Link>
-                            <Link
-                                href="/noticias"
-                                className="block px-3 py-2 text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
-                                onClick={() => setMobileMenuOpen(false)}
-                            >
-                                Noticias
-                            </Link>
-                        </nav>
-                        
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <FiSearch className="text-gray-400" />
-                            </div>
-                            <input
-                                type="text"
-                                placeholder="Buscar..."
-                                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                            />
-                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <Image width={15} height={15} alt='setting' src={'setting-2.svg'} />
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </header>
     );
 };
 
 export default Navbar;
-
