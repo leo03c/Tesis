@@ -34,7 +34,7 @@ const Navbar = () => {
                             <Link href="/descubrir" className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors">
                                 Descubrir
                             </Link>
-                            <Link href="/noticia" className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                            <Link href="/noticias" className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors">
                                 Noticias
                             </Link>
                         </nav>
