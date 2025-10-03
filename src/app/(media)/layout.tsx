@@ -26,11 +26,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-dark`}>
-        <div className="min-h-screen flex flex-col md:flex-row">
+    
 
-         <div className="min-h-screen flex flex-col md:flex-row">
+         <div className="min-h-screen flex flex-col md:flex-row bg-dark">
   {/* ====== Sidebar Escritorio (sticky) ====== */}
   <div className="hidden md:block w-64 sticky top-0 h-screen">
     <Sidebar />
@@ -65,8 +63,6 @@ export default function RootLayout({
   </div>
 </div>
 
-</div>
-      </body>
-    </html>
+
   );
 }

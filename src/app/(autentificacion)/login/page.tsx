@@ -77,7 +77,7 @@ export default function LoginPage() {
         <section className="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 py-8">
           <div className="max-w-md w-full space-y-8">
             <div className="text-center">
-              <Image src={COSMOX_LOGO} alt="COSMOX" width={150} height={150} className="mx-auto mb-4" />
+              <Image src={COSMOX_LOGO} alt="COSMOX" width={150} height={150} className="mx-auto h-auto w-40 mb-4" />
               <h1 className="text-3xl font-primary text-left">
                 ¿<span className="text-primary">Es usted</span> MIEMBRO?
               </h1>
@@ -137,7 +137,8 @@ export default function LoginPage() {
               onClick={handleGoogleLogin}
               className="w-full flex pl-12 pr-4 py-3 rounded-xl items-center justify-center gap-3 bg-deep hover:bg-subdeep transition"
             >
-              <Image src={googleIcon} alt="Google icon" width={20} height={20} />
+              <Image src={googleIcon} alt="Google icon" width={0} height={0} className="w-5 h-auto" />
+
               INICIAR SESIÓN CON GOOGLE
             </button>
 

@@ -226,7 +226,7 @@ function LoginPage() {
                                             alt: "COSMOX",
                                             width: 150,
                                             height: 150,
-                                            className: "mx-auto mb-4"
+                                            className: "mx-auto h-auto w-40 mb-4"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(autentificacion)/login/page.tsx",
                                             lineNumber: 80,
@@ -406,8 +406,9 @@ function LoginPage() {
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$image$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                                             src: googleIcon,
                                             alt: "Google icon",
-                                            width: 20,
-                                            height: 20
+                                            width: 0,
+                                            height: 0,
+                                            className: "w-5 h-auto"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(autentificacion)/login/page.tsx",
                                             lineNumber: 140,
@@ -431,13 +432,13 @@ function LoginPage() {
                                             children: "Crear cuenta"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/(autentificacion)/login/page.tsx",
-                                            lineNumber: 146,
+                                            lineNumber: 147,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/(autentificacion)/login/page.tsx",
-                                    lineNumber: 144,
+                                    lineNumber: 145,
                                     columnNumber: 13
                                 }, this)
                             ]
@@ -462,7 +463,7 @@ function LoginPage() {
                 children: "2025. Centro de Tecnologías Interactivas. Todos los derechos reservados"
             }, void 0, false, {
                 fileName: "[project]/src/app/(autentificacion)/login/page.tsx",
-                lineNumber: 153,
+                lineNumber: 154,
                 columnNumber: 7
             }, this)
         ]
