@@ -1,4 +1,9 @@
 {
+  "/(autentificacion)/api/auth/[...nextauth]/route": "app/(autentificacion)/api/auth/[...nextauth]/route.js",
+  "/(autentificacion)/login/page": "app/(autentificacion)/login/page.js",
   "/(main)/page": "app/(main)/page.js",
+  "/(media)/juego/page": "app/(media)/juego/page.js",
+  "/(noticias)/noticias/page": "app/(noticias)/noticias/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js"
 }

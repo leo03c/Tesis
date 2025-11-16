@@ -2,11 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { FiSearch, FiUser} from 'react-icons/fi';
+import { FiSearch, FiUser } from 'react-icons/fi';
 import Image from 'next/image';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
 const Navbar = () => {
     const [mobileMenuOpen] = useState(false);
+    const { data: session } = useSession();
 
     return (
         <header className={`bg-[#0D171F] shadow-sm ${mobileMenuOpen ? 'relative' : 'sticky top-0 z-40'}`}>
@@ -51,18 +53,23 @@ const Navbar = () => {
                             </button>
                         </div>
 
-                        <Link
-                            href="/login"
+                        {/* CONTROLES DE SESIÓN */}
+                        <div
                             className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-3xl shadow-sm text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                         >
                             <FiUser className="mr-2" />
                             <div className="flex flex-col items-start">
-                                <span className="text-xs text-gray-400">INVITADO</span>
-                                <span className="text-white font-medium hover:text-blue-400 transition-colors">
-                                    Log in
+                                <span className="text-xs text-gray-400">
+                                    {session ? (session.user?.email ?? session.user?.name ?? 'USUARIO') : 'INVITADO'}
                                 </span>
+                                <button
+                                    onClick={() => session ? signOut({ callbackUrl: '/' }) : signIn()}
+                                    className="text-white font-medium hover:text-blue-400 transition-colors"
+                                >
+                                    {session ? 'Cerrar sesión' : 'Log in'}
+                                </button>
                             </div>
-                        </Link>
+                        </div>
                     </div>
                 </div>
 
