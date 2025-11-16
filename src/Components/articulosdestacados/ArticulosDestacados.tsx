@@ -47,6 +47,9 @@ const ArticulosDestacados = () => {
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [isMobile, setIsMobile] = useState(false);
 
+  // dirección de la transición: 1 = next (entra desde la derecha), -1 = prev (entra desde la izquierda)
+  const [direction, setDirection] = useState(0);
+
   useEffect(() => {
     const handleResize = () => {
       const isSmall = window.innerWidth < 640;
@@ -62,11 +65,19 @@ const ArticulosDestacados = () => {
   const totalPages = Math.ceil(articles.length / itemsPerPage);
 
   const nextPage = () => {
-    if (currentPage < totalPages - 1) setCurrentPage(currentPage + 1);
+    if (currentPage < totalPages - 1) {
+      setDirection(1);
+      setCurrentPage((p) => p + 1);
+      setTimeout(() => setDirection(0), 350);
+    }
   };
 
   const prevPage = () => {
-    if (currentPage > 0) setCurrentPage(currentPage - 1);
+    if (currentPage > 0) {
+      setDirection(-1);
+      setCurrentPage((p) => p - 1);
+      setTimeout(() => setDirection(0), 350);
+    }
   };
 
   const startIndex = currentPage * itemsPerPage;
@@ -98,57 +109,92 @@ const ArticulosDestacados = () => {
           </div>
         </div>
 
-        {/* Tarjetas */}
-        <div className='grid grid-cols-1 sm:grid-cols-3 gap-6'>
-          {visibleArticles.map((article, index) => (
-            <div key={index} className='bg-dark rounded-xl overflow-hidden md:shadow-md flex flex-col justify-between'>
-              {/* Imagen */}
-              <div className="w-full aspect-[4/3] relative">
-                <Image
-                  src={article.image}
-                  alt={article.title}
-                  fill
-                  className="object-cover rounded-t-xl"
-                />
-              </div>
-
-              {/* Contenido */}
-              <div className='p-4 flex flex-col justify-between flex-grow'>
-                <div>
-                  <h3 className='text-text text-xl font-primary mb-2 leading-snug'>
-                    {article.title}
-                  </h3>
-                  <p className='text-sm text-text font-primary line-clamp-3 leading-snug'>
-                    {article.description}
-                  </p>
+        {/* Tarjetas - envoltorio con animación según dirección */}
+        <div className="overflow-hidden">
+          <div
+            key={currentPage}
+            className={`${direction === 1 ? "slide-from-right" : direction === -1 ? "slide-from-left" : ""} grid grid-cols-1 sm:grid-cols-3 gap-6`}
+          >
+            {visibleArticles.map((article, index) => (
+              <div key={index} className='bg-dark rounded-xl overflow-hidden md:shadow-md flex flex-col justify-between'>
+                {/* Imagen */}
+                <div className="w-full aspect-[4/3] relative">
+                  <Image
+                    src={article.image}
+                    alt={article.title}
+                    fill
+                    className="object-cover rounded-t-xl"
+                  />
                 </div>
 
-                {/* Leer más + Navegación (solo móvil) */}
-                <div className='mt-6'>
-                  <button
-                    className={`bg-azulsub text-text text-sm font-primary rounded-2xl hover:bg-gray-200 transition
-                    ${isMobile ? 'w-full py-4 px-6' : 'w-auto py-3 px-6'}`}>
-                    LEER MÁS
-                  </button>
+                {/* Contenido */}
+                <div className='p-4 flex flex-col justify-between flex-grow'>
+                  <div>
+                    <h3 className='text-text text-xl font-primary mb-2 leading-snug'>
+                      {article.title}
+                    </h3>
+                    <p className='text-sm text-text font-primary line-clamp-3 leading-snug'>
+                      {article.description}
+                    </p>
+                  </div>
 
-                  {/* Navegación dentro de tarjeta (solo móvil) */}
-                  {isMobile && (
-                    <div className='flex justify-end gap-2 mt-4'>
-                      <button onClick={prevPage} disabled={currentPage === 0} aria-label="Anterior">
-                        <Image src={izq} alt="Flecha izquierda" width={44} height={44} />
-                      </button>
-                      <button onClick={nextPage} disabled={currentPage >= totalPages - 1} aria-label="Siguiente">
-                        <Image src={der} alt="Flecha derecha" width={44} height={44} />
-                      </button>
-                    </div>
-                  )}
+                  {/* Leer más + Navegación (solo móvil) */}
+                  <div className='mt-6'>
+                    <button
+                      className={`bg-azulsub text-text text-sm font-primary rounded-2xl hover:bg-gray-200 transition
+                      ${isMobile ? 'w-full py-4 px-6' : 'w-auto py-3 px-6'}`}>
+                      LEER MÁS
+                    </button>
+
+                    {/* Navegación dentro de tarjeta (solo móvil) */}
+                    {isMobile && (
+                      <div className='flex justify-end gap-2 mt-4'>
+                        <button onClick={prevPage} disabled={currentPage === 0} aria-label="Anterior">
+                          <Image src={izq} alt="Flecha izquierda" width={44} height={44} />
+                        </button>
+                        <button onClick={nextPage} disabled={currentPage >= totalPages - 1} aria-label="Siguiente">
+                          <Image src={der} alt="Flecha derecha" width={44} height={44} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
       </div>
+
+      {/* Estilos de la animación (puedes mover esto a tu CSS global si prefieres) */}
+      <style jsx>{`
+        .slide-from-right {
+          animation: slideFromRight 300ms ease both;
+        }
+        .slide-from-left {
+          animation: slideFromLeft 300ms ease both;
+        }
+        @keyframes slideFromRight {
+          from {
+            transform: translateX(30%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes slideFromLeft {
+          from {
+            transform: translateX(-30%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 };

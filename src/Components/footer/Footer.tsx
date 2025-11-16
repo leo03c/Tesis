@@ -1,7 +1,14 @@
+"use client"
 import Image from "next/image"
 import Link from "next/link"
 
 const Footer = () => {
+    const handleScrollTop = () => {
+        if (typeof window !== 'undefined') {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+    }
+
     return (
         <div className="bg-[#1c2c3b] px-4">
             <div className="max-w-screen-xl mx-auto flex flex-col gap-10">
@@ -69,7 +76,7 @@ const Footer = () => {
                     </div>
 
                     <div className="w-full md:w-[25%] flex justify-center md:justify-end">
-                        <button className="w-full md:w-[275px] h-[66px] bg-[#283B4C] rounded-lg flex items-center justify-center text-white">
+                        <button onClick={handleScrollTop} className="w-full md:w-[275px] h-[66px] bg-[#283B4C] rounded-lg flex items-center justify-center text-white">
                             <p className="flex gap-2 items-center text-sm">
                                 VOLVER AL PRINCIPIO
                                 <Image width={15} height={15} alt='up' src={'up.svg'} />

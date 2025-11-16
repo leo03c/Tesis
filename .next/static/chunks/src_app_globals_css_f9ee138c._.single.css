@@ -56,7 +56,6 @@
     --color-blue-400: oklch(70.7% .165 254.624);
     --color-blue-500: oklch(62.3% .214 259.815);
     --color-blue-600: oklch(54.6% .245 262.881);
-    --color-blue-700: oklch(48.8% .243 264.376);
     --color-gray-200: oklch(92.8% .006 264.531);
     --color-gray-300: oklch(87.2% .01 258.338);
     --color-gray-400: oklch(70.7% .022 261.325);
@@ -1117,10 +1116,6 @@
     background-color: #0d171f;
   }
 
-  .bg-\[\#0f172a\] {
-    background-color: #0f172a;
-  }
-
   .bg-\[\#1C2C3B\], .bg-\[\#1c2c3b\] {
     background-color: #1c2c3b;
   }
@@ -1153,10 +1148,6 @@
     .bg-black\/50 {
       background-color: color-mix(in oklab, var(--color-black) 50%, transparent);
     }
-  }
-
-  .bg-blue-600 {
-    background-color: var(--color-blue-600);
   }
 
   .bg-categorico {
@@ -1522,10 +1513,6 @@
     opacity: .3;
   }
 
-  .opacity-70 {
-    opacity: .7;
-  }
-
   .shadow-\[7px_2px_17px_\#00000026\,29px_9px_31px_\#00000021\,66px_20px_41px_\#00000014\,117px_36px_49px_\#00000005\,183px_56px_54px_transparent\] {
     --tw-shadow: 7px 2px 17px var(--tw-shadow-color, #00000026), 29px 9px 31px var(--tw-shadow-color, #00000021), 66px 20px 41px var(--tw-shadow-color, #00000014), 117px 36px 49px var(--tw-shadow-color, #00000005), 183px 56px 54px var(--tw-shadow-color, transparent);
     box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
@@ -1586,12 +1573,6 @@
   @media (hover: hover) {
     .hover\:bg-blue-600:hover {
       background-color: var(--color-blue-600);
-    }
-  }
-
-  @media (hover: hover) {
-    .hover\:bg-blue-700:hover {
-      background-color: var(--color-blue-700);
     }
   }
 
