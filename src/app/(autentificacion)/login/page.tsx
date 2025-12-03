@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { login } from "@/lib/api/auth";
 
 // Imágenes
 const COSMOX_LOGO = "/logo-cosmox.svg";
@@ -25,18 +26,29 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
   
-    const res = await signIn("credentials", {
-      redirect: false,
-      username: form.username,
-      password: form.password,
-    });
-  
-    setLoading(false);
-  
-    if (res?.error) {
-      setError(res.error);
-    } else if (res?.ok) {
+    try {
+      // Try direct API login first
+      await login({
+        username: form.username,
+        password: form.password,
+      });
+      
       router.push("/");
+    } catch (apiError) {
+      // Fallback to next-auth credentials provider
+      const res = await signIn("credentials", {
+        redirect: false,
+        username: form.username,
+        password: form.password,
+      });
+    
+      if (res?.error) {
+        setError(apiError instanceof Error ? apiError.message : "Credenciales inválidas");
+      } else if (res?.ok) {
+        router.push("/");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
