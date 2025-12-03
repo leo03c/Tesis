@@ -1,38 +1,85 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-
-const siguiendo = [
-  { name: "CD Projekt Red", avatar: "/pic4.jpg", followers: "2.5M", games: 3, isFollowing: true, type: "Desarrollador" },
-  { name: "FromSoftware", avatar: "/pic5.jpg", followers: "1.8M", games: 12, isFollowing: true, type: "Desarrollador" },
-  { name: "Supergiant Games", avatar: "/pic6.jpg", followers: "850K", games: 4, isFollowing: true, type: "Desarrollador" },
-  { name: "GamerPro123", avatar: "/pic4.jpg", followers: "125K", games: 0, isFollowing: true, type: "Usuario" },
-  { name: "StreamerElite", avatar: "/pic5.jpg", followers: "500K", games: 0, isFollowing: true, type: "Usuario" },
-  { name: "Riot Games", avatar: "/pic6.jpg", followers: "5.2M", games: 8, isFollowing: true, type: "Desarrollador" },
-];
-
-const sugerencias = [
-  { name: "Naughty Dog", avatar: "/pic4.jpg", followers: "3.1M", games: 15, isFollowing: false, type: "Desarrollador" },
-  { name: "Insomniac Games", avatar: "/pic5.jpg", followers: "1.2M", games: 20, isFollowing: false, type: "Desarrollador" },
-];
+import { getFollowing, unfollowUser, followUser } from "@/lib/api/social";
+import type { FollowUser, PaginatedResponse } from "@/types/api";
 
 const SiguiendoApp = () => {
+  const [followingList, setFollowingList] = useState<FollowUser[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"siguiendo" | "sugerencias">("siguiendo");
-  const [followingList, setFollowingList] = useState(siguiendo);
-  const [suggestions, setSuggestions] = useState(sugerencias);
 
-  const handleUnfollow = (name: string) => {
-    setFollowingList(followingList.filter((u) => u.name !== name));
-  };
+  const fetchFollowing = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response: PaginatedResponse<FollowUser> = await getFollowing();
+      setFollowingList(response.results);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar la lista');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const handleFollow = (name: string) => {
-    const userToFollow = suggestions.find((u) => u.name === name);
-    if (userToFollow) {
-      setFollowingList([...followingList, { ...userToFollow, isFollowing: true }]);
-      setSuggestions(suggestions.filter((u) => u.name !== name));
+  useEffect(() => {
+    fetchFollowing();
+  }, [fetchFollowing]);
+
+  const handleUnfollow = async (userId: number) => {
+    try {
+      await unfollowUser(userId);
+      setFollowingList(prev => prev.filter((u) => u.id !== userId));
+    } catch {
+      // Error handling
     }
   };
+
+  const handleFollow = async (userId: number) => {
+    try {
+      await followUser(userId);
+      // Refresh the list after following
+      await fetchFollowing();
+    } catch {
+      // Error handling
+    }
+  };
+
+  const formatFollowers = (count?: number) => {
+    if (!count) return "0";
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+    return count.toString();
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-texInactivo">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={fetchFollowing}
+            className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-white">
@@ -62,7 +109,7 @@ const SiguiendoApp = () => {
               : "bg-subdeep text-texInactivo hover:text-white"
           }`}
         >
-          Sugerencias ({suggestions.length})
+          Sugerencias
         </button>
       </div>
 
@@ -81,32 +128,34 @@ const SiguiendoApp = () => {
                 </button>
               </div>
             ) : (
-              followingList.map((user, i) => (
+              followingList.map((user) => (
                 <div
-                  key={i}
+                  key={user.id}
                   className="bg-subdeep rounded-xl p-4 flex items-center gap-4 hover:bg-categorico transition"
                 >
                   <div className="w-14 h-14 relative flex-shrink-0">
                     <Image
-                      src={user.avatar}
-                      alt={user.name}
+                      src={user.avatar || "/pic4.jpg"}
+                      alt={user.username}
                       fill
                       className="object-cover rounded-full"
                     />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold truncate">{user.name}</h3>
-                      <span className="bg-categorico text-texInactivo px-2 py-0.5 rounded text-xs">
-                        {user.type}
-                      </span>
+                      <h3 className="font-semibold truncate">{user.username}</h3>
+                      {user.user_type && (
+                        <span className="bg-categorico text-texInactivo px-2 py-0.5 rounded text-xs">
+                          {user.user_type}
+                        </span>
+                      )}
                     </div>
                     <p className="text-texInactivo text-sm">
-                      {user.followers} seguidores {user.games > 0 && `• ${user.games} juegos`}
+                      {formatFollowers(user.followers_count)} seguidores {user.games_count ? `• ${user.games_count} juegos` : ''}
                     </p>
                   </div>
                   <button
-                    onClick={() => handleUnfollow(user.name)}
+                    onClick={() => handleUnfollow(user.id)}
                     className="bg-subdeep border border-primary text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary hover:text-white transition"
                   >
                     Siguiendo
@@ -117,44 +166,15 @@ const SiguiendoApp = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {suggestions.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-texInactivo">No hay más sugerencias por ahora</p>
-              </div>
-            ) : (
-              suggestions.map((user, i) => (
-                <div
-                  key={i}
-                  className="bg-subdeep rounded-xl p-4 flex items-center gap-4 hover:bg-categorico transition"
-                >
-                  <div className="w-14 h-14 relative flex-shrink-0">
-                    <Image
-                      src={user.avatar}
-                      alt={user.name}
-                      fill
-                      className="object-cover rounded-full"
-                    />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold truncate">{user.name}</h3>
-                      <span className="bg-categorico text-texInactivo px-2 py-0.5 rounded text-xs">
-                        {user.type}
-                      </span>
-                    </div>
-                    <p className="text-texInactivo text-sm">
-                      {user.followers} seguidores • {user.games} juegos
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleFollow(user.name)}
-                    className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-subprimary transition"
-                  >
-                    Seguir
-                  </button>
-                </div>
-              ))
-            )}
+            <div className="text-center py-10">
+              <p className="text-texInactivo">Las sugerencias se cargarán pronto</p>
+              <button
+                onClick={() => handleFollow(0)}
+                className="mt-4 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition hidden"
+              >
+                Seguir
+              </button>
+            </div>
           </div>
         )}
       </div>
