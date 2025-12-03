@@ -3,8 +3,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import type { JWT } from "next-auth/jwt";
 import type { Session, User } from "next-auth";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
-
 export const authOptions = {
   providers: [
     GoogleProvider({
@@ -25,7 +23,7 @@ export const authOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const res = await fetch(`${API_BASE_URL}/api/auth/login/`, {
+        const res = await fetch("http://localhost:8000/api/login/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -34,15 +32,11 @@ export const authOptions = {
           }),
         });
 
-        const data = await res.json();
+        const user = await res.json();
 
-        if (!res.ok) throw new Error(data.detail || "Error en el login");
+        if (!res.ok) throw new Error(user.detail || "Error en el login");
 
-        return { 
-          id: data.user?.id || data.id, 
-          name: data.user?.username || data.username, 
-          token: data.access 
-        };
+        return { id: user.id, name: user.username, token: user.token };
       },
     }),
   ],

@@ -2,61 +2,29 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { useLibrary } from "@/lib/hooks/useLibrary";
+
+const pic4 = "/pic4.jpg";
+const pic5 = "/pic5.jpg";
+const pic6 = "/pic6.jpg";
+
+const libreria = [
+  { title: "League of Legends", image: pic4, hoursPlayed: 1250, lastPlayed: "Hace 2 horas", installed: true },
+  { title: "God of War", image: pic5, hoursPlayed: 45, lastPlayed: "Hace 3 días", installed: true },
+  { title: "Cyberpunk 2077", image: pic6, hoursPlayed: 120, lastPlayed: "Hace 1 semana", installed: false },
+  { title: "Control", image: pic4, hoursPlayed: 30, lastPlayed: "Hace 2 semanas", installed: false },
+  { title: "Hogwarts Legacy", image: pic5, hoursPlayed: 80, lastPlayed: "Ayer", installed: true },
+  { title: "Elden Ring", image: pic6, hoursPlayed: 200, lastPlayed: "Hace 5 días", installed: true },
+];
 
 const LibreriaApp = () => {
-  const { library, isLoading, error, totalHoursPlayed, installedCount } = useLibrary();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filter, setFilter] = useState("todos");
 
-  const filteredGames = library.filter((item) => {
-    if (filter === "instalados") return item.installed;
-    if (filter === "no-instalados") return !item.installed;
+  const filteredGames = libreria.filter((game) => {
+    if (filter === "instalados") return game.installed;
+    if (filter === "no-instalados") return !game.installed;
     return true;
   });
-
-  const formatLastPlayed = (dateString?: string) => {
-    if (!dateString) return "Nunca";
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    
-    if (hours < 1) return "Hace unos minutos";
-    if (hours < 24) return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
-    if (days === 1) return "Ayer";
-    if (days < 7) return `Hace ${days} días`;
-    if (days < 30) return `Hace ${Math.floor(days / 7)} semana${Math.floor(days / 7) > 1 ? 's' : ''}`;
-    return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-texInactivo">Cargando librería...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen text-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition"
-          >
-            Reintentar
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen text-white">
@@ -64,7 +32,7 @@ const LibreriaApp = () => {
       <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">Mi Librería</h1>
-          <p className="text-texInactivo">{library.length} juegos en tu colección</p>
+          <p className="text-texInactivo">{libreria.length} juegos en tu colección</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -109,69 +77,65 @@ const LibreriaApp = () => {
 
       {/* Games */}
       <div className="rounded-3xl bg-deep py-10 px-6">
-        {filteredGames.length === 0 ? (
-          <div className="text-center py-10">
-            <p className="text-texInactivo">No se encontraron juegos con este filtro</p>
-          </div>
-        ) : viewMode === "grid" ? (
+        {viewMode === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredGames.map((item) => (
-              <div key={item.id} className="bg-subdeep rounded-2xl overflow-hidden group">
+            {filteredGames.map((game, i) => (
+              <div key={i} className="bg-subdeep rounded-2xl overflow-hidden group">
                 <div className="w-full aspect-[4/3] relative">
                   <Image
-                    src={item.game.image || "/pic4.jpg"}
-                    alt={item.game.title}
+                    src={game.image}
+                    alt={game.title}
                     fill
                     className="object-cover group-hover:scale-105 transition duration-300"
                   />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                     <button className="bg-primary text-white px-6 py-2 rounded-xl font-semibold hover:bg-subprimary transition">
-                      {item.installed ? "Jugar" : "Instalar"}
+                      {game.installed ? "Jugar" : "Instalar"}
                     </button>
                   </div>
-                  {item.installed && (
+                  {game.installed && (
                     <div className="absolute top-2 right-2 bg-green-500 w-3 h-3 rounded-full" />
                   )}
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold mb-1 truncate">{item.game.title}</h3>
-                  <p className="text-texInactivo text-sm">{item.hours_played || 0}h jugadas</p>
-                  <p className="text-texInactivo text-xs">{formatLastPlayed(item.last_played)}</p>
+                  <h3 className="font-semibold mb-1 truncate">{game.title}</h3>
+                  <p className="text-texInactivo text-sm">{game.hoursPlayed}h jugadas</p>
+                  <p className="text-texInactivo text-xs">{game.lastPlayed}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredGames.map((item) => (
+            {filteredGames.map((game, i) => (
               <div
-                key={item.id}
+                key={i}
                 className="bg-subdeep rounded-xl p-4 flex items-center gap-4 hover:bg-categorico transition"
               >
                 <div className="w-20 h-14 relative flex-shrink-0">
                   <Image
-                    src={item.game.image || "/pic4.jpg"}
-                    alt={item.game.title}
+                    src={game.image}
+                    alt={game.title}
                     fill
                     className="object-cover rounded-lg"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold truncate">{item.game.title}</h3>
-                  <p className="text-texInactivo text-sm">{formatLastPlayed(item.last_played)}</p>
+                  <h3 className="font-semibold truncate">{game.title}</h3>
+                  <p className="text-texInactivo text-sm">{game.lastPlayed}</p>
                 </div>
                 <div className="text-right hidden sm:block">
-                  <p className="text-white font-medium">{item.hours_played || 0}h</p>
+                  <p className="text-white font-medium">{game.hoursPlayed}h</p>
                   <p className="text-texInactivo text-xs">Tiempo jugado</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  {item.installed && (
+                  {game.installed && (
                     <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs">
                       Instalado
                     </span>
                   )}
                   <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-subprimary transition">
-                    {item.installed ? "Jugar" : "Instalar"}
+                    {game.installed ? "Jugar" : "Instalar"}
                   </button>
                 </div>
               </div>
@@ -184,17 +148,17 @@ const LibreriaApp = () => {
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-deep rounded-2xl p-6 text-center">
           <p className="text-3xl font-bold text-primary">
-            {totalHoursPlayed}h
+            {libreria.reduce((acc, g) => acc + g.hoursPlayed, 0)}h
           </p>
           <p className="text-texInactivo">Total jugado</p>
         </div>
         <div className="bg-deep rounded-2xl p-6 text-center">
-          <p className="text-3xl font-bold text-primary">{library.length}</p>
+          <p className="text-3xl font-bold text-primary">{libreria.length}</p>
           <p className="text-texInactivo">Juegos</p>
         </div>
         <div className="bg-deep rounded-2xl p-6 text-center">
           <p className="text-3xl font-bold text-primary">
-            {installedCount}
+            {libreria.filter((g) => g.installed).length}
           </p>
           <p className="text-texInactivo">Instalados</p>
         </div>

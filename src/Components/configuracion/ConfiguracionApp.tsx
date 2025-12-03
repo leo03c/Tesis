@@ -1,25 +1,15 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
-import { getProfile, updateProfile } from "@/lib/api/users";
-import type { UserProfile } from "@/types/api";
 
 const ConfiguracionApp = () => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("cuenta");
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
     updates: false,
     newsletter: true,
-  });
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
   });
 
   const tabs = [
@@ -28,71 +18,6 @@ const ConfiguracionApp = () => {
     { id: "privacidad", label: "Privacidad", icon: "/setting.svg" },
     { id: "apariencia", label: "Apariencia", icon: "/setting.svg" },
   ];
-
-  const fetchProfile = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await getProfile();
-      setProfile(data);
-      setFormData({
-        username: data.username || "",
-        email: data.email || "",
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar el perfil');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
-
-  const handleSaveProfile = async () => {
-    setIsSaving(true);
-    try {
-      const updated = await updateProfile(formData);
-      setProfile(updated);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al guardar los cambios');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const getInitials = (name?: string) => {
-    if (!name) return "U";
-    return name.split(" ").filter(n => n.length > 0).map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U";
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen text-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-texInactivo">Cargando configuración...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error && !profile) {
-    return (
-      <div className="min-h-screen text-white flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">{error}</p>
-          <button 
-            onClick={fetchProfile}
-            className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition"
-          >
-            Reintentar
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen text-white">
@@ -130,41 +55,24 @@ const ConfiguracionApp = () => {
               <h2 className="text-xl font-semibold mb-4">Información de la cuenta</h2>
               
               <div className="flex items-center gap-4 p-4 bg-subdeep rounded-xl">
-                <div className="w-20 h-20 bg-categorico rounded-full flex items-center justify-center text-2xl font-bold overflow-hidden">
-                  {profile?.avatar ? (
-                    <Image 
-                      src={profile.avatar} 
-                      alt={profile.username || "Avatar"} 
-                      width={80} 
-                      height={80}
-                      className="object-cover w-full h-full"
-                    />
-                  ) : (
-                    getInitials(profile?.username || profile?.first_name)
-                  )}
+                <div className="w-20 h-20 bg-categorico rounded-full flex items-center justify-center text-2xl font-bold">
+                  JD
                 </div>
                 <div>
-                  <h3 className="font-semibold">{profile?.first_name || profile?.username || "Usuario"}</h3>
-                  <p className="text-texInactivo text-sm">{profile?.email}</p>
+                  <h3 className="font-semibold">Juan Desarrollador</h3>
+                  <p className="text-texInactivo text-sm">juan@cosmox.com</p>
                   <button className="text-primary text-sm mt-1 hover:underline">
                     Cambiar foto
                   </button>
                 </div>
               </div>
 
-              {error && (
-                <div className="bg-red-500/20 text-red-400 p-4 rounded-xl">
-                  {error}
-                </div>
-              )}
-
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm text-texInactivo mb-2">Nombre de usuario</label>
                   <input
                     type="text"
-                    value={formData.username}
-                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    defaultValue="JuanDev"
                     className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
                   />
                 </div>
@@ -172,17 +80,12 @@ const ConfiguracionApp = () => {
                   <label className="block text-sm text-texInactivo mb-2">Email</label>
                   <input
                     type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    defaultValue="juan@cosmox.com"
                     className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
                   />
                 </div>
-                <button 
-                  onClick={handleSaveProfile}
-                  disabled={isSaving}
-                  className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition disabled:opacity-50"
-                >
-                  {isSaving ? "Guardando..." : "Guardar cambios"}
+                <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition">
+                  Guardar cambios
                 </button>
               </div>
             </div>

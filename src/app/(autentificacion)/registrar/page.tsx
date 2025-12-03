@@ -4,7 +4,6 @@ import Image from "next/image";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { register } from "@/lib/api/auth";
 
 //Variables de imágenes
 const COSMOX_LOGO = "/logo-cosmox.svg";
@@ -39,15 +38,25 @@ export default function RegisterPage() {
     }
 
     try {
-      await register({
-        username: form.username,
-        email: form.email,
-        password: form.password,
-        password_confirm: form.confirmPassword,
+      const res = await fetch("http://localhost:8000/api/register/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          username: form.username,
+          password: form.password,
+        }),
       });
 
-      // Registro exitoso, redirigir a inicio
-      router.push("/");
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.detail || "Error en el registro");
+      }
+
+      // Registro exitoso, redirigir a login
+      router.push("/login");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
