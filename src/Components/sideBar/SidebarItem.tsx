@@ -1,8 +1,16 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
+const normalizeText = (text: string) => {
+    return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+/g, '-');
+};
+
 const SidebarItem = ({ title, icon }: { title: string; icon: string }) => {
-    const path = `/${title.toLowerCase().replace(/\s+/g, '-')}`;
+    const path = `/${normalizeText(title)}`;
 
     return (
         <Link 
