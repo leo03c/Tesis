@@ -1,9 +1,0 @@
-{
-  "/_not-found/page": "/_not-found",
-  "/(autentificacion)/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
-  "/favicon.ico/route": "/favicon.ico",
-  "/(autentificacion)/login/page": "/login",
-  "/(autentificacion)/registrar/page": "/registrar",
-  "/(media)/juego/page": "/juego",
-  "/(main)/page": "/"
-}

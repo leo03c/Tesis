@@ -1,4 +1,4 @@
-// File: D:\Tesis\src\app\(autentificacion)\registrar\page.tsx
+// File: /home/runner/work/Tesis/Tesis/src/app/(autentificacion)/registrar/page.tsx
 import * as entry from '../../../../../src/app/(autentificacion)/registrar/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

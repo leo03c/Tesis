@@ -1,4 +1,4 @@
-// File: D:\Tesis\src\app\(media)\juego\page.tsx
+// File: /home/runner/work/Tesis/Tesis/src/app/(media)/juego/page.tsx
 import * as entry from '../../../../../src/app/(media)/juego/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
