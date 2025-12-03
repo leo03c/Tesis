@@ -1,29 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-
-const faqs = [
-  {
-    question: "¿Cómo puedo crear una cuenta en CosmoX?",
-    answer: "Para crear una cuenta, haz clic en el botón 'Registrarse' en la página principal. Completa el formulario con tu email, nombre de usuario y contraseña. Recibirás un email de confirmación para activar tu cuenta."
-  },
-  {
-    question: "¿Cómo descargo un juego?",
-    answer: "Una vez que hayas comprado un juego, ve a 'Mi Librería', busca el juego y haz clic en el botón 'Instalar'. El juego se descargará automáticamente en tu dispositivo."
-  },
-  {
-    question: "¿Cómo puedo solicitar un reembolso?",
-    answer: "Puedes solicitar un reembolso dentro de los 14 días posteriores a la compra si has jugado menos de 2 horas. Ve a tu historial de compras, selecciona el juego y haz clic en 'Solicitar reembolso'."
-  },
-  {
-    question: "¿Cómo publico mi propio juego en CosmoX?",
-    answer: "Ve a 'Mi Catálogo' y haz clic en 'Nuevo Proyecto'. Sigue las instrucciones para subir tu juego, agregar imágenes, descripción y configurar el precio. Nuestro equipo revisará tu juego antes de publicarlo."
-  },
-  {
-    question: "¿Qué métodos de pago aceptan?",
-    answer: "Aceptamos tarjetas de crédito/débito (Visa, MasterCard, American Express), PayPal, y en algunos países transferencias bancarias y pagos locales."
-  },
-];
+import React, { useState, useEffect, useCallback } from "react";
+import { getFaqs } from "@/lib/api/support";
+import type { FAQ } from "@/types/api";
 
 const contactOptions = [
   { icon: "💬", title: "Chat en vivo", desc: "Habla con nuestro equipo en tiempo real", action: "Iniciar chat" },
@@ -32,14 +11,61 @@ const contactOptions = [
 ];
 
 const AyudaApp = () => {
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const fetchFaqs = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await getFaqs();
+      setFaqs(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al cargar las FAQs');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchFaqs();
+  }, [fetchFaqs]);
 
   const filteredFaqs = faqs.filter(
     (faq) =>
       faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
       faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-texInactivo">Cargando centro de ayuda...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">{error}</p>
+          <button 
+            onClick={fetchFaqs}
+            className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-white">
@@ -101,19 +127,19 @@ const AyudaApp = () => {
         <div className="space-y-4">
           {filteredFaqs.length === 0 ? (
             <p className="text-texInactivo text-center py-8">
-              No se encontraron resultados para tu búsqueda
+              {searchQuery ? "No se encontraron resultados para tu búsqueda" : "No hay FAQs disponibles"}
             </p>
           ) : (
-            filteredFaqs.map((faq, i) => (
-              <div key={i} className="bg-subdeep rounded-xl overflow-hidden">
+            filteredFaqs.map((faq) => (
+              <div key={faq.id} className="bg-subdeep rounded-xl overflow-hidden">
                 <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
                   className="w-full flex items-center justify-between p-5 text-left hover:bg-categorico transition"
                 >
                   <span className="font-medium pr-4">{faq.question}</span>
                   <svg
                     className={`w-5 h-5 text-texInactivo flex-shrink-0 transition-transform ${
-                      openFaq === i ? "rotate-180" : ""
+                      openFaq === faq.id ? "rotate-180" : ""
                     }`}
                     fill="none"
                     stroke="currentColor"
@@ -122,7 +148,7 @@ const AyudaApp = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                {openFaq === i && (
+                {openFaq === faq.id && (
                   <div className="px-5 pb-5">
                     <p className="text-texInactivo">{faq.answer}</p>
                   </div>
