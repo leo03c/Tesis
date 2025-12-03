@@ -64,7 +64,7 @@ const ConfiguracionApp = () => {
 
   const getInitials = (name?: string) => {
     if (!name) return "U";
-    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+    return name.split(" ").filter(n => n.length > 0).map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U";
   };
 
   if (isLoading) {

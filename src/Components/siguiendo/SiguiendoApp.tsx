@@ -168,12 +168,6 @@ const SiguiendoApp = () => {
           <div className="space-y-4">
             <div className="text-center py-10">
               <p className="text-texInactivo">Las sugerencias se cargarán pronto</p>
-              <button
-                onClick={() => handleFollow(0)}
-                className="mt-4 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition hidden"
-              >
-                Seguir
-              </button>
             </div>
           </div>
         )}

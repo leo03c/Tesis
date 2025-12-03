@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 // Token storage keys
 const ACCESS_TOKEN_KEY = 'cosmox_access_token';
@@ -135,5 +135,3 @@ export async function apiClient<T>(
 
   return response.json();
 }
-
-export { API_BASE_URL };

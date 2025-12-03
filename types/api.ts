@@ -71,11 +71,19 @@ export interface Game {
   created_at?: string;
 }
 
+/**
+ * Filters for querying games from the API
+ */
 export interface GameFilters {
+  /** Filter by tag slug */
   tag?: string;
+  /** Filter to show only featured games */
   featured?: boolean;
+  /** Filter by maximum price (0 for free games) */
   max_price?: number;
+  /** Filter to show only games on sale */
   on_sale?: boolean;
+  /** Sort order (e.g., 'title', '-title', 'price', '-price', 'created_at', '-created_at') */
   ordering?: string;
 }
 
