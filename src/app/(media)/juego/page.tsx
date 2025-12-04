@@ -79,7 +79,7 @@ const youtube = () => {
                 key={i}
                 className="relative w-28 h-20 rounded-xl overflow-hidden border border-deep flex-shrink-0"
               >
-                <Image src={src} alt={`Galería ${i}`} fill className="object-cover" />
+                <Image src={src} alt={`Galería ${i}`} fill sizes="112px" className="object-cover" />
               </div>
             ))}
           </div>

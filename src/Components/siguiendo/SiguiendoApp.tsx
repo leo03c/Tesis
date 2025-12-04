@@ -91,6 +91,7 @@ const SiguiendoApp = () => {
                       src={user.avatar}
                       alt={user.name}
                       fill
+                      sizes="56px"
                       className="object-cover rounded-full"
                     />
                   </div>
@@ -132,6 +133,7 @@ const SiguiendoApp = () => {
                       src={user.avatar}
                       alt={user.name}
                       fill
+                      sizes="56px"
                       className="object-cover rounded-full"
                     />
                   </div>

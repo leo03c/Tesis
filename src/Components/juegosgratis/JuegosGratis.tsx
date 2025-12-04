@@ -94,6 +94,7 @@ const JuegosGratis = () => {
                     src={juego.image}
                     alt={juego.title}
                     fill
+                    sizes="(max-width: 640px) 100vw, 33vw"
                     className="object-cover rounded-t-xl"
                   />
                   <div className="absolute top-2 right-2">

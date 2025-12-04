@@ -86,6 +86,7 @@ const LibreriaApp = () => {
                     src={game.image}
                     alt={game.title}
                     fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className="object-cover group-hover:scale-105 transition duration-300"
                   />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
@@ -117,6 +118,7 @@ const LibreriaApp = () => {
                     src={game.image}
                     alt={game.title}
                     fill
+                    sizes="80px"
                     className="object-cover rounded-lg"
                   />
                 </div>

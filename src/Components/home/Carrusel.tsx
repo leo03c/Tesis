@@ -98,6 +98,7 @@ const Carrusel = () => {
                         <div className="w-1/2 aspect-[1.08] relative">
                             <Image
                                 fill
+                                sizes="(max-width: 1024px) 50vw, 25vw"
                                 className="rounded-xl object-cover"
                                 src={'/images/miniCard1.svg'}
                                 alt="Mini Card 1"
@@ -106,6 +107,7 @@ const Carrusel = () => {
                         <div className="w-1/2 aspect-[1.08] relative">
                             <Image
                                 fill
+                                sizes="(max-width: 1024px) 50vw, 25vw"
                                 className="rounded-xl object-cover"
                                 src={'/images/miniCard2.svg'}
                                 alt="Mini Card 2"

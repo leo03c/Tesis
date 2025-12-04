@@ -99,6 +99,7 @@ const TiendaApp = () => {
                       src={juego.image}
                       alt={juego.title}
                       fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                       className="object-cover rounded-t-xl"
                     />
                     <div className="absolute top-2 right-2">
