@@ -1,6 +1,6 @@
 // Settings service - User settings operations
 
-import { api } from './api';
+import { api, API_BASE_URL, getAuthToken } from './api';
 import type {
   AccountSettings,
   NotificationSettings,
@@ -40,14 +40,14 @@ export const settingsService = {
     const formData = new FormData();
     formData.append('avatar', avatarFile);
     
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-    const headers: HeadersInit = {};
+    const token = getAuthToken();
+    const headers: Record<string, string> = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api'}/settings/account/avatar`,
+      `${API_BASE_URL}/settings/account/avatar`,
       {
         method: 'PUT',
         headers,

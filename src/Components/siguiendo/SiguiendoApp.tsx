@@ -50,19 +50,19 @@ const SiguiendoApp = () => {
     fetchData();
   }, []);
 
-  const handleUnfollow = async (userId: number, name: string) => {
+  const handleUnfollow = async (userId: number) => {
     try {
       await followService.unfollow(userId);
       setFollowingList(followingList.filter((u) => u.id !== userId));
     } catch (err) {
       console.error('Error unfollowing user:', err);
       // Fallback: update locally even if API fails
-      setFollowingList(followingList.filter((u) => u.name !== name));
+      setFollowingList(followingList.filter((u) => u.id !== userId));
     }
   };
 
-  const handleFollow = async (userId: number, name: string) => {
-    const userToFollow = suggestions.find((u) => u.id === userId || u.name === name);
+  const handleFollow = async (userId: number) => {
+    const userToFollow = suggestions.find((u) => u.id === userId);
     if (userToFollow) {
       try {
         await followService.follow(userId);
@@ -72,7 +72,7 @@ const SiguiendoApp = () => {
         console.error('Error following user:', err);
         // Fallback: update locally even if API fails
         setFollowingList([...followingList, { ...userToFollow, isFollowing: true }]);
-        setSuggestions(suggestions.filter((u) => u.name !== name));
+        setSuggestions(suggestions.filter((u) => u.id !== userId));
       }
     }
   };
@@ -168,7 +168,7 @@ const SiguiendoApp = () => {
                     </p>
                   </div>
                   <button
-                    onClick={() => handleUnfollow(user.id, user.name)}
+                    onClick={() => handleUnfollow(user.id)}
                     className="bg-subdeep border border-primary text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary hover:text-white transition"
                   >
                     Siguiendo
@@ -209,7 +209,7 @@ const SiguiendoApp = () => {
                     </p>
                   </div>
                   <button
-                    onClick={() => handleFollow(user.id, user.name)}
+                    onClick={() => handleFollow(user.id)}
                     className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-subprimary transition"
                   >
                     Seguir
