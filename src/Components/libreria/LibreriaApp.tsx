@@ -1,24 +1,44 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { libraryService } from "@/services";
+import type { LibraryGame } from "@/types";
 
-const pic4 = "/pic4.jpg";
-const pic5 = "/pic5.jpg";
-const pic6 = "/pic6.jpg";
-
-const libreria = [
-  { title: "League of Legends", image: pic4, hoursPlayed: 1250, lastPlayed: "Hace 2 horas", installed: true },
-  { title: "God of War", image: pic5, hoursPlayed: 45, lastPlayed: "Hace 3 días", installed: true },
-  { title: "Cyberpunk 2077", image: pic6, hoursPlayed: 120, lastPlayed: "Hace 1 semana", installed: false },
-  { title: "Control", image: pic4, hoursPlayed: 30, lastPlayed: "Hace 2 semanas", installed: false },
-  { title: "Hogwarts Legacy", image: pic5, hoursPlayed: 80, lastPlayed: "Ayer", installed: true },
-  { title: "Elden Ring", image: pic6, hoursPlayed: 200, lastPlayed: "Hace 5 días", installed: true },
+// Fallback data for when API is unavailable
+const fallbackLibreria: LibraryGame[] = [
+  { id: 1, gameId: 1, title: "League of Legends", image: "/pic4.jpg", hoursPlayed: 1250, lastPlayed: "Hace 2 horas", installed: true, addedAt: "" },
+  { id: 2, gameId: 2, title: "God of War", image: "/pic5.jpg", hoursPlayed: 45, lastPlayed: "Hace 3 días", installed: true, addedAt: "" },
+  { id: 3, gameId: 3, title: "Cyberpunk 2077", image: "/pic6.jpg", hoursPlayed: 120, lastPlayed: "Hace 1 semana", installed: false, addedAt: "" },
+  { id: 4, gameId: 4, title: "Control", image: "/pic4.jpg", hoursPlayed: 30, lastPlayed: "Hace 2 semanas", installed: false, addedAt: "" },
+  { id: 5, gameId: 5, title: "Hogwarts Legacy", image: "/pic5.jpg", hoursPlayed: 80, lastPlayed: "Ayer", installed: true, addedAt: "" },
+  { id: 6, gameId: 6, title: "Elden Ring", image: "/pic6.jpg", hoursPlayed: 200, lastPlayed: "Hace 5 días", installed: true, addedAt: "" },
 ];
 
 const LibreriaApp = () => {
+  const [libreria, setLibreria] = useState<LibraryGame[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filter, setFilter] = useState("todos");
+
+  useEffect(() => {
+    const fetchLibrary = async () => {
+      try {
+        setLoading(true);
+        const response = await libraryService.getLibrary();
+        setLibreria(response.library);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching library:', err);
+        setError('No se pudo cargar la librería');
+        setLibreria(fallbackLibreria);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchLibrary();
+  }, []);
 
   const filteredGames = libreria.filter((game) => {
     if (filter === "instalados") return game.installed;
@@ -26,8 +46,30 @@ const LibreriaApp = () => {
     return true;
   });
 
+  const totalHoursPlayed = libreria.reduce((acc, g) => acc + g.hoursPlayed, 0);
+  const installedCount = libreria.filter((g) => g.installed).length;
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-texInactivo">Cargando librería...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen text-white">
+      {/* Error message */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400">
+          {error}
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -148,7 +190,7 @@ const LibreriaApp = () => {
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-deep rounded-2xl p-6 text-center">
           <p className="text-3xl font-bold text-primary">
-            {libreria.reduce((acc, g) => acc + g.hoursPlayed, 0)}h
+            {totalHoursPlayed}h
           </p>
           <p className="text-texInactivo">Total jugado</p>
         </div>
@@ -158,7 +200,7 @@ const LibreriaApp = () => {
         </div>
         <div className="bg-deep rounded-2xl p-6 text-center">
           <p className="text-3xl font-bold text-primary">
-            {libreria.filter((g) => g.installed).length}
+            {installedCount}
           </p>
           <p className="text-texInactivo">Instalados</p>
         </div>

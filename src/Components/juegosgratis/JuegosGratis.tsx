@@ -2,29 +2,50 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { gamesService } from "@/services";
+import type { FreeGame } from "@/types";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
 const coraR = "/icons/coraR.svg";
 const star = "/icons/star 5.svg";
-const pic4 = "/pic4.jpg";
-const pic5 = "/pic5.jpg";
-const pic6 = "/pic6.jpg";
 
-const juegos = [
-  { title: "Cat Quest II", image: pic4, tags: ["RPG"], rating: 5.0 },
-  { title: "Cat Quest III", image: pic4, tags: ["RPG"], rating: 3.0 },
-  { title: "Cat Quest IV", image: pic4, tags: ["RPG"], rating: 3.5 },
-  { title: "Arcadegeddon", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5 },
-  { title: "River City Girls", image: pic6, tags: ["RPG"], rating: 5.0 },
+// Fallback data for when API is unavailable
+const fallbackJuegos: FreeGame[] = [
+  { id: 1, title: "Cat Quest II", image: "/pic4.jpg", tags: ["RPG"], rating: 5.0 },
+  { id: 2, title: "Cat Quest III", image: "/pic4.jpg", tags: ["RPG"], rating: 3.0 },
+  { id: 3, title: "Cat Quest IV", image: "/pic4.jpg", tags: ["RPG"], rating: 3.5 },
+  { id: 4, title: "Arcadegeddon", image: "/pic5.jpg", tags: ["AVENTURA", "RPG"], rating: 4.5 },
+  { id: 5, title: "River City Girls", image: "/pic6.jpg", tags: ["RPG"], rating: 5.0 },
 ];
 
 const JuegosGratis = () => {
+  const [juegos, setJuegos] = useState<FreeGame[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
 
   // dirección de la transición: 1 = next (entra desde la derecha), -1 = prev (entra desde la izquierda)
   const [direction, setDirection] = useState(0);
+
+  useEffect(() => {
+    const fetchFreeGames = async () => {
+      try {
+        setLoading(true);
+        const response = await gamesService.getFreeGames();
+        setJuegos(response.games);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching free games:', err);
+        setError('No se pudieron cargar los juegos gratis');
+        setJuegos(fallbackJuegos);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFreeGames();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -58,8 +79,26 @@ const JuegosGratis = () => {
   const startIndex = currentPage * itemsPerPage;
   const visibleGames = juegos.slice(startIndex, startIndex + itemsPerPage);
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="my-4 rounded-3xl bg-deep text-white py-10 px-6">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-texInactivo">Cargando juegos gratis...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="my-4 rounded-3xl bg-deep text-white py-10 px-6">
+      {/* Error message */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400">
+          {error}
+        </div>
+      )}
       <div className="max-w-7xl mx-auto relative">
         {/* Encabezado */}
         <div className="flex justify-between items-center mb-6">

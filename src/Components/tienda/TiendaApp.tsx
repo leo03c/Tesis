@@ -2,28 +2,49 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { gamesService } from "@/services";
+import type { Game } from "@/types";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
 const coraR = "/icons/coraR.svg";
 const star = "/icons/star 5.svg";
-const pic4 = "/pic4.jpg";
-const pic5 = "/pic5.jpg";
-const pic6 = "/pic6.jpg";
 
-const juegos = [
-  { title: "League of Legends", image: pic4, price: 0, originalPrice: 0, discount: 0, tags: ["MOBA", "MULTIJUGADOR"], rating: 4.8 },
-  { title: "God of War", image: pic5, price: 29.99, originalPrice: 59.99, discount: 50, tags: ["AVENTURA", "ACCIÓN"], rating: 5.0 },
-  { title: "Cyberpunk 2077", image: pic6, price: 44.99, originalPrice: 59.99, discount: 25, tags: ["RPG", "ACCIÓN"], rating: 4.5 },
-  { title: "Control", image: pic4, price: 19.99, originalPrice: 39.99, discount: 50, tags: ["ACCIÓN", "AVENTURA"], rating: 4.7 },
-  { title: "Hogwarts Legacy", image: pic5, price: 49.99, originalPrice: 69.99, discount: 28, tags: ["RPG", "AVENTURA"], rating: 4.9 },
-  { title: "Elden Ring", image: pic6, price: 59.99, originalPrice: 59.99, discount: 0, tags: ["RPG", "SOULS"], rating: 5.0 },
+// Fallback data for when API is unavailable
+const fallbackGames: Game[] = [
+  { id: 1, title: "League of Legends", image: "/pic4.jpg", price: 0, originalPrice: 0, discount: 0, tags: ["MOBA", "MULTIJUGADOR"], rating: 4.8 },
+  { id: 2, title: "God of War", image: "/pic5.jpg", price: 29.99, originalPrice: 59.99, discount: 50, tags: ["AVENTURA", "ACCIÓN"], rating: 5.0 },
+  { id: 3, title: "Cyberpunk 2077", image: "/pic6.jpg", price: 44.99, originalPrice: 59.99, discount: 25, tags: ["RPG", "ACCIÓN"], rating: 4.5 },
+  { id: 4, title: "Control", image: "/pic4.jpg", price: 19.99, originalPrice: 39.99, discount: 50, tags: ["ACCIÓN", "AVENTURA"], rating: 4.7 },
+  { id: 5, title: "Hogwarts Legacy", image: "/pic5.jpg", price: 49.99, originalPrice: 69.99, discount: 28, tags: ["RPG", "AVENTURA"], rating: 4.9 },
+  { id: 6, title: "Elden Ring", image: "/pic6.jpg", price: 59.99, originalPrice: 59.99, discount: 0, tags: ["RPG", "SOULS"], rating: 5.0 },
 ];
 
 const TiendaApp = () => {
+  const [juegos, setJuegos] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [direction, setDirection] = useState(0);
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        setLoading(true);
+        const response = await gamesService.getGames();
+        setJuegos(response.games);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching games:', err);
+        setError('No se pudieron cargar los juegos');
+        setJuegos(fallbackGames);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchGames();
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -56,6 +77,18 @@ const TiendaApp = () => {
   const startIndex = currentPage * itemsPerPage;
   const visibleGames = juegos.slice(startIndex, startIndex + itemsPerPage);
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-texInactivo">Cargando juegos...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen text-white">
       {/* Header */}
@@ -63,6 +96,13 @@ const TiendaApp = () => {
         <h1 className="text-3xl font-bold mb-2">Tienda de Juegos</h1>
         <p className="text-texInactivo">Descubre los mejores juegos y ofertas exclusivas</p>
       </div>
+
+      {/* Error message */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400">
+          {error}
+        </div>
+      )}
 
       {/* Featured Section */}
       <div className="my-4 rounded-3xl bg-deep text-white py-10 px-6">

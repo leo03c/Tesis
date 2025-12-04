@@ -1,41 +1,103 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { followService } from "@/services";
+import type { FollowUser, FollowSuggestion } from "@/types";
 
-const siguiendo = [
-  { name: "CD Projekt Red", avatar: "/pic4.jpg", followers: "2.5M", games: 3, isFollowing: true, type: "Desarrollador" },
-  { name: "FromSoftware", avatar: "/pic5.jpg", followers: "1.8M", games: 12, isFollowing: true, type: "Desarrollador" },
-  { name: "Supergiant Games", avatar: "/pic6.jpg", followers: "850K", games: 4, isFollowing: true, type: "Desarrollador" },
-  { name: "GamerPro123", avatar: "/pic4.jpg", followers: "125K", games: 0, isFollowing: true, type: "Usuario" },
-  { name: "StreamerElite", avatar: "/pic5.jpg", followers: "500K", games: 0, isFollowing: true, type: "Usuario" },
-  { name: "Riot Games", avatar: "/pic6.jpg", followers: "5.2M", games: 8, isFollowing: true, type: "Desarrollador" },
+// Fallback data for when API is unavailable
+const fallbackSiguiendo: FollowUser[] = [
+  { id: 1, name: "CD Projekt Red", avatar: "/pic4.jpg", followers: "2.5M", games: 3, isFollowing: true, type: "Desarrollador" },
+  { id: 2, name: "FromSoftware", avatar: "/pic5.jpg", followers: "1.8M", games: 12, isFollowing: true, type: "Desarrollador" },
+  { id: 3, name: "Supergiant Games", avatar: "/pic6.jpg", followers: "850K", games: 4, isFollowing: true, type: "Desarrollador" },
+  { id: 4, name: "GamerPro123", avatar: "/pic4.jpg", followers: "125K", games: 0, isFollowing: true, type: "Usuario" },
+  { id: 5, name: "StreamerElite", avatar: "/pic5.jpg", followers: "500K", games: 0, isFollowing: true, type: "Usuario" },
+  { id: 6, name: "Riot Games", avatar: "/pic6.jpg", followers: "5.2M", games: 8, isFollowing: true, type: "Desarrollador" },
 ];
 
-const sugerencias = [
-  { name: "Naughty Dog", avatar: "/pic4.jpg", followers: "3.1M", games: 15, isFollowing: false, type: "Desarrollador" },
-  { name: "Insomniac Games", avatar: "/pic5.jpg", followers: "1.2M", games: 20, isFollowing: false, type: "Desarrollador" },
+const fallbackSugerencias: FollowSuggestion[] = [
+  { id: 7, name: "Naughty Dog", avatar: "/pic4.jpg", followers: "3.1M", games: 15, type: "Desarrollador" },
+  { id: 8, name: "Insomniac Games", avatar: "/pic5.jpg", followers: "1.2M", games: 20, type: "Desarrollador" },
 ];
 
 const SiguiendoApp = () => {
   const [activeTab, setActiveTab] = useState<"siguiendo" | "sugerencias">("siguiendo");
-  const [followingList, setFollowingList] = useState(siguiendo);
-  const [suggestions, setSuggestions] = useState(sugerencias);
+  const [followingList, setFollowingList] = useState<FollowUser[]>([]);
+  const [suggestions, setSuggestions] = useState<FollowSuggestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleUnfollow = (name: string) => {
-    setFollowingList(followingList.filter((u) => u.name !== name));
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [followingResponse, suggestionsResponse] = await Promise.all([
+          followService.getFollowing(),
+          followService.getSuggestions(),
+        ]);
+        setFollowingList(followingResponse.following);
+        setSuggestions(suggestionsResponse.suggestions);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching following data:', err);
+        setError('No se pudieron cargar los datos');
+        setFollowingList(fallbackSiguiendo);
+        setSuggestions(fallbackSugerencias);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
-  const handleFollow = (name: string) => {
-    const userToFollow = suggestions.find((u) => u.name === name);
-    if (userToFollow) {
-      setFollowingList([...followingList, { ...userToFollow, isFollowing: true }]);
-      setSuggestions(suggestions.filter((u) => u.name !== name));
+  const handleUnfollow = async (userId: number, name: string) => {
+    try {
+      await followService.unfollow(userId);
+      setFollowingList(followingList.filter((u) => u.id !== userId));
+    } catch (err) {
+      console.error('Error unfollowing user:', err);
+      // Fallback: update locally even if API fails
+      setFollowingList(followingList.filter((u) => u.name !== name));
     }
   };
 
+  const handleFollow = async (userId: number, name: string) => {
+    const userToFollow = suggestions.find((u) => u.id === userId || u.name === name);
+    if (userToFollow) {
+      try {
+        await followService.follow(userId);
+        setFollowingList([...followingList, { ...userToFollow, isFollowing: true }]);
+        setSuggestions(suggestions.filter((u) => u.id !== userId));
+      } catch (err) {
+        console.error('Error following user:', err);
+        // Fallback: update locally even if API fails
+        setFollowingList([...followingList, { ...userToFollow, isFollowing: true }]);
+        setSuggestions(suggestions.filter((u) => u.name !== name));
+      }
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-texInactivo">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen text-white">
+      {/* Error message */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400">
+          {error}
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Siguiendo</h1>
@@ -81,9 +143,9 @@ const SiguiendoApp = () => {
                 </button>
               </div>
             ) : (
-              followingList.map((user, i) => (
+              followingList.map((user) => (
                 <div
-                  key={i}
+                  key={user.id}
                   className="bg-subdeep rounded-xl p-4 flex items-center gap-4 hover:bg-categorico transition"
                 >
                   <div className="w-14 h-14 relative flex-shrink-0">
@@ -106,7 +168,7 @@ const SiguiendoApp = () => {
                     </p>
                   </div>
                   <button
-                    onClick={() => handleUnfollow(user.name)}
+                    onClick={() => handleUnfollow(user.id, user.name)}
                     className="bg-subdeep border border-primary text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary hover:text-white transition"
                   >
                     Siguiendo
@@ -122,9 +184,9 @@ const SiguiendoApp = () => {
                 <p className="text-texInactivo">No hay más sugerencias por ahora</p>
               </div>
             ) : (
-              suggestions.map((user, i) => (
+              suggestions.map((user) => (
                 <div
-                  key={i}
+                  key={user.id}
                   className="bg-subdeep rounded-xl p-4 flex items-center gap-4 hover:bg-categorico transition"
                 >
                   <div className="w-14 h-14 relative flex-shrink-0">
@@ -147,7 +209,7 @@ const SiguiendoApp = () => {
                     </p>
                   </div>
                   <button
-                    onClick={() => handleFollow(user.name)}
+                    onClick={() => handleFollow(user.id, user.name)}
                     className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-subprimary transition"
                   >
                     Seguir

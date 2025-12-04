@@ -1,39 +1,84 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supportService } from "@/services";
+import type { FAQ, ContactOption, SystemStatus } from "@/types";
 
-const faqs = [
+// Fallback data for when API is unavailable
+const fallbackFaqs: FAQ[] = [
   {
+    id: 1,
     question: "¿Cómo puedo crear una cuenta en CosmoX?",
     answer: "Para crear una cuenta, haz clic en el botón 'Registrarse' en la página principal. Completa el formulario con tu email, nombre de usuario y contraseña. Recibirás un email de confirmación para activar tu cuenta."
   },
   {
+    id: 2,
     question: "¿Cómo descargo un juego?",
     answer: "Una vez que hayas comprado un juego, ve a 'Mi Librería', busca el juego y haz clic en el botón 'Instalar'. El juego se descargará automáticamente en tu dispositivo."
   },
   {
+    id: 3,
     question: "¿Cómo puedo solicitar un reembolso?",
     answer: "Puedes solicitar un reembolso dentro de los 14 días posteriores a la compra si has jugado menos de 2 horas. Ve a tu historial de compras, selecciona el juego y haz clic en 'Solicitar reembolso'."
   },
   {
+    id: 4,
     question: "¿Cómo publico mi propio juego en CosmoX?",
     answer: "Ve a 'Mi Catálogo' y haz clic en 'Nuevo Proyecto'. Sigue las instrucciones para subir tu juego, agregar imágenes, descripción y configurar el precio. Nuestro equipo revisará tu juego antes de publicarlo."
   },
   {
+    id: 5,
     question: "¿Qué métodos de pago aceptan?",
     answer: "Aceptamos tarjetas de crédito/débito (Visa, MasterCard, American Express), PayPal, y en algunos países transferencias bancarias y pagos locales."
   },
 ];
 
-const contactOptions = [
-  { icon: "💬", title: "Chat en vivo", desc: "Habla con nuestro equipo en tiempo real", action: "Iniciar chat" },
-  { icon: "📧", title: "Email", desc: "soporte@cosmox.com", action: "Enviar email" },
-  { icon: "📱", title: "Redes sociales", desc: "@CosmoXGames en todas las plataformas", action: "Seguir" },
+const fallbackContactOptions: ContactOption[] = [
+  { id: 1, icon: "💬", title: "Chat en vivo", description: "Habla con nuestro equipo en tiempo real", action: "Iniciar chat" },
+  { id: 2, icon: "📧", title: "Email", description: "soporte@cosmox.com", action: "Enviar email" },
+  { id: 3, icon: "📱", title: "Redes sociales", description: "@CosmoXGames en todas las plataformas", action: "Seguir" },
 ];
 
+const fallbackSystemStatus: SystemStatus = {
+  operational: true,
+  lastUpdate: "hace 5 minutos",
+  message: "Todos los sistemas operativos"
+};
+
 const AyudaApp = () => {
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [contactOptions, setContactOptions] = useState<ContactOption[]>([]);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [faqsResponse, contactResponse, statusResponse] = await Promise.all([
+          supportService.getFAQs(),
+          supportService.getContactOptions(),
+          supportService.getSystemStatus(),
+        ]);
+        setFaqs(faqsResponse.faqs);
+        setContactOptions(contactResponse.options);
+        setSystemStatus(statusResponse);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching support data:', err);
+        setError('No se pudieron cargar los datos de ayuda');
+        setFaqs(fallbackFaqs);
+        setContactOptions(fallbackContactOptions);
+        setSystemStatus(fallbackSystemStatus);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   const filteredFaqs = faqs.filter(
     (faq) =>
@@ -41,8 +86,27 @@ const AyudaApp = () => {
       faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-texInactivo">Cargando centro de ayuda...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen text-white">
+      {/* Error message */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400">
+          {error}
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold mb-2">Centro de Ayuda</h1>
@@ -104,16 +168,16 @@ const AyudaApp = () => {
               No se encontraron resultados para tu búsqueda
             </p>
           ) : (
-            filteredFaqs.map((faq, i) => (
-              <div key={i} className="bg-subdeep rounded-xl overflow-hidden">
+            filteredFaqs.map((faq) => (
+              <div key={faq.id} className="bg-subdeep rounded-xl overflow-hidden">
                 <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  onClick={() => setOpenFaq(openFaq === faq.id ? null : faq.id)}
                   className="w-full flex items-center justify-between p-5 text-left hover:bg-categorico transition"
                 >
                   <span className="font-medium pr-4">{faq.question}</span>
                   <svg
                     className={`w-5 h-5 text-texInactivo flex-shrink-0 transition-transform ${
-                      openFaq === i ? "rotate-180" : ""
+                      openFaq === faq.id ? "rotate-180" : ""
                     }`}
                     fill="none"
                     stroke="currentColor"
@@ -122,7 +186,7 @@ const AyudaApp = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                {openFaq === i && (
+                {openFaq === faq.id && (
                   <div className="px-5 pb-5">
                     <p className="text-texInactivo">{faq.answer}</p>
                   </div>
@@ -137,11 +201,11 @@ const AyudaApp = () => {
       <div className="rounded-3xl bg-deep py-10 px-6">
         <h2 className="text-xl font-semibold mb-6">¿Necesitas más ayuda?</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {contactOptions.map((option, i) => (
-            <div key={i} className="bg-subdeep rounded-xl p-6 text-center">
+          {contactOptions.map((option) => (
+            <div key={option.id} className="bg-subdeep rounded-xl p-6 text-center">
               <span className="text-4xl mb-4 block">{option.icon}</span>
               <h3 className="font-semibold mb-2">{option.title}</h3>
-              <p className="text-texInactivo text-sm mb-4">{option.desc}</p>
+              <p className="text-texInactivo text-sm mb-4">{option.description}</p>
               <button className="bg-primary text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-subprimary transition">
                 {option.action}
               </button>
@@ -151,13 +215,15 @@ const AyudaApp = () => {
       </div>
 
       {/* Status */}
-      <div className="mt-8 bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-center gap-4">
-        <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
-        <div>
-          <p className="font-medium text-green-400">Todos los sistemas operativos</p>
-          <p className="text-texInactivo text-sm">Última actualización: hace 5 minutos</p>
+      {systemStatus && (
+        <div className={`mt-8 ${systemStatus.operational ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'} border rounded-xl p-4 flex items-center gap-4`}>
+          <div className={`w-3 h-3 ${systemStatus.operational ? 'bg-green-500' : 'bg-red-500'} rounded-full animate-pulse`} />
+          <div>
+            <p className={`font-medium ${systemStatus.operational ? 'text-green-400' : 'text-red-400'}`}>{systemStatus.message}</p>
+            <p className="text-texInactivo text-sm">Última actualización: {systemStatus.lastUpdate}</p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
