@@ -1,0 +1,675 @@
+================================================================================
+                    COSMOX - DOCUMENTACIÓN FRONTEND COMPLETA
+                    Plataforma de Distribución de Videojuegos
+                    Next.js 15 + React 19 + TypeScript + Tailwind CSS 4
+================================================================================
+
+================================================================================
+                         1. INFORMACIÓN GENERAL
+================================================================================
+
+Nombre del Proyecto: cosmox-frontend
+Versión: 0.1.0
+Tipo: Aplicación Web SPA/SSR
+
+DESCRIPCIÓN:
+CosmoX es una plataforma cubana de distribución de videojuegos digitales,
+similar a Epic Games Store o Steam.  Permite a los usuarios explorar, comprar
+y gestionar juegos, así como a desarrolladores publicar sus propios títulos.
+
+================================================================================
+                         2. STACK TECNOLÓGICO
+================================================================================
+
+FRAMEWORK:
+├── Next.js 15. 3.2          # Framework React con App Router
+├── React 19.1. 0            # Librería UI
+├── TypeScript 5            # Tipado estático
+└── Turbopack               # Bundler (modo desarrollo)
+
+ESTILOS:
+├── Tailwind CSS 4          # Framework CSS utility-first
+├── PostCSS                 # Procesador CSS
+├── tailwind-variants       # Variantes de componentes
+└── class-variance-authority # CVA para variantes
+
+AUTENTICACIÓN:
+└── NextAuth.js 4.24. 11     # Autenticación (Credentials + Google OAuth)
+
+UI COMPONENTS:
+├── @radix-ui/react-slot    # Primitivos accesibles
+├── lucide-react            # Iconos
+├── react-icons             # Iconos adicionales
+└── geist                   # Fuente tipográfica
+
+DEPENDENCIAS DE DESARROLLO:
+├── ESLint 9                # Linting
+├── @types/node             # Tipos Node.js
+├── @types/react            # Tipos React
+└── @types/react-dom        # Tipos React DOM
+
+================================================================================
+                         3. ESTRUCTURA DE CARPETAS
+================================================================================
+
+cosmox-frontend/
+├── public/                          # Archivos estáticos
+│   ├── icons/                       # Iconos SVG
+│   │   ├── user. svg
+│   │   ├── security-safe.svg
+│   │   ├── google. svg
+│   │   ├── Frame.svg
+│   │   ├── izquierdaC.svg
+│   │   ├── derechaC.svg
+│   │   ├── coraR.svg
+│   │   ├── star 5.svg
+│   │   ├── izquierda.svg
+│   │   ├── derecha.svg
+│   │   └── ... 
+│   ├── pic1.jpg - pic6.jpg          # Imágenes de juegos
+│   ├── noticia1.jpg, noticia2.jpg   # Imágenes de noticias
+│   ├── noti1.jpg, noti2.jpg         # Banners de noticias
+│   ├── logo-cosmox.svg              # Logo principal
+│   ├── coliseum-bg.jpg              # Fondo autenticación
+│   ├── 404.jpg                      # Fondo página 404
+│   ├── x.svg, y.svg                 # Iconos redes sociales
+│   └── setting.svg, setting-2.svg   # Iconos configuración
+│
+├── src/
+│   ├── app/                         # App Router (Next.js 15)
+│   │   ├── globals.css              # Estilos globales + tema
+│   │   ├── layout.tsx               # Layout raíz
+│   │   ├── not-found.tsx            # Página 404
+│   │   │
+│   │   ├── (main)/                  # Grupo de rutas principales
+│   │   │   ├── layout.tsx           # Layout con Sidebar + Navbar + Footer
+│   │   │   ├── page.tsx             # Home (/)
+│   │   │   ├── tienda/
+│   │   │   │   └── page.tsx         # Tienda (/tienda)
+│   │   │   ├── categorias/
+│   │   │   │   └── page.tsx         # Categorías (/categorias)
+│   │   │   ├── mi-catalogo/
+│   │   │   │   └── page. tsx         # Mi Catálogo (/mi-catalogo)
+│   │   │   ├── favoritos/
+│   │   │   │   └── page. tsx         # Favoritos (/favoritos)
+│   │   │   ├── libreria/
+│   │   │   │   └── page. tsx         # Mi Librería (/libreria)
+│   │   │   ├── siguiendo/
+│   │   │   │   └── page.tsx         # Siguiendo (/siguiendo)
+│   │   │   ├── configuracion/
+│   │   │   │   └── page. tsx         # Configuración (/configuracion)
+│   │   │   └── ayuda/
+│   │   │       └── page.tsx         # Ayuda (/ayuda)
+│   │   │
+│   │   ├── (media)/                 # Grupo rutas multimedia
+│   │   │   ├── layout.tsx           # Layout sin footer
+│   │   │   └── juego/
+│   │   │       └── page.tsx         # Detalle juego (/juego)
+│   │   │
+│   │   ├── (noticias)/              # Grupo rutas noticias
+│   │   │   ├── layout. tsx           # Layout noticias
+│   │   │   ├── noticias/
+│   │   │   │   └── page.tsx         # Lista noticias (/noticias)
+│   │   │   └── noticia/
+│   │   │       └── page.tsx         # Detalle noticia (/noticia)
+│   │   │
+│   │   └── (autentificacion)/       # Grupo rutas auth
+│   │       ├── login/
+│   │       │   └── page.tsx         # Login (/login)
+│   │       ├── registrar/
+│   │       │   └── page.tsx         # Registro (/registrar)
+│   │       └── api/
+│   │           └── auth/
+│   │               └── [... nextauth]/
+│   │                   └── route.ts # API NextAuth
+│   │
+│   ├── Components/                  # Componentes reutilizables
+│   │   ├── articulosdestacados/
+│   │   │   └── ArticulosDestacados.tsx
+│   │   ├── ayuda/
+│   │   │   └── AyudaApp.tsx
+│   │   ├── catalogo/
+│   │   │   └── CatalogoApp.tsx
+│   │   ├── categorias/
+│   │   │   └── CategoriasApp. tsx
+│   │   ├── configuracion/
+│   │   │   └── ConfiguracionApp.tsx
+│   │   ├── favoritos/
+│   │   │   └── FavoritosApp.tsx
+│   │   ├── footer/
+│   │   │   └── Footer.tsx
+│   │   ├── footer404/
+│   │   │   └── footer404.tsx
+│   │   ├── home/
+│   │   │   └── HomeApp.tsx
+│   │   ├── juegosgratis/
+│   │   │   └── JuegosGratis.tsx
+│   │   ├── libreria/
+│   │   │   └── LibreriaApp.tsx
+│   │   ├── navBar/
+│   │   │   └── Navbar.tsx
+│   │   ├── navBar404/
+│   │   │   └── navBar404.tsx
+│   │   ├── sideBar/
+│   │   │   ├── Sidebar.tsx
+│   │   │   ├── SidebarItem.tsx
+│   │   │   └── SidebarModal.tsx
+│   │   ├── siguiendo/
+│   │   │   └── SiguiendoApp.tsx
+│   │   └── tienda/
+│   │       └── TiendaApp.tsx
+│   │
+│   └── lib/
+│       └── auth. ts                  # Configuración NextAuth
+│
+├── types/
+│   └── next-auth.d.ts               # Tipos extendidos NextAuth
+│
+├── . env.local                       # Variables de entorno
+├── .env_template                    # Template de variables
+├── next.config.ts                   # Configuración Next.js
+├── tsconfig.json                    # Configuración TypeScript
+├── postcss.config.mjs               # Configuración PostCSS
+├── eslint.config.mjs                # Configuración ESLint
+└── package.json                     # Dependencias y scripts
+
+================================================================================
+                         4.  SISTEMA DE RUTAS (APP ROUTER)
+================================================================================
+
+RUTAS PÚBLICAS:
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ Ruta                │ Descripción                                            │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ /                   │ Página principal (Home)                                │
+│ /tienda             │ Catálogo de juegos disponibles                         │
+│ /categorias         │ Navegación por categorías/géneros                      │
+│ /noticias           │ Lista de noticias y artículos                          │
+│ /noticia            │ Detalle de una noticia específica                      │
+│ /juego              │ Detalle de un juego específico                         │
+│ /login              │ Inicio de sesión                                       │
+│ /registrar          │ Registro de nuevo usuario                              │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+
+RUTAS PROTEGIDAS (requieren autenticación):
+┌─────────────────────┬────────────────────────────────────────────────────────┐
+│ Ruta                │ Descripción                                            │
+├─────────────────────┼────────────────────────────────────────────────────────┤
+│ /libreria           │ Juegos comprados por el usuario                        │
+│ /favoritos          │ Juegos marcados como favoritos                         │
+│ /mi-catalogo        │ Proyectos del desarrollador                            │
+│ /siguiendo          │ Usuarios/desarrolladores seguidos                      │
+│ /configuracion      │ Ajustes de cuenta del usuario                          │
+│ /ayuda              │ Centro de ayuda y soporte                              │
+└─────────────────────┴────────────────────────────────────────────────────────┘
+
+GRUPOS DE RUTAS (Route Groups):
+├── (main)            # Layout principal con Sidebar, Navbar y Footer
+├── (media)           # Layout para contenido multimedia (sin footer extenso)
+├── (noticias)        # Layout para sección de noticias
+└── (autentificacion) # Layout minimalista para login/registro
+
+================================================================================
+                         5. SISTEMA DE DISEÑO
+================================================================================
+
+PALETA DE COLORES (definida en globals.css):
+┌──────────────────┬───────────┬────────────────────────────────────────────────┐
+│ Variable CSS     │ Valor     │ Uso                                            │
+├──────────────────┼───────────┼────────────────────────────────────────────────┤
+│ --color-dark     │ #0D171F   │ Fondo principal de la aplicación               │
+│ --color-primary  │ #2993FA   │ Color primario (botones, enlaces, acentos)     │
+│ --color-subprimary│ #1e7bd9  │ Hover del color primario                       │
+│ --color-azulsub  │ #1C2C3B   │ Fondo secundario azulado                       │
+│ --color-deep     │ #1C2C3B   │ Fondo de cards y contenedores                  │
+│ --color-subdeep  │ #243646   │ Fondo hover de elementos                       │
+│ --color-text     │ #FFFFFF   │ Color de texto principal                       │
+│ --color-categorico│ #283B4C  │ Bordes y elementos categóricos                 │
+│ --color-texInactivo│ #7791A9 │ Texto secundario/inactivo                      │
+└──────────────────┴───────────┴────────────────────────────────────────────────┘
+
+TIPOGRAFÍA:
+├── Fuente Principal: "Nunito Sans", sans-serif
+├── Fuente Sistema: Geist Sans (variable --font-geist-sans)
+└── Fuente Mono: Geist Mono (variable --font-geist-mono)
+
+CLASES TAILWIND PERSONALIZADAS:
+├── bg-dark          # Fondo oscuro principal
+├── bg-primary       # Fondo azul primario
+├── bg-subprimary    # Fondo azul hover
+├── bg-deep          # Fondo de cards
+├── bg-subdeep       # Fondo hover de cards
+├── bg-categorico    # Fondo de categorías
+├── text-text        # Texto blanco
+├── text-texInactivo # Texto gris/inactivo
+├── font-primary     # Fuente Nunito Sans
+└── no-scrollbar     # Ocultar scrollbar
+
+BREAKPOINTS RESPONSIVE:
+├── sm: 640px        # Móviles grandes
+├── md: 768px        # Tablets
+├── lg: 1024px       # Laptops
+├── xl: 1280px       # Desktops
+└── 2xl: 1536px      # Pantallas grandes
+
+================================================================================
+                         6. COMPONENTES DETALLADOS
+================================================================================
+
+# ============ COMPONENTES DE LAYOUT ============
+
+SIDEBAR (src/Components/sideBar/)
+├── Sidebar.tsx          # Sidebar principal (desktop)
+├── SidebarItem.tsx      # Item individual del menú
+└── SidebarModal.tsx     # Sidebar modal (mobile)
+
+Funcionalidad:
+- Navegación lateral fija en desktop
+- Modal desplegable en mobile
+- Iconos + texto para cada opción
+- Secciones separadas: navegación principal y configuración
+
+Items del menú:
+┌────────────────┬─────────────────────┬───────────────────┐
+│ Título         │ Icono               │ Ruta              │
+├────────────────┼─────────────────────┼───────────────────┤
+│ TIENDA         │ shop.svg            │ /tienda           │
+│ CATEGORÍAS     │ category.svg        │ /categorias       │
+│ MI CATÁLOGO    │ code-circle.svg     │ /mi-catalogo      │
+│ ME GUSTAN      │ heart.svg           │ /favoritos        │
+│ MI LIBRERÍA    │ gameboy.svg         │ /libreria         │
+│ SIGUIENDO      │ user-octagon.svg    │ /siguiendo        │
+├────────────────┼─────────────────────┼───────────────────┤
+│ CONFIGURACIÓN  │ setting.svg         │ /configuracion    │
+│ AYUDA          │ message-question.svg│ /ayuda            │
+└────────────────┴─────────────────────┴───────────────────┘
+
+---
+
+NAVBAR (src/Components/navBar/Navbar.tsx)
+Funcionalidad:
+- Logo CosmoX con enlace al home
+- Barra de búsqueda global
+- Botón de configuración
+- Sticky en scroll (desktop)
+- Responsive: se oculta en mobile (reemplazado por Sidebar)
+
+---
+
+FOOTER (src/Components/footer/Footer.tsx)
+Secciones:
+├── Logo y redes sociales (Facebook, Twitter, YouTube)
+├── Servicios en línea
+│   ├── Acuerdo de servicios
+│   ├── Política de uso aceptable
+│   ├── Declaración de confianza
+│   └── Clasificación por edades
+├── Ayuda
+│   ├── Base de conocimientos
+│   ├── Contacto
+│   ├── Accesibilidad
+│   └── Consultas sobre el reglamento
+├── Legal y copyright
+└── Botón "Subir" (scroll to top)
+
+---
+
+# ============ COMPONENTES DE PÁGINA ============
+
+HOMEAPP (src/Components/home/HomeApp. tsx)
+Estructura:
+├── Banner principal (carrusel destacado)
+├── ArticulosDestacados
+├── JuegosGratis
+└── TiendaApp (preview)
+
+---
+
+TIENDAAPP (src/Components/tienda/TiendaApp.tsx)
+Props/Estado:
+├── juegos[]              # Array de juegos
+├── currentIndex          # Índice carrusel
+├── wishlist              # Lista de deseos local
+
+Estructura de juego:
+{
+  title: string,          # "League of Legends"
+  image: string,          # "/pic4.jpg"
+  price: number,          # 29.99
+  originalPrice: number,  # 59.99
+  discount: number,       # 50 (porcentaje)
+  tags: string[],         # ["MOBA", "MULTIJUGADOR"]
+  rating: number          # 4.8
+}
+
+Funcionalidades:
+├── Carrusel de juegos con flechas de navegación
+├── Cards de juegos con:
+│   ├── Imagen
+│   ├── Título
+│   ├── Tags/géneros
+│   ├── Rating (estrellas)
+│   ├── Precio (con descuento si aplica)
+│   └── Botón wishlist (corazón)
+├── Indicador de descuento
+└── Scroll horizontal con botones
+
+---
+
+JUEGOSGRATIS (src/Components/juegosgratis/JuegosGratis.tsx)
+Similar a TiendaApp pero filtrado solo juegos gratuitos. 
+
+Estructura de juego gratuito:
+{
+  title: string,
+  image: string,
+  tags: string[],
+  rating: number
+}
+
+---
+
+ARTICULOSDESTACADOS (src/Components/articulosdestacados/ArticulosDestacados.tsx)
+Props/Estado:
+├── articles[]            # Array de artículos
+├── currentPage           # Página actual del carrusel
+├── itemsPerPage          # Items por página (responsive)
+├── direction             # Dirección de animación
+
+Estructura de artículo:
+{
+  title: string,
+  description: string,
+  image: string
+}
+
+Funcionalidades:
+├── Carrusel con paginación
+├── Animación de transición
+├── Responsive: 1 item (mobile), 3 items (desktop)
+└── Botones prev/next
+
+---
+
+LIBRERIAAPP (src/Components/libreria/LibreriaApp.tsx)
+Props/Estado:
+├── libreria[]            # Juegos del usuario
+├── viewMode              # "grid" | "list"
+├── filter                # "todos" | "instalados" | "no-instalados"
+
+Estructura de juego en librería:
+{
+  title: string,
+  image: string,
+  hoursPlayed: number,    # 1250
+  lastPlayed: string,     # "Hace 2 horas"
+  installed: boolean
+}
+
+Funcionalidades:
+├── Cambio de vista (grid/lista)
+├── Filtros por estado de instalación
+├── Stats: total juegos, horas jugadas
+├── Indicador de estado (instalado/no instalado)
+└── Botón instalar/jugar
+
+---
+
+CATALOGOAPP (src/Components/catalogo/CatalogoApp.tsx)
+Props/Estado:
+├── miCatalogo[]          # Proyectos del desarrollador
+├── filter                # Filtro por estado
+
+Estructura de proyecto:
+{
+  title: string,
+  image: string,
+  status: string,         # "En desarrollo", "Publicado", etc.
+  progress: number,       # 0-100
+  lastUpdated: string
+}
+
+Estados de proyecto:
+├── Borrador
+├── En desarrollo
+├── En revisión
+└── Publicado
+
+Funcionalidades:
+├── CRUD de proyectos (UI)
+├── Barra de progreso visual
+├── Filtros por estado
+├── Botón "Nuevo Proyecto"
+└── Acciones: editar, eliminar, publicar
+
+---
+
+SIGUIENDOAPP (src/Components/siguiendo/SiguiendoApp.tsx)
+Props/Estado:
+├── siguiendo[]           # Lista de seguidos
+├── activeTab             # "siguiendo" | "sugerencias"
+├── followingList         # Estado local de seguidos
+
+Estructura de usuario seguido:
+{
+  name: string,
+  avatar: string,
+  followers: string,      # "2. 5M"
+  games: number,
+  isFollowing: boolean,
+  type: string            # "Desarrollador" | "Usuario"
+}
+
+Funcionalidades:
+├── Lista de usuarios/desarrolladores seguidos
+├── Tab de sugerencias
+├── Botón follow/unfollow
+├── Indicador de tipo (badge)
+├── Contador de seguidores y juegos
+└── Búsqueda/filtrado
+
+---
+
+AYUDAAPP (src/Components/ayuda/AyudaApp. tsx)
+Props/Estado:
+├── faqs[]                # Preguntas frecuentes
+├── contactOptions[]      # Opciones de contacto
+├── searchQuery           # Búsqueda en FAQs
+├── openFaq               # FAQ expandida
+├── activeCategory        # Categoría activa
+
+Estructura de FAQ:
+{
+  question: string,
+  answer: string
+}
+
+Estructura de contacto:
+{
+  icon: string,           # Emoji
+  title: string,
+  desc: string,
+  action: string          # Texto del botón
+}
+
+Categorías de ayuda:
+├── 🎮 Juegos
+├── 💳 Pagos
+├── 👤 Cuenta
+└── 🛠️ Técnico
+
+Funcionalidades:
+├── Buscador de FAQs
+├── Acordeón expandible
+├── Filtro por categoría
+├── Opciones de contacto:
+│   ├── Chat en vivo
+│   ├── Email
+│   └── Teléfono
+└── Cards de categorías
+
+---
+
+CONFIGURACIONAPP (src/Components/configuracion/ConfiguracionApp. tsx)
+Props/Estado:
+├── activeTab             # Tab activa
+├── notifications{}       # Estado de notificaciones
+
+Tabs disponibles:
+┌────────────────┬────────────────────────────────────────────────────────────┐
+│ Tab            │ Campos                                                     │
+├────────────────┼────────────────────────────────────────────────────────────┤
+│ Cuenta         │ - Foto de perfil (avatar con iniciales)                   │
+│                │ - Nombre de usuario                                        │
+│                │ - Email                                                    │
+│                │ - Botón "Guardar cambios"                                  │
+│                │ - Cambiar foto                                             │
+├────────────────┼────────────────────────────────────────────────────────────┤
+│ Notificaciones │ - Notificaciones por email (toggle)                       │
+│                │ - Notificaciones push (toggle)                             │
+│                │ - Actualizaciones de juegos (toggle)                       │
+│                │ - Newsletter (toggle)                                      │
+├────────────────┼────────────────────────────────────────────────────────────┤
+│ Privacidad     │ - Visibilidad del perfil (select)                         │
+│                │   └── Público / Solo amigos / Privado                      │
+│                │ - Historial de juegos (select)                             │
+│                │   └── Visible para todos / Solo amigos / Oculto            │
+│                │ - Eliminar cuenta permanentemente (botón)                  │
+├────────────────┼────────────────────────────────────────────────────────────┤
+│ Apariencia     │ - Tema: Oscuro / Claro                                    │
+│                │ - Color de acento (5 opciones)                             │
+│                │   └── Azul, Morado, Verde, Rojo, Amarillo                  │
+│                │ - Idioma (select)                                          │
+│                │   └── Español / English / Português                        │
+└────────────────┴────────────────────────────────────────────────────────────┘
+
+---
+
+CATEGORIASAPP (src/Components/categorias/CategoriasApp. tsx)
+Funcionalidad:
+├── Grid de categorías/géneros
+├── Cada categoría muestra:
+│   ├── Icono/imagen
+│   ├── Nombre
+│   └── Cantidad de juegos
+└── Click navega a tienda filtrada
+
+---
+
+FAVORITOSAPP (src/Components/favoritos/FavoritosApp.tsx)
+Similar a LibreriaApp pero para juegos favoritos. 
+
+================================================================================
+                         7. AUTENTICACIÓN
+================================================================================
+
+CONFIGURACIÓN (src/lib/auth.ts):
+
+Providers configurados:
+├── Google OAuth
+│   ├── clientId: GOOGLE_CLIENT_ID
+│   ├── clientSecret: GOOGLE_CLIENT_SECRET
+│   └── authorization: consent, offline, code
+│
+└── Credentials (Usuario/Contraseña)
+    └── Endpoint: POST http://localhost:8000/api/login/
+
+Callbacks:
+├── jwt: Agrega accessToken al token JWT
+└── session: Agrega accessToken a la sesión
+
+Páginas personalizadas:
+├── signIn: "/login"
+└── signOut: "/login"
+
+---
+
+FLUJO DE LOGIN:
+1. Usuario ingresa credenciales
+2.  signIn("credentials", { username, password })
+3. Backend valida y retorna { id, username, token }
+4. Token se almacena en sesión
+5.  Redirección a "/"
+
+FLUJO DE REGISTRO:
+1. Usuario completa formulario
+2. POST http://localhost:8000/api/register/
+3. Body: { name, email, username, password }
+4.  Éxito: redirección a /login
+5. Error: mensaje de error
+
+FLUJO GOOGLE OAUTH:
+1. Click en "Continuar con Google"
+2. signIn("google", { callbackUrl: "/" })
+3. Google OAuth flow
+4. Callback con usuario autenticado
+
+================================================================================
+                         8. VARIABLES DE ENTORNO
+================================================================================
+
+Archivo: .env. local
+
+# NextAuth
+NEXTAUTH_SECRET=<secret-key>
+NEXTAUTH_URL=http://localhost:3000
+
+# Google OAuth
+GOOGLE_CLIENT_ID=<google-client-id>
+GOOGLE_CLIENT_SECRET=<google-client-secret>
+
+# API Backend (a agregar)
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+
+================================================================================
+                         9. SCRIPTS NPM
+================================================================================
+
+┌─────────────────┬────────────────────────────────────────────────────────────┐
+│ Comando         │ Descripción                                                │
+├─────────────────┼────────────────────────────────────────────────────────────┤
+│ npm run dev     │ Inicia servidor desarrollo con Turbopack                   │
+│ npm run build   │ Compila la aplicación para producción                      │
+│ npm run start   │ Inicia servidor de producción                              │
+│ npm run lint    │ Ejecuta ESLint para verificar código                       │
+└─────────────────┴────────────────────────────────────────────────────────────┘
+
+================================================================================
+                         10. PATRONES Y CONVENCIONES
+================================================================================
+
+NOMENCLATURA DE ARCHIVOS:
+├── Componentes: PascalCase (Ej: TiendaApp. tsx)
+├── Páginas: page.tsx (Next.js App Router)
+├── Layouts: layout.tsx
+├── Hooks: camelCase con prefijo "use" (Ej: useAuth. ts)
+├── Servicios: camelCase con sufijo "Service" (Ej: authService.ts)
+└── Tipos: camelCase (Ej: game.ts)
+
+ESTRUCTURA DE COMPONENTE:
+```tsx
+"use client";                         // Si usa hooks/interactividad
+
+import React, { useState } from "react";
+import Image from "next/image";
+
+// Constantes/datos estáticos
+const items = [... ];
+
+// Componente principal
+const ComponentName = () => {
+  // Estado
+  const [state, setState] = useState();
+
+  // Handlers
+  const handleAction = () => {... };
+
+  // Render
+  return (
+    <div className="... ">
+      {/* JSX */}
+    </div>
+  );
+};
+
+export default ComponentName;
