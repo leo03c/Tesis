@@ -16,10 +16,6 @@ interface RequestOptions {
  * Ensures the URL has a trailing slash (required by Django)
  */
 function ensureTrailingSlash(url: string): string {
-  // Don't add trailing slash if URL has query params
-  if (url.includes('?')) {
-    return url;
-  }
   return url.endsWith('/') ? url : `${url}/`;
 }
 
