@@ -48,13 +48,20 @@ export default function RegisterPage() {
           email: form.email,
           username: form.username,
           password: form.password,
+          privacyAccepted: form.privacyAccepted,
         }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.detail || "Error en el registro");
+        // Handle different error response formats from Django
+        const errorMessage = data.detail || 
+          data.error?.message || 
+          data.message ||
+          (typeof data === 'object' ? Object.values(data).flat().join(', ') : null) ||
+          "Error en el registro";
+        throw new Error(errorMessage);
       }
 
       // Registro exitoso, redirigir a login

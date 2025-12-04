@@ -14,6 +14,7 @@ export interface RegisterData {
   email: string;
   username: string;
   password: string;
+  privacyAccepted: boolean;
 }
 
 export interface AuthResponse {
@@ -57,7 +58,37 @@ export const register = async (userData: RegisterData): Promise<AuthResponse> =>
   const data = await response.json();
   
   if (!response.ok) {
-    throw new Error(data.detail || 'Error en el registro');
+    // Handle different error response formats from Django
+    const errorMessage = data.detail || 
+      data.error?.message || 
+      data.message ||
+      (typeof data === 'object' ? Object.values(data).flat().join(', ') : null) ||
+      'Error en el registro';
+    throw new Error(errorMessage);
+  }
+  
+  return data;
+};
+
+/**
+ * Register/Login with Google OAuth
+ * Backend endpoint: /api/google-auth/
+ */
+export const googleAuth = async (googleToken: string): Promise<AuthResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/google-auth/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: googleToken }),
+  });
+  
+  const data = await response.json();
+  
+  if (!response.ok) {
+    const errorMessage = data.detail || 
+      data.error?.message || 
+      data.message ||
+      'Error en la autenticación con Google';
+    throw new Error(errorMessage);
   }
   
   return data;
@@ -110,6 +141,7 @@ export const verifyToken = async (): Promise<boolean> => {
 const authService = {
   login,
   register,
+  googleAuth,
   logout,
   verifyToken,
 };
