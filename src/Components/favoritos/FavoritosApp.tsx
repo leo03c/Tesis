@@ -94,6 +94,7 @@ const FavoritosApp = () => {
                       src={juego.image}
                       alt={juego.title}
                       fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
                       className="object-cover rounded-t-xl"
                     />
                     <button className="absolute top-2 right-2 bg-red-500 p-2 rounded-full opacity-0 group-hover:opacity-100 transition">

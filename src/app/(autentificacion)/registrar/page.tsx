@@ -5,6 +5,8 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
 //Variables de imágenes
 const COSMOX_LOGO = "/logo-cosmox.svg";
 const COLISEUM_BG = "/coliseum-bg.jpg";
@@ -38,7 +40,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/register/", {
+      const res = await fetch(`${API_BASE_URL}/api/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
