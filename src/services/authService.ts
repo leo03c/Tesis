@@ -14,6 +14,7 @@ export interface RegisterData {
   email: string;
   username: string;
   password: string;
+  privacyAccepted: boolean;
 }
 
 export interface AuthResponse {
@@ -22,6 +23,26 @@ export interface AuthResponse {
   email?: string;
   token: string;
 }
+
+/**
+ * Extract error message from Django API response
+ * Handles different error response formats from Django REST Framework
+ */
+const extractErrorMessage = (data: Record<string, unknown>, defaultMessage: string): string => {
+  if (typeof data.detail === 'string') return data.detail;
+  if (typeof data.error === 'object' && data.error !== null && 'message' in data.error) {
+    return (data.error as { message: string }).message;
+  }
+  if (typeof data.message === 'string') return data.message;
+  // Handle field-level validation errors from Django
+  if (typeof data === 'object' && data !== null) {
+    const values = Object.values(data);
+    if (values.length > 0 && Array.isArray(values[0])) {
+      return values.flat().join(', ');
+    }
+  }
+  return defaultMessage;
+};
 
 /**
  * Login user
@@ -37,7 +58,7 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
   const data = await response.json();
   
   if (!response.ok) {
-    throw new Error(data.detail || 'Error en el login');
+    throw new Error(extractErrorMessage(data, 'Error en el login'));
   }
   
   return data;
@@ -57,7 +78,27 @@ export const register = async (userData: RegisterData): Promise<AuthResponse> =>
   const data = await response.json();
   
   if (!response.ok) {
-    throw new Error(data.detail || 'Error en el registro');
+    throw new Error(extractErrorMessage(data, 'Error en el registro'));
+  }
+  
+  return data;
+};
+
+/**
+ * Register/Login with Google OAuth
+ * Backend endpoint: /api/google-auth/
+ */
+export const googleAuth = async (googleToken: string): Promise<AuthResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/google-auth/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: googleToken }),
+  });
+  
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(extractErrorMessage(data, 'Error en la autenticación con Google'));
   }
   
   return data;
@@ -110,6 +151,7 @@ export const verifyToken = async (): Promise<boolean> => {
 const authService = {
   login,
   register,
+  googleAuth,
   logout,
   verifyToken,
 };
