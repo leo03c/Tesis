@@ -38,10 +38,11 @@ function buildUrl(endpoint: string, params?: Record<string, string | number | bo
 
 /**
  * Get the authentication token from localStorage
+ * Supports both JWT access_token (preferred) and legacy token
  */
 function getAuthToken(): string | null {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('token');
+    return localStorage.getItem('access_token') || localStorage.getItem('token');
   }
   return null;
 }
@@ -60,7 +61,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
   };
   
   if (token) {
-    defaultHeaders['Authorization'] = `Token ${token}`;
+    defaultHeaders['Authorization'] = `Bearer ${token}`;
   }
   
   const response = await fetch(url, {

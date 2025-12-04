@@ -43,7 +43,8 @@ export default function RegisterPage() {
         name: form.name,
         email: form.email,
         username: form.username,
-        password: form.password,
+        password1: form.password,
+        password2: form.confirmPassword,
         privacyAccepted: form.privacyAccepted,
       });
 

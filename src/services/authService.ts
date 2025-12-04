@@ -1,6 +1,6 @@
 /**
  * Auth Service - API endpoints for authentication
- * Backend base: /api/auth/, /api/login/, /api/register/
+ * Backend base: /api/auth/login/, /api/auth/register/, /api/auth/me/, /api/auth/token/refresh/
  */
 import { API_BASE_URL } from './api';
 
@@ -13,8 +13,22 @@ export interface RegisterData {
   name: string;
   email: string;
   username: string;
-  password: string;
+  password1: string;
+  password2: string;
   privacyAccepted: boolean;
+}
+
+export interface User {
+  id: number;
+  username: string;
+  email?: string;
+  name?: string;
+}
+
+export interface JWTAuthResponse {
+  access: string;
+  refresh: string;
+  user: User;
 }
 
 export interface AuthResponse {
@@ -45,11 +59,53 @@ const extractErrorMessage = (data: Record<string, unknown>, defaultMessage: stri
 };
 
 /**
- * Login user
- * Backend endpoint: /api/login/
+ * Store JWT tokens in localStorage
  */
-export const login = async (credentials: LoginCredentials): Promise<AuthResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/login/`, {
+const storeTokens = (access: string, refresh: string): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('access_token', access);
+    localStorage.setItem('refresh_token', refresh);
+  }
+};
+
+/**
+ * Clear tokens from localStorage
+ */
+const clearTokens = (): void => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('token'); // Clear legacy token
+  }
+};
+
+/**
+ * Get the access token from localStorage
+ */
+const getAccessToken = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('access_token');
+  }
+  return null;
+};
+
+/**
+ * Get the refresh token from localStorage
+ */
+const getRefreshToken = (): string | null => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('refresh_token');
+  }
+  return null;
+};
+
+/**
+ * Login user
+ * Backend endpoint: /api/auth/login/
+ * Returns JWT tokens: { access, refresh, user }
+ */
+export const login = async (credentials: LoginCredentials): Promise<JWTAuthResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(credentials),
@@ -61,15 +117,21 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
     throw new Error(extractErrorMessage(data, 'Error en el login'));
   }
   
+  // Store JWT tokens
+  if (data.access && data.refresh) {
+    storeTokens(data.access, data.refresh);
+  }
+  
   return data;
 };
 
 /**
  * Register new user
- * Backend endpoint: /api/register/
+ * Backend endpoint: /api/auth/register/
+ * Django expects password1 and password2 for confirmation
  */
-export const register = async (userData: RegisterData): Promise<AuthResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/register/`, {
+export const register = async (userData: RegisterData): Promise<JWTAuthResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/auth/register/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(userData),
@@ -81,24 +143,69 @@ export const register = async (userData: RegisterData): Promise<AuthResponse> =>
     throw new Error(extractErrorMessage(data, 'Error en el registro'));
   }
   
+  // Store JWT tokens if returned
+  if (data.access && data.refresh) {
+    storeTokens(data.access, data.refresh);
+  }
+  
   return data;
 };
 
 /**
- * Register/Login with Google OAuth
- * Backend endpoint: /api/google-auth/
+ * Refresh JWT access token
+ * Backend endpoint: /api/auth/token/refresh/
  */
-export const googleAuth = async (googleToken: string): Promise<AuthResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/google-auth/`, {
+export const refreshToken = async (): Promise<{ access: string }> => {
+  const refresh = getRefreshToken();
+  
+  if (!refresh) {
+    throw new Error('No refresh token available');
+  }
+  
+  const response = await fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: googleToken }),
+    body: JSON.stringify({ refresh }),
   });
   
   const data = await response.json();
   
   if (!response.ok) {
-    throw new Error(extractErrorMessage(data, 'Error en la autenticación con Google'));
+    clearTokens();
+    throw new Error(extractErrorMessage(data, 'Error al renovar el token'));
+  }
+  
+  // Update access token
+  if (data.access && typeof window !== 'undefined') {
+    localStorage.setItem('access_token', data.access);
+  }
+  
+  return data;
+};
+
+/**
+ * Get current authenticated user
+ * Backend endpoint: /api/auth/me/
+ */
+export const getCurrentUser = async (): Promise<User> => {
+  const token = getAccessToken();
+  
+  if (!token) {
+    throw new Error('No access token available');
+  }
+  
+  const response = await fetch(`${API_BASE_URL}/api/auth/me/`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(extractErrorMessage(data, 'Error al obtener usuario'));
   }
   
   return data;
@@ -109,19 +216,19 @@ export const googleAuth = async (googleToken: string): Promise<AuthResponse> => 
  * Backend endpoint: /api/auth/logout/
  */
 export const logout = async (): Promise<void> => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token = getAccessToken();
   
-  await fetch(`${API_BASE_URL}/api/auth/logout/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { 'Authorization': `Token ${token}` } : {}),
-    },
-  });
-  
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('token');
+  if (token) {
+    await fetch(`${API_BASE_URL}/api/auth/logout/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+    });
   }
+  
+  clearTokens();
 };
 
 /**
@@ -129,7 +236,7 @@ export const logout = async (): Promise<void> => {
  * Backend endpoint: /api/auth/verify/
  */
 export const verifyToken = async (): Promise<boolean> => {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const token = getAccessToken();
   
   if (!token) return false;
   
@@ -138,7 +245,7 @@ export const verifyToken = async (): Promise<boolean> => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Token ${token}`,
+        'Authorization': `Bearer ${token}`,
       },
     });
     
@@ -151,9 +258,13 @@ export const verifyToken = async (): Promise<boolean> => {
 const authService = {
   login,
   register,
-  googleAuth,
+  refreshToken,
+  getCurrentUser,
   logout,
   verifyToken,
+  getAccessToken,
+  getRefreshToken,
+  clearTokens,
 };
 
 export default authService;

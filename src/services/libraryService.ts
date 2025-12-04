@@ -6,13 +6,13 @@ import api from './api';
 
 export interface LibraryGame {
   id: number;
-  game_id: number;
+  game: number;
   title: string;
   image?: string;
   hours_played: number;
   last_played?: string;
   installed: boolean;
-  added_date?: string;
+  added_at?: string;
 }
 
 export interface LibraryResponse {
@@ -20,12 +20,6 @@ export interface LibraryResponse {
   count: number;
   next?: string;
   previous?: string;
-}
-
-export interface LibraryStats {
-  total_games: number;
-  total_hours_played: number;
-  installed_count: number;
 }
 
 /**
@@ -37,52 +31,39 @@ export const getLibrary = (params?: Record<string, string | number | boolean>) =
 
 /**
  * Get a specific game from the library
- * Backend endpoint: /api/library/{gameId}/
+ * Backend endpoint: /api/library/{id}/
  */
-export const getLibraryGame = (gameId: number) => 
-  api.get<LibraryGame>(`/library/${gameId}`);
+export const getLibraryGame = (id: number) => 
+  api.get<LibraryGame>(`/library/${id}`);
 
 /**
  * Add a game to the library (after purchase)
  * Backend endpoint: /api/library/
+ * Django expects { game: gameId } not { game_id: gameId }
  */
 export const addToLibrary = (gameId: number) => 
-  api.post<LibraryGame>('/library', { game_id: gameId });
+  api.post<LibraryGame>('/library', { game: gameId });
+
+/**
+ * Remove a game from the library
+ * Backend endpoint: DELETE /api/library/{id}/
+ */
+export const removeFromLibrary = (id: number) => 
+  api.delete<void>(`/library/${id}`);
 
 /**
  * Update library game info (e.g., mark as installed)
- * Backend endpoint: /api/library/{gameId}/
+ * Backend endpoint: /api/library/{id}/
  */
-export const updateLibraryGame = (gameId: number, data: Partial<LibraryGame>) => 
-  api.patch<LibraryGame>(`/library/${gameId}`, data);
-
-/**
- * Get installed games only
- */
-export const getInstalledGames = () => 
-  api.get<LibraryResponse>('/library', { installed: true });
-
-/**
- * Get not installed games
- */
-export const getNotInstalledGames = () => 
-  api.get<LibraryResponse>('/library', { installed: false });
-
-/**
- * Get library statistics
- * Backend endpoint: /api/library/stats/
- */
-export const getLibraryStats = () => 
-  api.get<LibraryStats>('/library/stats');
+export const updateLibraryGame = (id: number, data: Partial<LibraryGame>) => 
+  api.patch<LibraryGame>(`/library/${id}`, data);
 
 const libraryService = {
   getLibrary,
   getLibraryGame,
   addToLibrary,
+  removeFromLibrary,
   updateLibraryGame,
-  getInstalledGames,
-  getNotInstalledGames,
-  getLibraryStats,
 };
 
 export default libraryService;
