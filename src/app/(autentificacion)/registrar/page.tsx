@@ -4,8 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { register } from "@/services/authService";
 
 //Variables de imágenes
 const COSMOX_LOGO = "/logo-cosmox.svg";
@@ -40,29 +39,13 @@ export default function RegisterPage() {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/register/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          username: form.username,
-          password: form.password,
-          privacyAccepted: form.privacyAccepted,
-        }),
+      await register({
+        name: form.name,
+        email: form.email,
+        username: form.username,
+        password: form.password,
+        privacyAccepted: form.privacyAccepted,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        // Handle different error response formats from Django
-        const errorMessage = data.detail || 
-          data.error?.message || 
-          data.message ||
-          (typeof data === 'object' ? Object.values(data).flat().join(', ') : null) ||
-          "Error en el registro";
-        throw new Error(errorMessage);
-      }
 
       // Registro exitoso, redirigir a login
       router.push("/login");

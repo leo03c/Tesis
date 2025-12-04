@@ -25,6 +25,26 @@ export interface AuthResponse {
 }
 
 /**
+ * Extract error message from Django API response
+ * Handles different error response formats from Django REST Framework
+ */
+const extractErrorMessage = (data: Record<string, unknown>, defaultMessage: string): string => {
+  if (typeof data.detail === 'string') return data.detail;
+  if (typeof data.error === 'object' && data.error !== null && 'message' in data.error) {
+    return (data.error as { message: string }).message;
+  }
+  if (typeof data.message === 'string') return data.message;
+  // Handle field-level validation errors from Django
+  if (typeof data === 'object' && data !== null) {
+    const values = Object.values(data);
+    if (values.length > 0 && Array.isArray(values[0])) {
+      return values.flat().join(', ');
+    }
+  }
+  return defaultMessage;
+};
+
+/**
  * Login user
  * Backend endpoint: /api/login/
  */
@@ -38,7 +58,7 @@ export const login = async (credentials: LoginCredentials): Promise<AuthResponse
   const data = await response.json();
   
   if (!response.ok) {
-    throw new Error(data.detail || 'Error en el login');
+    throw new Error(extractErrorMessage(data, 'Error en el login'));
   }
   
   return data;
@@ -58,13 +78,7 @@ export const register = async (userData: RegisterData): Promise<AuthResponse> =>
   const data = await response.json();
   
   if (!response.ok) {
-    // Handle different error response formats from Django
-    const errorMessage = data.detail || 
-      data.error?.message || 
-      data.message ||
-      (typeof data === 'object' ? Object.values(data).flat().join(', ') : null) ||
-      'Error en el registro';
-    throw new Error(errorMessage);
+    throw new Error(extractErrorMessage(data, 'Error en el registro'));
   }
   
   return data;
@@ -84,11 +98,7 @@ export const googleAuth = async (googleToken: string): Promise<AuthResponse> => 
   const data = await response.json();
   
   if (!response.ok) {
-    const errorMessage = data.detail || 
-      data.error?.message || 
-      data.message ||
-      'Error en la autenticación con Google';
-    throw new Error(errorMessage);
+    throw new Error(extractErrorMessage(data, 'Error en la autenticación con Google'));
   }
   
   return data;
