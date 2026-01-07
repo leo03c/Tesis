@@ -56,9 +56,14 @@ export default function RegisterPage() {
       });
 
       if (res?.error) {
-        setError("Registro exitoso pero error al iniciar sesión: " + res.error);
+        // Si falla el inicio de sesión automático, redirigir al login manual
+        setError("Registro exitoso. Por favor, inicia sesión con tus credenciales.");
+        setTimeout(() => router.push("/login"), 2000);
       } else if (res?.ok) {
         router.push("/");
+      } else {
+        // Caso inesperado, redirigir al login para que el usuario inicie sesión manualmente
+        router.push("/login");
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
