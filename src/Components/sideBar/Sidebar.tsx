@@ -17,7 +17,7 @@ const Sidebar = () => {
             {/* ===== Desktop sidebar ===== */}
             <div className="hidden md:block w-64 bg-gray-800 text-white p-4 h-[calc(100vh-1rem)] rounded-md my-2">
                 {/* Logo */}
-                <div className="mb-8 p-4">
+                <Link href="/" className="mb-8 p-4">
                     <Image 
                         width={205} 
                         height={51} 
@@ -26,7 +26,7 @@ const Sidebar = () => {
                         className="text-2xl font-bold"
                         priority
                     />
-                </div>
+                </Link>
 
                 {/* Navegación */}
                 <nav className="space-y-2">
