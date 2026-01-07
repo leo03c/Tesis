@@ -52,7 +52,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
   const toggleFavorite = async (gameId: number) => {
     if (!session) {
-      console.warn('User must be logged in to add favorites');
+      console.warn('Please log in to manage your favorites');
+      // TODO: Show user-friendly notification/toast
       return;
     }
 
@@ -83,7 +84,8 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      // Optionally: Show error notification to user
+      // TODO: Implement toast notification to show error to user
+      // For now, we just log the error
     }
   };
 

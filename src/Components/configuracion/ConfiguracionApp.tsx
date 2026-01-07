@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
+import { signIn } from "next-auth/react";
 
 const ConfiguracionApp = () => {
   const { user, isAuthenticated } = useUser();
@@ -59,7 +60,10 @@ const ConfiguracionApp = () => {
               {!isAuthenticated ? (
                 <div className="p-8 bg-subdeep rounded-xl text-center">
                   <p className="text-texInactivo mb-4">Debes iniciar sesión para ver la información de tu cuenta</p>
-                  <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition">
+                  <button 
+                    onClick={() => signIn()}
+                    className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition"
+                  >
                     Iniciar sesión
                   </button>
                 </div>

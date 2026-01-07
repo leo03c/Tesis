@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { GAME_IDS } from "@/constants/gameIds";
@@ -28,8 +28,11 @@ const FavoritosApp = () => {
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [direction, setDirection] = useState(0);
 
-  // Filter games to only show favorites
-  const favoritos = allGames.filter(game => isFavorite(game.id));
+  // Filter games to only show favorites (memoized for performance)
+  const favoritos = useMemo(() => 
+    allGames.filter(game => isFavorite(game.id)),
+    [isFavorite]
+  );
 
   useEffect(() => {
     const handleResize = () => {
