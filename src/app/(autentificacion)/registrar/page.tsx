@@ -14,6 +14,9 @@ const lockIcon = "/icons/security-safe.svg";
 const googleIcon = "/icons/google.svg";
 const frameIcon = "/icons/Frame.svg";
 
+// Constante para el tiempo de espera antes de redirigir al login
+const REDIRECT_DELAY_MS = 1500;
+
 export default function RegisterPage() {
   const [form, setForm] = useState({
     name: "",
@@ -48,8 +51,25 @@ export default function RegisterPage() {
         privacyAccepted: form.privacyAccepted,
       });
 
-      // Registro exitoso, redirigir a login
-      router.push("/login");
+      // Registro exitoso, iniciar sesión automáticamente
+      const res = await signIn("credentials", {
+        redirect: false,
+        username: form.username,
+        password: form.password,
+      });
+
+      if (res?.error) {
+        // Si falla el inicio de sesión automático, redirigir al login manual
+        setError("Registro exitoso. Hubo un problema al iniciar sesión automáticamente. Por favor, inicia sesión con tus credenciales.");
+        // Pequeña pausa para que el usuario lea el mensaje antes de redirigir
+        setTimeout(() => router.push("/login"), REDIRECT_DELAY_MS);
+      } else if (res?.ok) {
+        router.push("/");
+      } else {
+        // Caso inesperado, informar al usuario y redirigir al login
+        setError("Registro exitoso. Redirigiendo al login...");
+        setTimeout(() => router.push("/login"), REDIRECT_DELAY_MS);
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
