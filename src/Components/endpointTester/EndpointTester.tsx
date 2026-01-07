@@ -36,17 +36,17 @@ const endpoints: Endpoint[] = [
     description: "Register a new user account",
     requiresAuth: false,
     sampleBody: {
-      name: "Test User",
-      email: "test@example.com",
-      username: "testuser",
-      password: "testpassword",
+      name: "Tesst User",
+      email: "tesst@example.com",
+      username: "tesstuser",
+      password: "tesstpassword",
     },
   },
   // User endpoints
   {
     name: "Get Current User",
     method: "GET",
-    path: "/api/user/",
+    path: "/api/users/1",
     description: "Get current authenticated user info",
     requiresAuth: true,
   },

@@ -1,15 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiSearch, FiUser } from 'react-icons/fi';
 import Image from 'next/image';
-import { signIn, signOut } from 'next-auth/react';
-import { useUser } from '@/contexts/UserContext';
+import { signIn, signOut, useSession } from 'next-auth/react';
 
 const Navbar = () => {
     const [mobileMenuOpen] = useState(false);
-    const { user, isAuthenticated } = useUser();
+    const { data: session, status } = useSession();
+
+    // Debug
+    useEffect(() => {
+        console.log('Navbar Session:', session);
+        console.log('Navbar Status:', status);
+        console.log('Navbar User:', session?.user);
+    }, [session, status]);
+
+    // Función para obtener el nombre de usuario a mostrar
+    const getDisplayName = () => {
+        if (status === 'loading') return 'Cargando...';
+        if (!session?.user) return 'INVITADO';
+        
+        const user = session.user;
+        
+        // Debug de los datos del usuario
+        console.log('User data for display:', {
+            name: user.name,
+            email: user.email,
+            id: user.id,
+            allData: user
+        });
+        
+        // Prioridad: 1. Nombre, 2. Email, 3. 'USUARIO'
+        return user.name || user.email || 'USUARIO';
+    };
+
+    // Determinar si hay sesión activa
+    const isAuthenticated = !!session?.user;
 
     return (
         <header className={`bg-[#0D171F] shadow-sm ${mobileMenuOpen ? 'relative' : 'sticky top-0 z-40'}`}>
@@ -55,46 +83,44 @@ const Navbar = () => {
                         </div>
 
                         {/* CONTROLES DE SESIÓN */}
-                        <div
-                            className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-3xl shadow-sm text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                        >
+                        <div className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-3xl shadow-sm text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                             <FiUser className="mr-2" />
                             <div className="flex flex-col items-start">
                                 <span className="text-xs text-gray-400">
-                                    {isAuthenticated ? (user?.name ?? user?.email ?? 'USUARIO') : 'INVITADO'}
+                                    {getDisplayName()}
                                 </span>
                                 <button
                                     onClick={() => isAuthenticated ? signOut({ callbackUrl: '/' }) : signIn()}
                                     className="text-white font-medium hover:text-blue-400 transition-colors"
+                                    disabled={status === 'loading'}
                                 >
-                                    {isAuthenticated ? 'Cerrar sesión' : 'Log in'}
+                                    {status === 'loading' ? '...' : (isAuthenticated ? 'Cerrar sesión' : 'Log in')}
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Mobile Navbar */}
+                {/* Mobile Navbar - mantén igual */}
                 <div className="md:hidden flex items-center justify-between py-6 px-6 bg-deep rounded-3xl">
-                {/* Barra de búsqueda y configuración */}
-                <div className="relative flex-1">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FiSearch className="text-gray-400" size={30} />
+                    {/* Barra de búsqueda y configuración */}
+                    <div className="relative flex-1">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <FiSearch className="text-gray-400" size={30} />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="  Buscar..."
+                            className="block w-full pl-10 pr-14 py-2 border border-gray-300 rounded-md leading-5 bg-deep placeholder-gray-500 focus:outline-none  sm:text-sm border-none"
+                        />
+                        <button
+                            onClick={() => console.log('Abrir configuración')}
+                            className="absolute inset-y-0 right-0 flex items-center"
+                        >
+                            <Image width={80} height={70} alt="setting" src="setting-2.svg" />
+                        </button>
                     </div>
-                    <input
-                    type="text"
-                    placeholder="  Buscar..."
-                    className="block w-full pl-10 pr-14 py-2 border border-gray-300 rounded-md leading-5 bg-deep placeholder-gray-500 focus:outline-none  sm:text-sm border-none"
-                    />
-                    <button
-                    onClick={() => console.log('Abrir configuración')}
-                    className="absolute inset-y-0 right-0  flex items-center"
-                    >
-                    <Image width={  80} height={70} alt="setting" src="setting-2.svg" />
-                    </button>
                 </div>
-                </div>
-
             </div>
         </header>
     );

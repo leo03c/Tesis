@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/contexts/UserContext';
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 
 // Imágenes
 const COSMOX_LOGO = "/logo-cosmox.svg";
@@ -19,24 +20,35 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { refreshSession } = useUser();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-  
-    const res = await signIn("credentials", {
-      redirect: false,
-      username: form.username,
-      password: form.password,
-    });
-  
-    setLoading(false);
-  
-    if (res?.error) {
-      setError(res.error);
-    } else if (res?.ok) {
-      router.push("/");
+
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        username: form.username,
+        password: form.password,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+      } else if (result?.ok) {
+        // Esperar un poco para que la sesión se actualice
+        setTimeout(async () => {
+          await refreshSession();
+          router.push("/");
+          router.refresh(); // Forzar refresco de la página
+        }, 1000);
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setError(error.message || "Error durante el inicio de sesión");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -138,7 +150,6 @@ export default function LoginPage() {
               className="w-full flex pl-12 pr-4 py-3 rounded-xl items-center justify-center gap-3 bg-deep hover:bg-subdeep transition"
             >
               <Image src={googleIcon} alt="Google icon" width={0} height={0} className="w-5 h-auto" />
-
               INICIAR SESIÓN CON GOOGLE
             </button>
 

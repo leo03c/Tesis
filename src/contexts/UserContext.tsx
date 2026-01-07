@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 
 interface UserContextType {
@@ -12,17 +12,37 @@ interface UserContextType {
   } | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  provider?: string;
+  refreshSession: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const { data: session, status } = useSession();
-  
+  const { data: session, status, update } = useSession();
+
+  // Debug: Ver qué datos llegan
+  React.useEffect(() => {
+    console.log('UserProvider - Session:', session);
+    console.log('UserProvider - Status:', status);
+  }, [session, status]);
+
+  const refreshSession = useCallback(async () => {
+    try {
+      console.log('Refreshing session...');
+      const updated = await update();
+      console.log('Session refreshed:', updated);
+    } catch (error) {
+      console.error('Error refreshing session:', error);
+    }
+  }, [update]);
+
   const value: UserContextType = {
     user: session?.user || null,
     isLoading: status === 'loading',
-    isAuthenticated: !!session,
+    isAuthenticated: !!session?.user,
+    provider: (session as any)?.provider,
+    refreshSession,
   };
 
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
