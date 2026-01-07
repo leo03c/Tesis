@@ -60,7 +60,7 @@ export default function RegisterPage() {
 
       if (res?.error) {
         // Si falla el inicio de sesión automático, redirigir al login manual
-        setError("Registro exitoso. Por favor, inicia sesión con tus credenciales.");
+        setError("Registro exitoso. Hubo un problema al iniciar sesión automáticamente. Por favor, inicia sesión con tus credenciales.");
         // Pequeña pausa para que el usuario lea el mensaje antes de redirigir
         setTimeout(() => router.push("/login"), REDIRECT_DELAY_MS);
       } else if (res?.ok) {
