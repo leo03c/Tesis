@@ -2,24 +2,27 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { useFavorites } from "@/contexts/FavoritesContext";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
-const coraR = "/icons/coraR.svg";
+const coraB = "/icons/coraB.svg"; // Blank/gray heart
+const coraR = "/icons/coraR.svg"; // Red heart
 const star = "/icons/star 5.svg";
 const pic4 = "/pic4.jpg";
 const pic5 = "/pic5.jpg";
 const pic6 = "/pic6.jpg";
 
 const juegos = [
-  { title: "Cat Quest II", image: pic4, tags: ["RPG"], rating: 5.0 },
-  { title: "Cat Quest III", image: pic4, tags: ["RPG"], rating: 3.0 },
-  { title: "Cat Quest IV", image: pic4, tags: ["RPG"], rating: 3.5 },
-  { title: "Arcadegeddon", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5 },
-  { title: "River City Girls", image: pic6, tags: ["RPG"], rating: 5.0 },
+  { id: 7, title: "Cat Quest II", image: pic4, tags: ["RPG"], rating: 5.0 },
+  { id: 8, title: "Cat Quest III", image: pic4, tags: ["RPG"], rating: 3.0 },
+  { id: 9, title: "Cat Quest IV", image: pic4, tags: ["RPG"], rating: 3.5 },
+  { id: 10, title: "Arcadegeddon", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5 },
+  { id: 11, title: "River City Girls", image: pic6, tags: ["RPG"], rating: 5.0 },
 ];
 
 const JuegosGratis = () => {
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
 
@@ -97,9 +100,17 @@ const JuegosGratis = () => {
                     sizes="(max-width: 640px) 100vw, 33vw"
                     className="object-cover rounded-t-xl"
                   />
-                  <div className="absolute top-2 right-2">
-                    <Image src={coraR} alt="heart" width={56} height={56} />
-                  </div>
+                  <button 
+                    onClick={() => toggleFavorite(juego.id)}
+                    className="absolute top-2 right-2 transition-transform hover:scale-110"
+                  >
+                    <Image 
+                      src={isFavorite(juego.id) ? coraR : coraB} 
+                      alt="heart" 
+                      width={56} 
+                      height={56} 
+                    />
+                  </button>
                 </div>
 
                 {/* Contenido */}
