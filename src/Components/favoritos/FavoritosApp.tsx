@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
+import { GAME_IDS } from "@/constants/gameIds";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
@@ -13,12 +14,12 @@ const pic6 = "/pic6.jpg";
 
 // Mock data with IDs matching the ones we're using elsewhere
 const allGames = [
-  { id: 1, title: "League of Legends", image: pic4, tags: ["MOBA"], rating: 5.0, addedDate: "15 Nov 2024" },
-  { id: 2, title: "God of War", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5, addedDate: "10 Nov 2024" },
-  { id: 3, title: "Cyberpunk 2077", image: pic6, tags: ["RPG"], rating: 5.0, addedDate: "5 Nov 2024" },
-  { id: 4, title: "Control", image: pic4, tags: ["ACCIÓN"], rating: 4.9, addedDate: "1 Nov 2024" },
-  { id: 5, title: "Hogwarts Legacy", image: pic5, tags: ["RPG"], rating: 4.8, addedDate: "28 Oct 2024" },
-  { id: 6, title: "Elden Ring", image: pic6, tags: ["RPG", "SOULS"], rating: 5.0, addedDate: "20 Oct 2024" },
+  { id: GAME_IDS.LEAGUE_OF_LEGENDS, title: "League of Legends", image: pic4, tags: ["MOBA"], rating: 5.0, addedDate: "15 Nov 2024" },
+  { id: GAME_IDS.GOD_OF_WAR, title: "God of War", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5, addedDate: "10 Nov 2024" },
+  { id: GAME_IDS.CYBERPUNK_2077, title: "Cyberpunk 2077", image: pic6, tags: ["RPG"], rating: 5.0, addedDate: "5 Nov 2024" },
+  { id: GAME_IDS.CONTROL, title: "Control", image: pic4, tags: ["ACCIÓN"], rating: 4.9, addedDate: "1 Nov 2024" },
+  { id: GAME_IDS.HOGWARTS_LEGACY, title: "Hogwarts Legacy", image: pic5, tags: ["RPG"], rating: 4.8, addedDate: "28 Oct 2024" },
+  { id: GAME_IDS.ELDEN_RING, title: "Elden Ring", image: pic6, tags: ["RPG", "SOULS"], rating: 5.0, addedDate: "20 Oct 2024" },
 ];
 
 const FavoritosApp = () => {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
+import { GAME_IDS } from "@/constants/gameIds";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
@@ -14,11 +15,11 @@ const pic5 = "/pic5.jpg";
 const pic6 = "/pic6.jpg";
 
 const juegos = [
-  { id: 7, title: "Cat Quest II", image: pic4, tags: ["RPG"], rating: 5.0 },
-  { id: 8, title: "Cat Quest III", image: pic4, tags: ["RPG"], rating: 3.0 },
-  { id: 9, title: "Cat Quest IV", image: pic4, tags: ["RPG"], rating: 3.5 },
-  { id: 10, title: "Arcadegeddon", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5 },
-  { id: 11, title: "River City Girls", image: pic6, tags: ["RPG"], rating: 5.0 },
+  { id: GAME_IDS.CAT_QUEST_II, title: "Cat Quest II", image: pic4, tags: ["RPG"], rating: 5.0 },
+  { id: GAME_IDS.CAT_QUEST_III, title: "Cat Quest III", image: pic4, tags: ["RPG"], rating: 3.0 },
+  { id: GAME_IDS.CAT_QUEST_IV, title: "Cat Quest IV", image: pic4, tags: ["RPG"], rating: 3.5 },
+  { id: GAME_IDS.ARCADEGEDDON, title: "Arcadegeddon", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5 },
+  { id: GAME_IDS.RIVER_CITY_GIRLS, title: "River City Girls", image: pic6, tags: ["RPG"], rating: 5.0 },
 ];
 
 const JuegosGratis = () => {

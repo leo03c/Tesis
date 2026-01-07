@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
+import { GAME_IDS } from "@/constants/gameIds";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
@@ -14,12 +15,12 @@ const pic5 = "/pic5.jpg";
 const pic6 = "/pic6.jpg";
 
 const juegos = [
-  { id: 1, title: "League of Legends", image: pic4, price: 0, originalPrice: 0, discount: 0, tags: ["MOBA", "MULTIJUGADOR"], rating: 4.8 },
-  { id: 2, title: "God of War", image: pic5, price: 29.99, originalPrice: 59.99, discount: 50, tags: ["AVENTURA", "ACCIÓN"], rating: 5.0 },
-  { id: 3, title: "Cyberpunk 2077", image: pic6, price: 44.99, originalPrice: 59.99, discount: 25, tags: ["RPG", "ACCIÓN"], rating: 4.5 },
-  { id: 4, title: "Control", image: pic4, price: 19.99, originalPrice: 39.99, discount: 50, tags: ["ACCIÓN", "AVENTURA"], rating: 4.7 },
-  { id: 5, title: "Hogwarts Legacy", image: pic5, price: 49.99, originalPrice: 69.99, discount: 28, tags: ["RPG", "AVENTURA"], rating: 4.9 },
-  { id: 6, title: "Elden Ring", image: pic6, price: 59.99, originalPrice: 59.99, discount: 0, tags: ["RPG", "SOULS"], rating: 5.0 },
+  { id: GAME_IDS.LEAGUE_OF_LEGENDS, title: "League of Legends", image: pic4, price: 0, originalPrice: 0, discount: 0, tags: ["MOBA", "MULTIJUGADOR"], rating: 4.8 },
+  { id: GAME_IDS.GOD_OF_WAR, title: "God of War", image: pic5, price: 29.99, originalPrice: 59.99, discount: 50, tags: ["AVENTURA", "ACCIÓN"], rating: 5.0 },
+  { id: GAME_IDS.CYBERPUNK_2077, title: "Cyberpunk 2077", image: pic6, price: 44.99, originalPrice: 59.99, discount: 25, tags: ["RPG", "ACCIÓN"], rating: 4.5 },
+  { id: GAME_IDS.CONTROL, title: "Control", image: pic4, price: 19.99, originalPrice: 39.99, discount: 50, tags: ["ACCIÓN", "AVENTURA"], rating: 4.7 },
+  { id: GAME_IDS.HOGWARTS_LEGACY, title: "Hogwarts Legacy", image: pic5, price: 49.99, originalPrice: 69.99, discount: 28, tags: ["RPG", "AVENTURA"], rating: 4.9 },
+  { id: GAME_IDS.ELDEN_RING, title: "Elden Ring", image: pic6, price: 59.99, originalPrice: 59.99, discount: 0, tags: ["RPG", "SOULS"], rating: 5.0 },
 ];
 
 const TiendaApp = () => {
