@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useFavorites } from "@/contexts/FavoritesContext";
 
 const listGame = [
     {
@@ -45,6 +48,10 @@ const Card = ({ srcimg, texto }: ICardProps) => {
   );
 };
 const Carrusel = () => {
+    const { isFavorite, toggleFavorite } = useFavorites();
+    // Using game ID 1 for League of Legends as an example
+    const lolGameId = 1;
+
     return (
         <div className="flex flex-col lg:flex-row  gap-4 lg:gap-5 w-full">
             {/* Tarjeta principal */}
@@ -54,9 +61,17 @@ const Carrusel = () => {
                         <span className="px-4 py-1 text-sm lg:text-base text-center bg-white/30 rounded-lg">AVENTURA</span>
                         <span className="px-3 py-1 text-sm lg:text-base text-center bg-white/30 rounded-lg">RPG</span>
                     </div>
-                    <div className="w-10 h-10 lg:w-14 lg:h-14 flex justify-center items-center bg-[#283B4C] rounded-2xl">
-                        <Image src={'/heart-red.svg'} alt="Heart Red" width={24} height={24} />
-                    </div>
+                    <button 
+                        onClick={() => toggleFavorite(lolGameId)}
+                        className="w-10 h-10 lg:w-14 lg:h-14 flex justify-center items-center bg-[#283B4C] rounded-2xl hover:scale-110 transition-transform"
+                    >
+                        <Image 
+                            src={isFavorite(lolGameId) ? '/heart-red.svg' : '/heart-gray.svg'} 
+                            alt="Heart" 
+                            width={24} 
+                            height={24} 
+                        />
+                    </button>
                 </div>
                 <div className="flex flex-col gap-3 lg:gap-5 absolute bottom-5 lg:bottom-8 left-5 lg:left-8">
                     <h2 className="text-xl lg:text-2xl font-bold text-white">LEAGUE OF LEGENDS</h2>

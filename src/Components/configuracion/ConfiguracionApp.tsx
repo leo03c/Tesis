@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { useUser } from "@/contexts/UserContext";
 
 const ConfiguracionApp = () => {
+  const { user, isAuthenticated } = useUser();
   const [activeTab, setActiveTab] = useState("cuenta");
   const [notifications, setNotifications] = useState({
     email: true,
@@ -54,40 +56,51 @@ const ConfiguracionApp = () => {
             <div className="space-y-6">
               <h2 className="text-xl font-semibold mb-4">Información de la cuenta</h2>
               
-              <div className="flex items-center gap-4 p-4 bg-subdeep rounded-xl">
-                <div className="w-20 h-20 bg-categorico rounded-full flex items-center justify-center text-2xl font-bold">
-                  JD
-                </div>
-                <div>
-                  <h3 className="font-semibold">Juan Desarrollador</h3>
-                  <p className="text-texInactivo text-sm">juan@cosmox.com</p>
-                  <button className="text-primary text-sm mt-1 hover:underline">
-                    Cambiar foto
+              {!isAuthenticated ? (
+                <div className="p-8 bg-subdeep rounded-xl text-center">
+                  <p className="text-texInactivo mb-4">Debes iniciar sesión para ver la información de tu cuenta</p>
+                  <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition">
+                    Iniciar sesión
                   </button>
                 </div>
-              </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-4 p-4 bg-subdeep rounded-xl">
+                    <div className="w-20 h-20 bg-categorico rounded-full flex items-center justify-center text-2xl font-bold">
+                      {user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? 'U'}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">{user?.name ?? 'Usuario'}</h3>
+                      <p className="text-texInactivo text-sm">{user?.email ?? 'Sin email'}</p>
+                      <button className="text-primary text-sm mt-1 hover:underline">
+                        Cambiar foto
+                      </button>
+                    </div>
+                  </div>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-texInactivo mb-2">Nombre de usuario</label>
-                  <input
-                    type="text"
-                    defaultValue="JuanDev"
-                    className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm text-texInactivo mb-2">Email</label>
-                  <input
-                    type="email"
-                    defaultValue="juan@cosmox.com"
-                    className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
-                  />
-                </div>
-                <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition">
-                  Guardar cambios
-                </button>
-              </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm text-texInactivo mb-2">Nombre de usuario</label>
+                      <input
+                        type="text"
+                        defaultValue={user?.name ?? ''}
+                        className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-texInactivo mb-2">Email</label>
+                      <input
+                        type="email"
+                        defaultValue={user?.email ?? ''}
+                        className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
+                      />
+                    </div>
+                    <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition">
+                      Guardar cambios
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
 

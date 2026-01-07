@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { useFavorites } from "@/contexts/FavoritesContext";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
@@ -10,18 +11,24 @@ const pic4 = "/pic4.jpg";
 const pic5 = "/pic5.jpg";
 const pic6 = "/pic6.jpg";
 
-const favoritos = [
-  { title: "Cat Quest II", image: pic4, tags: ["RPG"], rating: 5.0, addedDate: "15 Nov 2024" },
-  { title: "Arcadegeddon", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5, addedDate: "10 Nov 2024" },
-  { title: "River City Girls", image: pic6, tags: ["BEAT'EM UP"], rating: 5.0, addedDate: "5 Nov 2024" },
-  { title: "Hollow Knight", image: pic4, tags: ["METROIDVANIA"], rating: 4.9, addedDate: "1 Nov 2024" },
-  { title: "Celeste", image: pic5, tags: ["PLATAFORMAS"], rating: 4.8, addedDate: "28 Oct 2024" },
+// Mock data with IDs matching the ones we're using elsewhere
+const allGames = [
+  { id: 1, title: "League of Legends", image: pic4, tags: ["MOBA"], rating: 5.0, addedDate: "15 Nov 2024" },
+  { id: 2, title: "God of War", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5, addedDate: "10 Nov 2024" },
+  { id: 3, title: "Cyberpunk 2077", image: pic6, tags: ["RPG"], rating: 5.0, addedDate: "5 Nov 2024" },
+  { id: 4, title: "Control", image: pic4, tags: ["ACCIÓN"], rating: 4.9, addedDate: "1 Nov 2024" },
+  { id: 5, title: "Hogwarts Legacy", image: pic5, tags: ["RPG"], rating: 4.8, addedDate: "28 Oct 2024" },
+  { id: 6, title: "Elden Ring", image: pic6, tags: ["RPG", "SOULS"], rating: 5.0, addedDate: "20 Oct 2024" },
 ];
 
 const FavoritosApp = () => {
+  const { favorites, toggleFavorite, isFavorite } = useFavorites();
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [direction, setDirection] = useState(0);
+
+  // Filter games to only show favorites
+  const favoritos = allGames.filter(game => isFavorite(game.id));
 
   useEffect(() => {
     const handleResize = () => {
@@ -97,7 +104,10 @@ const FavoritosApp = () => {
                       sizes="(max-width: 640px) 100vw, 33vw"
                       className="object-cover rounded-t-xl"
                     />
-                    <button className="absolute top-2 right-2 bg-red-500 p-2 rounded-full opacity-0 group-hover:opacity-100 transition">
+                    <button 
+                      onClick={() => toggleFavorite(juego.id)}
+                      className="absolute top-2 right-2 bg-red-500 p-2 rounded-full opacity-0 group-hover:opacity-100 transition"
+                    >
                       <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
                       </svg>
