@@ -23,7 +23,7 @@ const allGames = [
 ];
 
 const FavoritosApp = () => {
-  const { toggleFavorite, isFavorite } = useFavorites();
+  const { toggleFavorite, isFavorite, favorites } = useFavorites();
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [direction, setDirection] = useState(0);
@@ -31,7 +31,7 @@ const FavoritosApp = () => {
   // Filter games to only show favorites (memoized for performance)
   const favoritos = useMemo(() => 
     allGames.filter(game => isFavorite(game.id)),
-    [isFavorite]
+    [favorites] // Use favorites Set as dependency instead of isFavorite function
   );
 
   useEffect(() => {
