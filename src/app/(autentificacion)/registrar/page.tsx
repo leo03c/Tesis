@@ -58,12 +58,15 @@ export default function RegisterPage() {
       if (res?.error) {
         // Si falla el inicio de sesión automático, redirigir al login manual
         setError("Registro exitoso. Por favor, inicia sesión con tus credenciales.");
-        setTimeout(() => router.push("/login"), 2000);
+        // Pequeña pausa para que el usuario lea el mensaje antes de redirigir
+        setTimeout(() => router.push("/login"), 1500);
       } else if (res?.ok) {
         router.push("/");
       } else {
-        // Caso inesperado, redirigir al login para que el usuario inicie sesión manualmente
-        router.push("/login");
+        // Caso inesperado, informar al usuario y redirigir al login
+        console.warn("Unexpected sign-in response after registration:", res);
+        setError("Registro exitoso. Redirigiendo al login...");
+        setTimeout(() => router.push("/login"), 1500);
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
