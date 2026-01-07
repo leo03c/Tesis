@@ -48,8 +48,18 @@ export default function RegisterPage() {
         privacyAccepted: form.privacyAccepted,
       });
 
-      // Registro exitoso, redirigir a login
-      router.push("/login");
+      // Registro exitoso, iniciar sesión automáticamente
+      const res = await signIn("credentials", {
+        redirect: false,
+        username: form.username,
+        password: form.password,
+      });
+
+      if (res?.error) {
+        setError("Registro exitoso pero error al iniciar sesión: " + res.error);
+      } else if (res?.ok) {
+        router.push("/");
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
