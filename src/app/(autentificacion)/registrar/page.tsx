@@ -17,13 +17,23 @@ const frameIcon = "/icons/Frame.svg";
 // Constante para el tiempo de espera antes de redirigir al login
 const REDIRECT_DELAY_MS = 1500;
 
+// Definir tipo para los datos del formulario
+interface RegisterFormData {
+  name: string;
+  email: string;
+  username: string;
+  password1: string;
+  password2: string;
+  privacyAccepted: boolean;
+}
+
 export default function RegisterPage() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<RegisterFormData>({
     name: "",
     email: "",
     username: "",
-    password: "",
-    confirmPassword: "",
+    password1: "",
+    password2: "",
     privacyAccepted: false,
   });
   const [error, setError] = useState("");
@@ -35,33 +45,57 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
 
-    if (form.password !== form.confirmPassword) {
+    // Validaciones
+    if (!form.privacyAccepted) {
+      setError("Debes aceptar los términos de la política de privacidad");
+      setLoading(false);
+      return;
+    }
+
+    if (form.password1 !== form.password2) {
       setError("Las contraseñas no coinciden");
       setLoading(false);
       return;
     }
 
+    if (form.password1.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres");
+      setLoading(false);
+      return;
+    }
+
+    // Validación básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      setError("Por favor ingresa un email válido");
+      setLoading(false);
+      return;
+    }
+
     try {
-      await register({
-        name: form.name,
-        email: form.email,
+      // Preparar datos para enviar a Django
+      const registerData = {
         username: form.username,
-        password1: form.password,
-        password2: form.confirmPassword,
-        privacyAccepted: form.privacyAccepted,
-      });
+        email: form.email,
+        first_name: form.name.split(' ')[0] || form.name,
+        last_name: form.name.split(' ').slice(1).join(' ') || '',
+        password1: form.password1,
+        password2: form.password2,
+        rol: 'basico', // Rol por defecto según el modelo
+      };
+
+      await register(registerData);
 
       // Registro exitoso, iniciar sesión automáticamente
       const res = await signIn("credentials", {
         redirect: false,
         username: form.username,
-        password: form.password,
+        password: form.password1,
       });
 
       if (res?.error) {
         // Si falla el inicio de sesión automático, redirigir al login manual
-        setError("Registro exitoso. Hubo un problema al iniciar sesión automáticamente. Por favor, inicia sesión con tus credenciales.");
-        // Pequeña pausa para que el usuario lea el mensaje antes de redirigir
+        setError("Registro exitoso. Redirigiendo al login...");
         setTimeout(() => router.push("/login"), REDIRECT_DELAY_MS);
       } else if (res?.ok) {
         router.push("/");
@@ -71,7 +105,32 @@ export default function RegisterPage() {
         setTimeout(() => router.push("/login"), REDIRECT_DELAY_MS);
       }
     } catch (err: unknown) {
-      if (err instanceof Error) {
+      // Manejo de errores específicos de Django REST
+      if (err && typeof err === 'object' && 'response' in err) {
+        const errorResponse = err as { response?: { data?: any } };
+        if (errorResponse.response?.data) {
+          const data = errorResponse.response.data;
+          
+          // Manejar errores comunes de Django
+          if (data.username) {
+            setError(`Usuario: ${Array.isArray(data.username) ? data.username[0] : data.username}`);
+          } else if (data.email) {
+            setError(`Email: ${Array.isArray(data.email) ? data.email[0] : data.email}`);
+          } else if (data.password1) {
+            setError(`Contraseña: ${Array.isArray(data.password1) ? data.password1[0] : data.password1}`);
+          } else if (data.non_field_errors) {
+            setError(Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors);
+          } else if (typeof data === 'string') {
+            setError(data);
+          } else if (data.detail) {
+            setError(data.detail);
+          } else {
+            setError("Error en el registro. Por favor verifica tus datos.");
+          }
+        } else {
+          setError("Error de conexión con el servidor");
+        }
+      } else if (err instanceof Error) {
         setError(err.message);
       } else {
         setError("Ocurrió un error desconocido");
@@ -83,6 +142,10 @@ export default function RegisterPage() {
 
   const handleGoogleRegister = () => {
     signIn("google", { callbackUrl: "/" });
+  };
+
+  const handleInputChange = (field: keyof RegisterFormData, value: string | boolean) => {
+    setForm(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -142,9 +205,10 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="Nombre y apellidos"
                   value={form.name}
-                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-deep text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
                   required
+                  minLength={2}
                 />
               </div>
 
@@ -156,7 +220,7 @@ export default function RegisterPage() {
                   type="email"
                   placeholder="Correo electrónico"
                   value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-deep text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
                   required
                 />
@@ -170,9 +234,12 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="Usuario"
                   value={form.username}
-                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  onChange={(e) => handleInputChange("username", e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-deep text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
                   required
+                  minLength={3}
+                  pattern="[A-Za-z0-9_]+"
+                  title="Solo letras, números y guiones bajos"
                 />
               </div>
   
@@ -183,10 +250,11 @@ export default function RegisterPage() {
                 <input
                   type="password"
                   placeholder="Contraseña"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  value={form.password1}
+                  onChange={(e) => handleInputChange("password1", e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-deep text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
                   required
+                  minLength={8}
                 />
               </div>
 
@@ -197,50 +265,84 @@ export default function RegisterPage() {
                 <input
                   type="password"
                   placeholder="Confirmación de contraseña"
-                  value={form.confirmPassword}
-                  onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                  value={form.password2}
+                  onChange={(e) => handleInputChange("password2", e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-deep text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
                   required
+                  minLength={8}
                 />
               </div>
   
               <div className="flex items-start gap-2 text-sm text-gray-400">
-              <input
+                <input
                   type="checkbox"
                   id="privacy"
                   checked={form.privacyAccepted}
-                  onChange={(e) => setForm({ ...form, privacyAccepted: e.target.checked })}
+                  onChange={(e) => handleInputChange("privacyAccepted", e.target.checked)}
                   className="mt-1 w-4 h-4 rounded border border-gray-600 bg-transparent checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary appearance-none"
                   required
-              />
-                  <label htmlFor="privacy">
-                      Acepta los términos de la política de privacidad
-                  </label>
+                />
+                <label htmlFor="privacy">
+                  Acepta los términos de la política de privacidad
+                </label>
               </div>
 
-              {error && <div className="text-sm text-red-500">{error}</div>}
+              {error && (
+                <div className="p-3 rounded-xl bg-red-900/20 border border-red-700 text-sm text-red-300">
+                  {error}
+                </div>
+              )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-primary text-white font-primary tracking-wide text-center hover:bg-subprimary transition-colors duration-300"
+                className={`w-full py-3 rounded-xl font-primary tracking-wide text-center transition-colors duration-300 ${
+                  loading 
+                    ? 'bg-gray-600 cursor-not-allowed' 
+                    : 'bg-primary hover:bg-subprimary text-white'
+                }`}
               >
-                {loading ? "Registrando..." : "REGISTRAR"}
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                    Registrando...
+                  </span>
+                ) : "REGISTRAR"}
               </button>
             </form>
   
             {/* Google + crear cuenta */}
-            <hr className="border-t border-gray-700" />
-            <button
-              type="button"
-              onClick={handleGoogleRegister}
-              className="w-full flex pl-12 pr-4 py-3 rounded-xl items-center justify-center gap-3 bg-deep hover:bg-subdeep transition"
-            >
-              <Image src={googleIcon} alt="Google icon" width={20} height={20} />
-              REGISTRARSE CON GOOGLE
-            </button>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <div className="flex-1 border-t border-gray-700"></div>
+                <span className="mx-4 text-sm text-gray-500">O regístrate con</span>
+                <div className="flex-1 border-t border-gray-700"></div>
+              </div>
+              
+              <button
+                type="button"
+                onClick={handleGoogleRegister}
+                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl bg-deep hover:bg-subdeep transition border border-gray-700"
+              >
+                <Image src={googleIcon} alt="Google icon" width={20} height={20} />
+                <span>Google</span>
+              </button>
+            </div>
   
-            
+            <div className="text-center">
+              <p className="text-sm text-gray-400">
+                ¿Ya tienes una cuenta?{" "}
+                <button
+                  onClick={() => router.push("/login")}
+                  className="text-primary hover:text-subprimary font-medium transition-colors"
+                >
+                  Inicia sesión aquí
+                </button>
+              </p>
+            </div>
           </div>
         </section>
       </div>
