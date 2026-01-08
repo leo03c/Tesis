@@ -49,6 +49,7 @@ const ConfiguracionApp = () => {
     if (isAuthenticated) {
       loadSettings();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated]);
 
   // Update account form when user data changes
@@ -109,9 +110,10 @@ const ConfiguracionApp = () => {
         email: accountForm.email,
       });
       showMessage('success', 'Información de cuenta actualizada correctamente');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving account settings:', error);
-      showMessage('error', error.message || 'Error al guardar la información');
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar la información';
+      showMessage('error', errorMessage);
     } finally {
       setSaving(false);
     }
@@ -122,9 +124,10 @@ const ConfiguracionApp = () => {
     try {
       await settingsService.updateNotificationSettings(notifications);
       showMessage('success', 'Preferencias de notificaciones guardadas');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving notification settings:', error);
-      showMessage('error', error.message || 'Error al guardar las notificaciones');
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar las notificaciones';
+      showMessage('error', errorMessage);
     } finally {
       setSaving(false);
     }
@@ -135,9 +138,10 @@ const ConfiguracionApp = () => {
     try {
       await settingsService.updatePrivacySettings(privacy);
       showMessage('success', 'Configuración de privacidad actualizada');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving privacy settings:', error);
-      showMessage('error', error.message || 'Error al guardar la privacidad');
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar la privacidad';
+      showMessage('error', errorMessage);
     } finally {
       setSaving(false);
     }
@@ -148,9 +152,10 @@ const ConfiguracionApp = () => {
     try {
       await settingsService.updateAppearanceSettings(appearance);
       showMessage('success', 'Configuración de apariencia guardada');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error saving appearance settings:', error);
-      showMessage('error', error.message || 'Error al guardar la apariencia');
+      const errorMessage = error instanceof Error ? error.message : 'Error al guardar la apariencia';
+      showMessage('error', errorMessage);
     } finally {
       setSaving(false);
     }
@@ -345,7 +350,7 @@ const ConfiguracionApp = () => {
                   <h3 className="font-medium mb-2">Visibilidad del perfil</h3>
                   <select 
                     value={privacy.profile_visibility}
-                    onChange={(e) => setPrivacy({ ...privacy, profile_visibility: e.target.value as any })}
+                    onChange={(e) => setPrivacy({ ...privacy, profile_visibility: e.target.value as 'public' | 'friends' | 'private' })}
                     className="w-full bg-deep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
                   >
                     <option value="public">Público</option>
@@ -358,7 +363,7 @@ const ConfiguracionApp = () => {
                   <h3 className="font-medium mb-2">Historial de juegos</h3>
                   <select 
                     value={privacy.game_history_visibility}
-                    onChange={(e) => setPrivacy({ ...privacy, game_history_visibility: e.target.value as any })}
+                    onChange={(e) => setPrivacy({ ...privacy, game_history_visibility: e.target.value as 'public' | 'friends' | 'hidden' })}
                     className="w-full bg-deep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
                   >
                     <option value="public">Visible para todos</option>

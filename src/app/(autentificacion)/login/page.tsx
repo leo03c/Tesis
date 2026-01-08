@@ -66,11 +66,12 @@ export default function LoginPage() {
           router.refresh(); // Forzar refresco de la página
         }, 1000);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
       if (slowLoadingTimerRef.current) clearTimeout(slowLoadingTimerRef.current);
       if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
-      setError(error.message || "Error durante el inicio de sesión");
+      const errorMessage = error instanceof Error ? error.message : "Error durante el inicio de sesión";
+      setError(errorMessage);
     } finally {
       setLoading(false);
       setSlowLoading(false);
