@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/contexts/UserContext';
@@ -19,13 +19,30 @@ export default function LoginPage() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [slowLoading, setSlowLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("Iniciando sesión...");
   const router = useRouter();
   const { refreshSession } = useUser();
+  const loadingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const slowLoadingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    setSlowLoading(false);
+    setLoadingMessage("Iniciando sesión...");
+
+    // Set timer to show "slow loading" warning after 3 seconds
+    slowLoadingTimerRef.current = setTimeout(() => {
+      setSlowLoading(true);
+      setLoadingMessage("La conexión está tardando más de lo esperado...");
+    }, 3000);
+
+    // Set timer to show timeout message after 10 seconds
+    loadingTimerRef.current = setTimeout(() => {
+      setLoadingMessage("El servidor está tomando mucho tiempo. Intente nuevamente.");
+    }, 10000);
 
     try {
       const result = await signIn("credentials", {
@@ -34,9 +51,14 @@ export default function LoginPage() {
         password: form.password,
       });
 
+      // Clear timers if login completes
+      if (slowLoadingTimerRef.current) clearTimeout(slowLoadingTimerRef.current);
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+
       if (result?.error) {
         setError(result.error);
       } else if (result?.ok) {
+        setLoadingMessage("¡Autenticación exitosa! Redirigiendo...");
         // Esperar un poco para que la sesión se actualice
         setTimeout(async () => {
           await refreshSession();
@@ -46,11 +68,22 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error('Login error:', error);
+      if (slowLoadingTimerRef.current) clearTimeout(slowLoadingTimerRef.current);
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
       setError(error.message || "Error durante el inicio de sesión");
     } finally {
       setLoading(false);
+      setSlowLoading(false);
     }
   };
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (slowLoadingTimerRef.current) clearTimeout(slowLoadingTimerRef.current);
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    };
+  }, []);
 
   const handleGoogleLogin = () => {
     signIn("google", { callbackUrl: "/" });
@@ -128,6 +161,17 @@ export default function LoginPage() {
 
               {error && <div className="text-sm text-red-500">{error}</div>}
 
+              {loading && (
+                <div className={`p-4 rounded-xl ${slowLoading ? 'bg-yellow-900/20 border border-yellow-600' : 'bg-primary/10 border border-primary'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 border-2 border-t-transparent border-primary rounded-full animate-spin" />
+                    <span className={`text-sm ${slowLoading ? 'text-yellow-400' : 'text-white'}`}>
+                      {loadingMessage}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               <div className="text-left text-sm">
                 <a href="#" className="text-primary hover:underline">¿Olvidó su usuario o su contraseña?</a>
               </div>
@@ -135,9 +179,10 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 rounded-xl bg-primary text-white font-primary tracking-wide hover:bg-subprimary transition duration-300"
+                className="w-full py-3 rounded-xl bg-primary text-white font-primary tracking-wide hover:bg-subprimary transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {loading ? "Entrando..." : "ENTRAR"}
+                {loading && <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin" />}
+                {loading ? "ENTRANDO..." : "ENTRAR"}
               </button>
             </form>
 
