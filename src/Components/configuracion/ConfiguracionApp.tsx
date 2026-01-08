@@ -102,6 +102,19 @@ const ConfiguracionApp = () => {
     setTimeout(() => setMessage(null), 3000);
   };
 
+  // Type-safe handlers for select changes
+  const handleProfileVisibilityChange = (value: string) => {
+    if (value === 'public' || value === 'friends' || value === 'private') {
+      setPrivacy({ ...privacy, profile_visibility: value });
+    }
+  };
+
+  const handleGameHistoryVisibilityChange = (value: string) => {
+    if (value === 'public' || value === 'friends' || value === 'hidden') {
+      setPrivacy({ ...privacy, game_history_visibility: value });
+    }
+  };
+
   const saveAccountSettings = async () => {
     setSaving(true);
     try {
@@ -350,7 +363,7 @@ const ConfiguracionApp = () => {
                   <h3 className="font-medium mb-2">Visibilidad del perfil</h3>
                   <select 
                     value={privacy.profile_visibility}
-                    onChange={(e) => setPrivacy({ ...privacy, profile_visibility: e.target.value as 'public' | 'friends' | 'private' })}
+                    onChange={(e) => handleProfileVisibilityChange(e.target.value)}
                     className="w-full bg-deep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
                   >
                     <option value="public">Público</option>
@@ -363,7 +376,7 @@ const ConfiguracionApp = () => {
                   <h3 className="font-medium mb-2">Historial de juegos</h3>
                   <select 
                     value={privacy.game_history_visibility}
-                    onChange={(e) => setPrivacy({ ...privacy, game_history_visibility: e.target.value as 'public' | 'friends' | 'hidden' })}
+                    onChange={(e) => handleGameHistoryVisibilityChange(e.target.value)}
                     className="w-full bg-deep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
                   >
                     <option value="public">Visible para todos</option>
