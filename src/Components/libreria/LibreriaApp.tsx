@@ -1,30 +1,66 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { getLibrary } from "@/services/libraryService";
+import type { LibraryGame } from "@/services/libraryService";
+import { APIError } from "@/services/api";
+import Loading from "@/Components/loading/Loading";
 
 const pic4 = "/pic4.jpg";
-const pic5 = "/pic5.jpg";
-const pic6 = "/pic6.jpg";
-
-const libreria = [
-  { title: "League of Legends", image: pic4, hoursPlayed: 1250, lastPlayed: "Hace 2 horas", installed: true },
-  { title: "God of War", image: pic5, hoursPlayed: 45, lastPlayed: "Hace 3 días", installed: true },
-  { title: "Cyberpunk 2077", image: pic6, hoursPlayed: 120, lastPlayed: "Hace 1 semana", installed: false },
-  { title: "Control", image: pic4, hoursPlayed: 30, lastPlayed: "Hace 2 semanas", installed: false },
-  { title: "Hogwarts Legacy", image: pic5, hoursPlayed: 80, lastPlayed: "Ayer", installed: true },
-  { title: "Elden Ring", image: pic6, hoursPlayed: 200, lastPlayed: "Hace 5 días", installed: true },
-];
 
 const LibreriaApp = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filter, setFilter] = useState("todos");
+  const [libreria, setLibreria] = useState<LibraryGame[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchLibrary = async () => {
+      try {
+        setLoading(true);
+        const response = await getLibrary();
+        setLibreria(response.results);
+        setError(null);
+        setApiUrl(null);
+      } catch (err) {
+        console.error('Error fetching library:', err);
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudo cargar la librería');
+          setApiUrl(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLibrary();
+  }, []);
 
   const filteredGames = libreria.filter((game) => {
     if (filter === "instalados") return game.installed;
     if (filter === "no-instalados") return !game.installed;
     return true;
   });
+
+  const formatLastPlayed = (dateString?: string) => {
+    if (!dateString) return 'Nunca';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'Hoy';
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays < 7) return `Hace ${diffDays} días`;
+    if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas`;
+    return `Hace ${Math.floor(diffDays / 30)} meses`;
+  };
 
   return (
     <div className="min-h-screen text-white">
@@ -77,13 +113,32 @@ const LibreriaApp = () => {
 
       {/* Games */}
       <div className="rounded-3xl bg-deep py-10 px-6">
+        {loading ? (
+          <Loading message="Cargando tu librería..." />
+        ) : error || libreria.length === 0 ? (
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>
+              {error || 'Tu librería está vacía'}
+            </p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
+        ) : filteredGames.length === 0 ? (
+          <p className='text-texInactivo text-center py-8'>
+            No hay juegos que coincidan con el filtro seleccionado
+          </p>
+        ) : (
+        <>
         {viewMode === "grid" ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredGames.map((game, i) => (
               <div key={i} className="bg-subdeep rounded-2xl overflow-hidden group">
                 <div className="w-full aspect-[4/3] relative">
                   <Image
-                    src={game.image}
+                    src={game.image || pic4}
                     alt={game.title}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
@@ -100,8 +155,8 @@ const LibreriaApp = () => {
                 </div>
                 <div className="p-4">
                   <h3 className="font-semibold mb-1 truncate">{game.title}</h3>
-                  <p className="text-texInactivo text-sm">{game.hoursPlayed}h jugadas</p>
-                  <p className="text-texInactivo text-xs">{game.lastPlayed}</p>
+                  <p className="text-texInactivo text-sm">{game.hours_played}h jugadas</p>
+                  <p className="text-texInactivo text-xs">{formatLastPlayed(game.last_played)}</p>
                 </div>
               </div>
             ))}
@@ -115,7 +170,7 @@ const LibreriaApp = () => {
               >
                 <div className="w-20 h-14 relative flex-shrink-0">
                   <Image
-                    src={game.image}
+                    src={game.image || pic4}
                     alt={game.title}
                     fill
                     sizes="80px"
@@ -124,10 +179,10 @@ const LibreriaApp = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold truncate">{game.title}</h3>
-                  <p className="text-texInactivo text-sm">{game.lastPlayed}</p>
+                  <p className="text-texInactivo text-sm">{formatLastPlayed(game.last_played)}</p>
                 </div>
                 <div className="text-right hidden sm:block">
-                  <p className="text-white font-medium">{game.hoursPlayed}h</p>
+                  <p className="text-white font-medium">{game.hours_played}h</p>
                   <p className="text-texInactivo text-xs">Tiempo jugado</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -144,13 +199,16 @@ const LibreriaApp = () => {
             ))}
           </div>
         )}
+        </>
+        )}
       </div>
 
       {/* Stats */}
+      {!loading && libreria.length > 0 && (
       <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="bg-deep rounded-2xl p-6 text-center">
           <p className="text-3xl font-bold text-primary">
-            {libreria.reduce((acc, g) => acc + g.hoursPlayed, 0)}h
+            {libreria.reduce((acc, g) => acc + g.hours_played, 0)}h
           </p>
           <p className="text-texInactivo">Total jugado</p>
         </div>
@@ -165,6 +223,7 @@ const LibreriaApp = () => {
           <p className="text-texInactivo">Instalados</p>
         </div>
       </div>
+      )}
     </div>
   );
 };

@@ -2,30 +2,11 @@
 
 import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
-import { GAME_IDS } from "@/constants/gameIds";
-
-const listGame = [
-    {
-        src: '/carruselimg/LOL.svg',
-        texto: 'LEAGUE OF LEGENDS'
-    },
-    {
-        src: '/carruselimg/GOW.svg',
-        texto: 'GOD OF WAR'
-    },
-    {
-        src: '/carruselimg/CBP.svg',
-        texto: 'CYBERPUNK 2077'
-    },
-    {
-        src: '/carruselimg/Control.svg',
-        texto: 'CONTROL'
-    },
-    {
-        src: '/carruselimg/HL.svg',
-        texto: 'HOGWARTS LEGACY'
-    },
-]
+import { useState, useEffect } from "react";
+import { getFeaturedGames } from "@/services/gamesService";
+import type { Game } from "@/services/gamesService";
+import { APIError } from "@/services/api";
+import Loading from "@/Components/loading/Loading";
 
 interface ICardProps {
   srcimg: string;
@@ -48,8 +29,66 @@ const Card = ({ srcimg, texto }: ICardProps) => {
     </div>
   );
 };
+
 const Carrusel = () => {
     const { isFavorite, toggleFavorite } = useFavorites();
+    const [games, setGames] = useState<Game[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [apiUrl, setApiUrl] = useState<string | null>(null);
+    const [featuredGame, setFeaturedGame] = useState<Game | null>(null);
+
+    useEffect(() => {
+        const fetchGames = async () => {
+            try {
+                setLoading(true);
+                const response = await getFeaturedGames();
+                setGames(response.results);
+                if (response.results.length > 0) {
+                    setFeaturedGame(response.results[0]);
+                }
+                setError(null);
+                setApiUrl(null);
+            } catch (err) {
+                console.error('Error fetching featured games:', err);
+                if (err instanceof APIError) {
+                    setError(err.message);
+                    setApiUrl(err.url);
+                } else {
+                    setError('No se pudieron cargar los juegos');
+                    setApiUrl(null);
+                }
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchGames();
+    }, []);
+
+    if (loading) {
+        return <Loading message="Cargando juegos destacados..." />;
+    }
+
+    if (error || !featuredGame) {
+        return (
+            <div className="p-8 text-center">
+                <p className="text-texInactivo mb-2">
+                    {error || 'No hay juegos destacados disponibles'}
+                </p>
+                {apiUrl && (
+                    <p className='text-texInactivo text-xs mt-2'>
+                        URL: <span className='text-primary'>{apiUrl}</span>
+                    </p>
+                )}
+            </div>
+        );
+    }
+
+    const listGame = games.slice(0, 5).map(game => ({
+        src: game.image || '/carruselimg/LOL.svg',
+        texto: game.title.toUpperCase()
+    }));
 
     return (
         <div className="flex flex-col lg:flex-row  gap-4 lg:gap-5 w-full">
@@ -57,15 +96,16 @@ const Carrusel = () => {
             <div className="relative w-full lg:w-[50%] aspect-[1.65] bg-[url(/images/bg-game1.svg)] bg-cover bg-center rounded-2xl">
                 <div className="flex justify-between items-center p-4 lg:p-5 absolute top-0 w-full">
                     <div className="flex gap-3 lg:gap-5 text-white">
-                        <span className="px-4 py-1 text-sm lg:text-base text-center bg-white/30 rounded-lg">AVENTURA</span>
-                        <span className="px-3 py-1 text-sm lg:text-base text-center bg-white/30 rounded-lg">RPG</span>
+                        {(featuredGame.tags || []).slice(0, 2).map((tag, index) => (
+                            <span key={index} className="px-4 py-1 text-sm lg:text-base text-center bg-white/30 rounded-lg">{tag}</span>
+                        ))}
                     </div>
                     <button 
-                        onClick={() => toggleFavorite(GAME_IDS.LEAGUE_OF_LEGENDS)}
+                        onClick={() => toggleFavorite(featuredGame.id)}
                         className="w-10 h-10 lg:w-14 lg:h-14 flex justify-center items-center bg-[#283B4C] rounded-2xl hover:scale-110 transition-transform"
                     >
                         <Image 
-                            src={isFavorite(GAME_IDS.LEAGUE_OF_LEGENDS) ? '/heart-red.svg' : '/heart-gray.svg'} 
+                            src={isFavorite(featuredGame.id) ? '/heart-red.svg' : '/heart-gray.svg'} 
                             alt="Heart" 
                             width={24} 
                             height={24} 
@@ -73,11 +113,9 @@ const Carrusel = () => {
                     </button>
                 </div>
                 <div className="flex flex-col gap-3 lg:gap-5 absolute bottom-5 lg:bottom-8 left-5 lg:left-8">
-                    <h2 className="text-xl lg:text-2xl font-bold text-white">LEAGUE OF LEGENDS</h2>
+                    <h2 className="text-xl lg:text-2xl font-bold text-white">{featuredGame.title.toUpperCase()}</h2>
                     <p className="w-full lg:w-[55%] text-white text-sm lg:text-base">
-                        Conviértete en una leyenda. Encuentra a tu campeón, domina
-                        sus habilidades y supera a tus oponentes en una épica batalla
-                        de 5 contra 5 para destruir la base enemiga.
+                        {featuredGame.description || 'Un increíble juego que te mantendrá entretenido por horas.'}
                     </p>
                     <button className="w-40 lg:w-44 h-12 lg:h-14 text-white bg-[#2993FA] rounded-md text-sm lg:text-base">
                         DESCARGAR
@@ -103,8 +141,12 @@ const Carrusel = () => {
                             <span className="font-bold text-white">5.0</span>
                         </div>
                         <div className="flex gap-3 items-baseline">
-                            <span className="text-xl lg:text-2xl font-bold text-white">$44.99</span>
-                            <span className="line-through text-white">$59.99</span>
+                            <span className="text-xl lg:text-2xl font-bold text-white">
+                                {featuredGame.price ? `$${featuredGame.price}` : 'GRATIS'}
+                            </span>
+                            {featuredGame.price && featuredGame.price > 0 && (
+                                <span className="line-through text-white">$59.99</span>
+                            )}
                         </div>
                     </div>
 

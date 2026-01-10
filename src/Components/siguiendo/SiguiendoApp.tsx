@@ -1,36 +1,58 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { getFollowing } from "@/services/followService";
+import type { UserProfile } from "@/services/followService";
+import { APIError } from "@/services/api";
+import Loading from "@/Components/loading/Loading";
 
-const siguiendo = [
-  { name: "CD Projekt Red", avatar: "/pic4.jpg", followers: "2.5M", games: 3, isFollowing: true, type: "Desarrollador" },
-  { name: "FromSoftware", avatar: "/pic5.jpg", followers: "1.8M", games: 12, isFollowing: true, type: "Desarrollador" },
-  { name: "Supergiant Games", avatar: "/pic6.jpg", followers: "850K", games: 4, isFollowing: true, type: "Desarrollador" },
-  { name: "GamerPro123", avatar: "/pic4.jpg", followers: "125K", games: 0, isFollowing: true, type: "Usuario" },
-  { name: "StreamerElite", avatar: "/pic5.jpg", followers: "500K", games: 0, isFollowing: true, type: "Usuario" },
-  { name: "Riot Games", avatar: "/pic6.jpg", followers: "5.2M", games: 8, isFollowing: true, type: "Desarrollador" },
-];
-
-const sugerencias = [
-  { name: "Naughty Dog", avatar: "/pic4.jpg", followers: "3.1M", games: 15, isFollowing: false, type: "Desarrollador" },
-  { name: "Insomniac Games", avatar: "/pic5.jpg", followers: "1.2M", games: 20, isFollowing: false, type: "Desarrollador" },
-];
+const pic4 = "/pic4.jpg";
 
 const SiguiendoApp = () => {
   const [activeTab, setActiveTab] = useState<"siguiendo" | "sugerencias">("siguiendo");
-  const [followingList, setFollowingList] = useState(siguiendo);
-  const [suggestions, setSuggestions] = useState(sugerencias);
+  const [followingList, setFollowingList] = useState<UserProfile[]>([]);
+  const [suggestions, setSuggestions] = useState<UserProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
-  const handleUnfollow = (name: string) => {
-    setFollowingList(followingList.filter((u) => u.name !== name));
+  useEffect(() => {
+    const fetchFollowing = async () => {
+      try {
+        setLoading(true);
+        const response = await getFollowing();
+        setFollowingList(response.results);
+        // For now, suggestions will be empty as we don't have that endpoint
+        setSuggestions([]);
+        setError(null);
+        setApiUrl(null);
+      } catch (err) {
+        console.error('Error fetching following:', err);
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudo cargar la lista de seguidos');
+          setApiUrl(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFollowing();
+  }, []);
+
+  const handleUnfollow = (id: number) => {
+    setFollowingList(followingList.filter((u) => u.id !== id));
   };
 
-  const handleFollow = (name: string) => {
-    const userToFollow = suggestions.find((u) => u.name === name);
+  const handleFollow = (id: number) => {
+    const userToFollow = suggestions.find((u) => u.id === id);
     if (userToFollow) {
-      setFollowingList([...followingList, { ...userToFollow, isFollowing: true }]);
-      setSuggestions(suggestions.filter((u) => u.name !== name));
+      setFollowingList([...followingList, { ...userToFollow, is_following: true }]);
+      setSuggestions(suggestions.filter((u) => u.id !== id));
     }
   };
 
@@ -68,7 +90,18 @@ const SiguiendoApp = () => {
 
       {/* Content */}
       <div className="rounded-3xl bg-deep py-10 px-6">
-        {activeTab === "siguiendo" ? (
+        {loading ? (
+          <Loading message="Cargando..." />
+        ) : error ? (
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>{error}</p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
+        ) : activeTab === "siguiendo" ? (
           <div className="space-y-4">
             {followingList.length === 0 ? (
               <div className="text-center py-10">
@@ -88,7 +121,7 @@ const SiguiendoApp = () => {
                 >
                   <div className="w-14 h-14 relative flex-shrink-0">
                     <Image
-                      src={user.avatar}
+                      src={user.avatar || pic4}
                       alt={user.name}
                       fill
                       sizes="56px"
@@ -103,11 +136,11 @@ const SiguiendoApp = () => {
                       </span>
                     </div>
                     <p className="text-texInactivo text-sm">
-                      {user.followers} seguidores {user.games > 0 && `• ${user.games} juegos`}
+                      {user.followers} seguidores {(user.games && user.games > 0) && `• ${user.games} juegos`}
                     </p>
                   </div>
                   <button
-                    onClick={() => handleUnfollow(user.name)}
+                    onClick={() => handleUnfollow(user.id)}
                     className="bg-subdeep border border-primary text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary hover:text-white transition"
                   >
                     Siguiendo
@@ -130,7 +163,7 @@ const SiguiendoApp = () => {
                 >
                   <div className="w-14 h-14 relative flex-shrink-0">
                     <Image
-                      src={user.avatar}
+                      src={user.avatar || pic4}
                       alt={user.name}
                       fill
                       sizes="56px"
@@ -149,7 +182,7 @@ const SiguiendoApp = () => {
                     </p>
                   </div>
                   <button
-                    onClick={() => handleFollow(user.name)}
+                    onClick={() => handleFollow(user.id)}
                     className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-subprimary transition"
                   >
                     Seguir

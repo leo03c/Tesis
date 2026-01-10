@@ -3,7 +3,10 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
-import { GAME_IDS } from "@/constants/gameIds";
+import { getGames } from "@/services/gamesService";
+import type { Game } from "@/services/gamesService";
+import { APIError } from "@/services/api";
+import Loading from "@/Components/loading/Loading";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
@@ -11,23 +14,16 @@ const coraB = "/icons/coraB.svg"; // Blank/gray heart
 const coraR = "/icons/coraR.svg"; // Red heart
 const star = "/icons/star 5.svg";
 const pic4 = "/pic4.jpg";
-const pic5 = "/pic5.jpg";
-const pic6 = "/pic6.jpg";
-
-const juegos = [
-  { id: GAME_IDS.LEAGUE_OF_LEGENDS, title: "League of Legends", image: pic4, price: 0, originalPrice: 0, discount: 0, tags: ["MOBA", "MULTIJUGADOR"], rating: 4.8 },
-  { id: GAME_IDS.GOD_OF_WAR, title: "God of War", image: pic5, price: 29.99, originalPrice: 59.99, discount: 50, tags: ["AVENTURA", "ACCIÓN"], rating: 5.0 },
-  { id: GAME_IDS.CYBERPUNK_2077, title: "Cyberpunk 2077", image: pic6, price: 44.99, originalPrice: 59.99, discount: 25, tags: ["RPG", "ACCIÓN"], rating: 4.5 },
-  { id: GAME_IDS.CONTROL, title: "Control", image: pic4, price: 19.99, originalPrice: 39.99, discount: 50, tags: ["ACCIÓN", "AVENTURA"], rating: 4.7 },
-  { id: GAME_IDS.HOGWARTS_LEGACY, title: "Hogwarts Legacy", image: pic5, price: 49.99, originalPrice: 69.99, discount: 28, tags: ["RPG", "AVENTURA"], rating: 4.9 },
-  { id: GAME_IDS.ELDEN_RING, title: "Elden Ring", image: pic6, price: 59.99, originalPrice: 59.99, discount: 0, tags: ["RPG", "SOULS"], rating: 5.0 },
-];
 
 const TiendaApp = () => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [direction, setDirection] = useState(0);
+  const [juegos, setJuegos] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -37,6 +33,31 @@ const TiendaApp = () => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const fetchGames = async () => {
+      try {
+        setLoading(true);
+        const response = await getGames();
+        setJuegos(response.results);
+        setError(null);
+        setApiUrl(null);
+      } catch (err) {
+        console.error('Error fetching games:', err);
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudieron cargar los juegos');
+          setApiUrl(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGames();
   }, []);
 
   const totalPages = Math.ceil(juegos.length / itemsPerPage);
@@ -70,6 +91,20 @@ const TiendaApp = () => {
 
       {/* Featured Section */}
       <div className="my-4 rounded-3xl bg-deep text-white py-10 px-6">
+        {loading ? (
+          <Loading message="Cargando juegos de la tienda..." />
+        ) : error || juegos.length === 0 ? (
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>
+              {error || 'No hay juegos disponibles en la tienda'}
+            </p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
+        ) : (
         <div className="max-w-7xl mx-auto relative">
           {/* Header */}
           <div className="flex justify-between items-center mb-6">
@@ -100,7 +135,7 @@ const TiendaApp = () => {
                   {/* Image */}
                   <div className="w-full aspect-[4/3] relative">
                     <Image
-                      src={juego.image}
+                      src={juego.image || pic4}
                       alt={juego.title}
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
@@ -117,9 +152,9 @@ const TiendaApp = () => {
                         height={56} 
                       />
                     </button>
-                    {juego.discount > 0 && (
+                    {juego.price && juego.price > 0 && (
                       <div className="absolute top-2 left-2 bg-primary px-3 py-1 rounded-lg text-sm font-bold">
-                        -{juego.discount}%
+                        OFERTA
                       </div>
                     )}
                   </div>
@@ -127,7 +162,7 @@ const TiendaApp = () => {
                   {/* Content */}
                   <div className="p-4 pb-6">
                     <div className="flex gap-2 mb-2 flex-wrap">
-                      {juego.tags.map((tag, j) => (
+                      {(juego.tags || []).map((tag, j) => (
                         <span
                           key={j}
                           className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
@@ -149,20 +184,15 @@ const TiendaApp = () => {
                           />
                         ))}
                         <span className="text-xs font-medium ml-1">
-                          {juego.rating.toFixed(1)}
+                          {(juego.rating || 0).toFixed(1)}
                         </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="flex gap-2 items-baseline">
                         <span className="text-xl font-bold text-primary">
-                          {juego.price === 0 ? "GRATIS" : `$${juego.price}`}
+                          {juego.price === 0 || !juego.price ? "GRATIS" : `$${juego.price}`}
                         </span>
-                        {juego.discount > 0 && (
-                          <span className="line-through text-texInactivo text-sm">
-                            ${juego.originalPrice}
-                          </span>
-                        )}
                       </div>
                       <button className="bg-primary text-white px-4 py-2 rounded-xl text-sm hover:bg-subprimary transition">
                         Comprar
@@ -184,6 +214,7 @@ const TiendaApp = () => {
             </button>
           </div>
         </div>
+        )}
 
         <style jsx>{`
           .slide-from-right {

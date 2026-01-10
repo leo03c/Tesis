@@ -2,52 +2,24 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from "next/image";
+import { getFeaturedNews } from "@/services/newsService";
+import type { NewsArticle } from "@/services/newsService";
+import { APIError } from "@/services/api";
+import Loading from "@/Components/loading/Loading";
 
 const der = "/icons/derecha.svg";
 const izq = "/icons/izquierda.svg";
 const pic1 = "/pic1.jpg";
-const pic2 = "/pic2.jpg";
-const pic3 = "/pic3.jpg";
-
-const articles = [
-  {
-    title: 'Guía de iniciación de Fatal Fury: City of the Wolves',
-    description:
-      'Si sois neofuturistas, quizá no imagináis o entendéis la magnitud de Fatal Fury: City of the Wolves...',
-    image: pic1,
-  },
-  {
-    title: 'Terror japonés',
-    description:
-      'El último capítulo de la historia original del universo de Dead by Daylight...',
-    image: pic2,
-  },
-  {
-    title: 'Más terror japonés',
-    description:
-      'Una entrega que combina leyendas japonesas con la tensión clásica del survival horror...',
-    image: pic3,
-  },
-  {
-    title: 'Guía de Assassin’s Creed Shadows',
-    description:
-      'Assassin’s Creed Shadows lleva a los jugadores a un Japón en guerra durante el periodo Sengoku...',
-    image: pic1,
-  },
-  {
-    title: 'Otro artículo interesante',
-    description:
-      'Este es un artículo adicional para probar la paginación y el comportamiento responsivo.',
-    image: pic2,
-  },
-];
 
 const ArticulosDestacados = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [isMobile, setIsMobile] = useState(false);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
-  // dirección de la transición: 1 = next (entra desde la derecha), -1 = prev (entra desde la izquierda)
   const [direction, setDirection] = useState(0);
 
   useEffect(() => {
@@ -60,6 +32,31 @@ const ArticulosDestacados = () => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        setLoading(true);
+        const response = await getFeaturedNews();
+        setArticles(response.results);
+        setError(null);
+        setApiUrl(null);
+      } catch (err) {
+        console.error('Error fetching featured news:', err);
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudieron cargar los artículos');
+          setApiUrl(null);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticles();
   }, []);
 
   const totalPages = Math.ceil(articles.length / itemsPerPage);
@@ -83,19 +80,46 @@ const ArticulosDestacados = () => {
   const startIndex = currentPage * itemsPerPage;
   const visibleArticles = articles.slice(startIndex, startIndex + itemsPerPage);
 
+  if (loading) {
+    return (
+      <div className='w-full bg-dark text-white py-10'>
+        <div className='max-w-7xl mx-auto'>
+          <h2 className='text-xl font-primary mb-6'>Artículos destacados</h2>
+          <Loading message="Cargando artículos destacados..." />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || articles.length === 0) {
+    return (
+      <div className='w-full bg-dark text-white py-10'>
+        <div className='max-w-7xl mx-auto'>
+          <h2 className='text-xl font-primary mb-6'>Artículos destacados</h2>
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>
+              {error || 'No hay artículos destacados disponibles'}
+            </p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className='w-full bg-dark text-white py-10  overflow-hidden'>
       <div className='max-w-7xl mx-auto relative'>
-
-        {/* Encabezado con botones de paginación (solo escritorio) */}
         <div className='flex justify-between items-center mb-6'>
           <h2 className='text-xl font-primary'>Artículos destacados</h2>
-
           <div className='flex items-center gap-4'>
             <a href='#' className='text-primary font-primary text-xl hover:underline'>
               Ver todos
             </a>
-
             {!isMobile && (
               <div className='flex gap-2'>
                 <button onClick={prevPage} disabled={currentPage === 0} aria-label="Anterior">
@@ -108,8 +132,6 @@ const ArticulosDestacados = () => {
             )}
           </div>
         </div>
-
-        {/* Tarjetas - envoltorio con animación según dirección */}
         <div className="overflow-hidden">
           <div
             key={currentPage}
@@ -117,18 +139,15 @@ const ArticulosDestacados = () => {
           >
             {visibleArticles.map((article, index) => (
               <div key={index} className='bg-dark rounded-xl overflow-hidden md:shadow-md flex flex-col justify-between'>
-                {/* Imagen */}
                 <div className="w-full aspect-[4/3] relative">
                   <Image
-                    src={article.image}
+                    src={article.image || pic1}
                     alt={article.title}
                     fill
                     sizes="(max-width: 640px) 100vw, 33vw"
                     className="object-cover rounded-t-xl"
                   />
                 </div>
-
-                {/* Contenido */}
                 <div className='p-4 flex flex-col justify-between flex-grow'>
                   <div>
                     <h3 className='text-text text-xl font-primary mb-2 leading-snug'>
@@ -138,16 +157,12 @@ const ArticulosDestacados = () => {
                       {article.description}
                     </p>
                   </div>
-
-                  {/* Leer más + Navegación (solo móvil) */}
                   <div className='mt-6'>
                     <button
                       className={`bg-azulsub text-text text-sm font-primary rounded-2xl hover:bg-gray-200 transition
                       ${isMobile ? 'w-full py-4 px-6' : 'w-auto py-3 px-6'}`}>
                       LEER MÁS
                     </button>
-
-                    {/* Navegación dentro de tarjeta (solo móvil) */}
                     {isMobile && (
                       <div className='flex justify-end gap-2 mt-4'>
                         <button onClick={prevPage} disabled={currentPage === 0} aria-label="Anterior">
@@ -164,10 +179,7 @@ const ArticulosDestacados = () => {
             ))}
           </div>
         </div>
-
       </div>
-
-      {/* Estilos de la animación (puedes mover esto a tu CSS global si prefieres) */}
       <style jsx>{`
         .slide-from-right {
           animation: slideFromRight 300ms ease both;
