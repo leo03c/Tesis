@@ -3,35 +3,46 @@
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
-import { GAME_IDS } from "@/constants/gameIds";
+import { getFavorites } from "@/services/favoritesService";
+import type { Game } from "@/services/gamesService";
+import Loading from "@/Components/loading/Loading";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
 const star = "/icons/star 5.svg";
 const pic4 = "/pic4.jpg";
-const pic5 = "/pic5.jpg";
-const pic6 = "/pic6.jpg";
-
-// Mock data with IDs matching the ones we're using elsewhere
-const allGames = [
-  { id: GAME_IDS.LEAGUE_OF_LEGENDS, title: "League of Legends", image: pic4, tags: ["MOBA"], rating: 5.0, addedDate: "15 Nov 2024" },
-  { id: GAME_IDS.GOD_OF_WAR, title: "God of War", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5, addedDate: "10 Nov 2024" },
-  { id: GAME_IDS.CYBERPUNK_2077, title: "Cyberpunk 2077", image: pic6, tags: ["RPG"], rating: 5.0, addedDate: "5 Nov 2024" },
-  { id: GAME_IDS.CONTROL, title: "Control", image: pic4, tags: ["ACCIÓN"], rating: 4.9, addedDate: "1 Nov 2024" },
-  { id: GAME_IDS.HOGWARTS_LEGACY, title: "Hogwarts Legacy", image: pic5, tags: ["RPG"], rating: 4.8, addedDate: "28 Oct 2024" },
-  { id: GAME_IDS.ELDEN_RING, title: "Elden Ring", image: pic6, tags: ["RPG", "SOULS"], rating: 5.0, addedDate: "20 Oct 2024" },
-];
 
 const FavoritosApp = () => {
   const { toggleFavorite, isFavorite, favorites } = useFavorites();
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [direction, setDirection] = useState(0);
+  const [allGames, setAllGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        setLoading(true);
+        const response = await getFavorites();
+        setAllGames(response.results);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching favorites:', err);
+        setError('No se pudieron cargar los favoritos');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFavorites();
+  }, []);
 
   // Filter games to only show favorites (memoized for performance)
   const favoritos = useMemo(() => 
     allGames.filter(game => isFavorite(game.id)),
-    [favorites] // Use favorites Set as dependency instead of isFavorite function
+    [allGames, favorites] // Use both allGames and favorites Set as dependencies
   );
 
   useEffect(() => {
@@ -64,6 +75,27 @@ const FavoritosApp = () => {
 
   const startIndex = currentPage * itemsPerPage;
   const visibleGames = favoritos.slice(startIndex, startIndex + itemsPerPage);
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Fecha desconocida';
+    return new Date(dateString).toLocaleDateString('es-ES', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen text-white">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Me Gustan</h1>
+          <p className="text-texInactivo">Cargando tus juegos favoritos...</p>
+        </div>
+        <Loading message="Cargando favoritos..." />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-white">
@@ -102,7 +134,7 @@ const FavoritosApp = () => {
                   {/* Image */}
                   <div className="w-full aspect-[4/3] relative">
                     <Image
-                      src={juego.image}
+                      src={juego.image || pic4}
                       alt={juego.title}
                       fill
                       sizes="(max-width: 640px) 100vw, 33vw"
@@ -121,7 +153,7 @@ const FavoritosApp = () => {
                   {/* Content */}
                   <div className="p-4 pb-6">
                     <div className="flex gap-2 mb-2 flex-wrap">
-                      {juego.tags.map((tag, j) => (
+                      {(juego.tags || []).map((tag, j) => (
                         <span
                           key={j}
                           className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
@@ -143,11 +175,11 @@ const FavoritosApp = () => {
                           />
                         ))}
                         <span className="text-xs font-medium ml-1">
-                          {juego.rating.toFixed(1)}
+                          {(juego.rating || 0).toFixed(1)}
                         </span>
                       </div>
                     </div>
-                    <p className="text-texInactivo text-xs">Añadido: {juego.addedDate}</p>
+                    <p className="text-texInactivo text-xs">Añadido: {formatDate(juego.release_date)}</p>
                   </div>
                 </div>
               ))}

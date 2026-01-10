@@ -1,31 +1,53 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import { getProjects } from "@/services/catalogService";
+import type { Project } from "@/services/catalogService";
+import Loading from "@/Components/loading/Loading";
 
 const pic4 = "/pic4.jpg";
-const pic5 = "/pic5.jpg";
-const pic6 = "/pic6.jpg";
-
-const miCatalogo = [
-  { title: "Mi Proyecto RPG", image: pic4, status: "En desarrollo", progress: 65, lastUpdated: "Hace 2 días" },
-  { title: "Plataformas Retro", image: pic5, status: "Publicado", progress: 100, lastUpdated: "Hace 1 semana" },
-  { title: "Shooter Espacial", image: pic6, status: "En revisión", progress: 90, lastUpdated: "Hace 3 días" },
-  { title: "Puzzle Medieval", image: pic4, status: "Borrador", progress: 25, lastUpdated: "Hace 5 días" },
-];
 
 const CatalogoApp = () => {
   const [filter, setFilter] = useState("todos");
+  const [miCatalogo, setMiCatalogo] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const getStatusColor = (status: string) => {
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await getProjects();
+        setMiCatalogo(response.results);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching projects:', err);
+        setError('No se pudieron cargar los proyectos');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  const statusTranslation: Record<Project['status'], string> = {
+    'published': 'Publicado',
+    'in_development': 'En desarrollo',
+    'in_review': 'En revisión',
+    'draft': 'Borrador'
+  };
+
+  const getStatusColor = (status: Project['status']) => {
     switch (status) {
-      case "Publicado":
+      case "published":
         return "bg-green-600";
-      case "En desarrollo":
+      case "in_development":
         return "bg-blue-600";
-      case "En revisión":
+      case "in_review":
         return "bg-yellow-600";
-      case "Borrador":
+      case "draft":
         return "bg-gray-600";
       default:
         return "bg-gray-600";
@@ -64,20 +86,27 @@ const CatalogoApp = () => {
 
       {/* Projects Grid */}
       <div className="rounded-3xl bg-deep py-10 px-6">
+        {loading ? (
+          <Loading message="Cargando proyectos..." />
+        ) : error || miCatalogo.length === 0 ? (
+          <p className='text-texInactivo text-center py-8'>
+            {error || 'No tienes proyectos en tu catálogo'}
+          </p>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {miCatalogo.map((proyecto, i) => (
             <div key={i} className="bg-subdeep rounded-2xl overflow-hidden">
               {/* Image */}
               <div className="w-full aspect-video relative">
                 <Image
-                  src={proyecto.image}
+                  src={proyecto.image || pic4}
                   alt={proyecto.title}
                   fill
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   className="object-cover"
                 />
                 <div className={`absolute top-3 right-3 ${getStatusColor(proyecto.status)} px-3 py-1 rounded-lg text-xs font-semibold`}>
-                  {proyecto.status}
+                  {statusTranslation[proyecto.status]}
                 </div>
               </div>
 
@@ -100,7 +129,9 @@ const CatalogoApp = () => {
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-texInactivo text-sm">{proyecto.lastUpdated}</span>
+                  <span className="text-texInactivo text-sm">
+                    {proyecto.last_updated ? new Date(proyecto.last_updated).toLocaleDateString() : 'Sin fecha'}
+                  </span>
                   <button className="text-primary hover:text-subprimary text-sm font-medium">
                     Editar →
                   </button>
@@ -119,6 +150,7 @@ const CatalogoApp = () => {
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

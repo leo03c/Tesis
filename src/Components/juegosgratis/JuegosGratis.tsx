@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
-import { GAME_IDS } from "@/constants/gameIds";
+import { getFreeGames } from "@/services/gamesService";
+import type { Game } from "@/services/gamesService";
+import Loading from "@/Components/loading/Loading";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
@@ -11,21 +13,14 @@ const coraB = "/icons/coraB.svg"; // Blank/gray heart
 const coraR = "/icons/coraR.svg"; // Red heart
 const star = "/icons/star 5.svg";
 const pic4 = "/pic4.jpg";
-const pic5 = "/pic5.jpg";
-const pic6 = "/pic6.jpg";
-
-const juegos = [
-  { id: GAME_IDS.CAT_QUEST_II, title: "Cat Quest II", image: pic4, tags: ["RPG"], rating: 5.0 },
-  { id: GAME_IDS.CAT_QUEST_III, title: "Cat Quest III", image: pic4, tags: ["RPG"], rating: 3.0 },
-  { id: GAME_IDS.CAT_QUEST_IV, title: "Cat Quest IV", image: pic4, tags: ["RPG"], rating: 3.5 },
-  { id: GAME_IDS.ARCADEGEDDON, title: "Arcadegeddon", image: pic5, tags: ["AVENTURA", "RPG"], rating: 4.5 },
-  { id: GAME_IDS.RIVER_CITY_GIRLS, title: "River City Girls", image: pic6, tags: ["RPG"], rating: 5.0 },
-];
 
 const JuegosGratis = () => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [juegos, setJuegos] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // dirección de la transición: 1 = next (entra desde la derecha), -1 = prev (entra desde la izquierda)
   const [direction, setDirection] = useState(0);
@@ -38,6 +33,24 @@ const JuegosGratis = () => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const fetchFreeGames = async () => {
+      try {
+        setLoading(true);
+        const response = await getFreeGames();
+        setJuegos(response.results);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching free games:', err);
+        setError('No se pudieron cargar los juegos gratis');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFreeGames();
   }, []);
 
   const totalPages = Math.ceil(juegos.length / itemsPerPage);
@@ -61,6 +74,26 @@ const JuegosGratis = () => {
 
   const startIndex = currentPage * itemsPerPage;
   const visibleGames = juegos.slice(startIndex, startIndex + itemsPerPage);
+
+  if (loading) {
+    return (
+      <div className="my-4 rounded-3xl bg-deep text-white py-10 px-6">
+        <h2 className="text-xl font-primary mb-6">Juegos gratis</h2>
+        <Loading message="Cargando juegos gratis..." />
+      </div>
+    );
+  }
+
+  if (error || juegos.length === 0) {
+    return (
+      <div className="my-4 rounded-3xl bg-deep text-white py-10 px-6">
+        <h2 className="text-xl font-primary mb-6">Juegos gratis</h2>
+        <p className='text-texInactivo text-center py-8'>
+          {error || 'No hay juegos gratis disponibles'}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="my-4 rounded-3xl bg-deep text-white py-10 px-6">
@@ -95,7 +128,7 @@ const JuegosGratis = () => {
                 {/* Imagen */}
                 <div className="w-full aspect-[4/3] relative">
                   <Image
-                    src={juego.image}
+                    src={juego.image || pic4}
                     alt={juego.title}
                     fill
                     sizes="(max-width: 640px) 100vw, 33vw"
@@ -117,7 +150,7 @@ const JuegosGratis = () => {
                 {/* Contenido */}
                 <div className="p-4 pb-6">
                   <div className="flex gap-2 mb-2 flex-wrap">
-                    {juego.tags.map((tag, j) => (
+                    {(juego.tags || []).map((tag, j) => (
                       <span
                         key={j}
                         className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
@@ -139,7 +172,7 @@ const JuegosGratis = () => {
                         />
                       ))}
                       <span className="text-xs font-medium ml-1">
-                        {juego.rating.toFixed(1)}
+                        {(juego.rating || 0).toFixed(1)}
                       </span>
                     </div>
                   </div>
