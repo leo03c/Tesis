@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { getFavorites } from "@/services/favoritesService";
 import type { Game } from "@/services/gamesService";
+import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
 const izq = "/icons/izquierdaC.svg";
@@ -19,6 +20,7 @@ const FavoritosApp = () => {
   const [direction, setDirection] = useState(0);
   const [allGames, setAllGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -26,8 +28,12 @@ const FavoritosApp = () => {
         setLoading(true);
         const response = await getFavorites();
         setAllGames(response.results);
+        setApiUrl(null);
       } catch (err) {
         console.error('Error fetching favorites:', err);
+        if (err instanceof APIError) {
+          setApiUrl(err.url);
+        }
       } finally {
         setLoading(false);
       }
@@ -233,8 +239,13 @@ const FavoritosApp = () => {
             </svg>
           </div>
           <h3 className="text-xl font-semibold mb-2">No tienes favoritos aún</h3>
-          <p className="text-texInactivo mb-6">Explora la tienda y marca juegos que te gusten</p>
-          <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition">
+          <p className="text-texInactivo mb-2">Explora la tienda y marca juegos que te gusten</p>
+          {apiUrl && (
+            <p className='text-texInactivo text-xs mt-4'>
+              URL de API: <span className='text-primary'>{apiUrl}</span>
+            </p>
+          )}
+          <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition mt-6">
             Explorar Tienda
           </button>
         </div>

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { getFollowing } from "@/services/followService";
 import type { UserProfile } from "@/services/followService";
+import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
 const pic4 = "/pic4.jpg";
@@ -14,6 +15,7 @@ const SiguiendoApp = () => {
   const [suggestions, setSuggestions] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFollowing = async () => {
@@ -24,9 +26,16 @@ const SiguiendoApp = () => {
         // For now, suggestions will be empty as we don't have that endpoint
         setSuggestions([]);
         setError(null);
+        setApiUrl(null);
       } catch (err) {
         console.error('Error fetching following:', err);
-        setError('No se pudo cargar la lista de seguidos');
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudo cargar la lista de seguidos');
+          setApiUrl(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -84,7 +93,14 @@ const SiguiendoApp = () => {
         {loading ? (
           <Loading message="Cargando..." />
         ) : error ? (
-          <p className='text-texInactivo text-center py-8'>{error}</p>
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>{error}</p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
         ) : activeTab === "siguiendo" ? (
           <div className="space-y-4">
             {followingList.length === 0 ? (

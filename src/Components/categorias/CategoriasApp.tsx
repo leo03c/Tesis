@@ -4,12 +4,14 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { getTags } from "@/services/gamesService";
 import type { Tag } from "@/services/gamesService";
+import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
 const CategoriasApp = () => {
   const [categorias, setCategorias] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -18,9 +20,16 @@ const CategoriasApp = () => {
         const response = await getTags();
         setCategorias(response.results);
         setError(null);
+        setApiUrl(null);
       } catch (err) {
         console.error('Error fetching tags:', err);
-        setError('No se pudieron cargar las categorías');
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudieron cargar las categorías');
+          setApiUrl(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -50,9 +59,16 @@ const CategoriasApp = () => {
         {loading ? (
           <Loading message="Cargando categorías..." />
         ) : error || categorias.length === 0 ? (
-          <p className='text-texInactivo text-center py-8'>
-            {error || 'No hay categorías disponibles'}
-          </p>
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>
+              {error || 'No hay categorías disponibles'}
+            </p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
         ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {categorias.map((categoria, i) => (

@@ -5,6 +5,7 @@ import { useFavorites } from "@/contexts/FavoritesContext";
 import { useState, useEffect } from "react";
 import { getFeaturedGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
+import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
 interface ICardProps {
@@ -34,6 +35,7 @@ const Carrusel = () => {
     const [games, setGames] = useState<Game[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [apiUrl, setApiUrl] = useState<string | null>(null);
     const [featuredGame, setFeaturedGame] = useState<Game | null>(null);
 
     useEffect(() => {
@@ -46,9 +48,16 @@ const Carrusel = () => {
                     setFeaturedGame(response.results[0]);
                 }
                 setError(null);
+                setApiUrl(null);
             } catch (err) {
                 console.error('Error fetching featured games:', err);
-                setError('No se pudieron cargar los juegos');
+                if (err instanceof APIError) {
+                    setError(err.message);
+                    setApiUrl(err.url);
+                } else {
+                    setError('No se pudieron cargar los juegos');
+                    setApiUrl(null);
+                }
             } finally {
                 setLoading(false);
             }
@@ -63,8 +72,15 @@ const Carrusel = () => {
 
     if (error || !featuredGame) {
         return (
-            <div className="p-8 text-center text-texInactivo">
-                {error || 'No hay juegos destacados disponibles'}
+            <div className="p-8 text-center">
+                <p className="text-texInactivo mb-2">
+                    {error || 'No hay juegos destacados disponibles'}
+                </p>
+                {apiUrl && (
+                    <p className='text-texInactivo text-xs mt-2'>
+                        URL: <span className='text-primary'>{apiUrl}</span>
+                    </p>
+                )}
             </div>
         );
     }

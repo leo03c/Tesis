@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from "next/image";
 import { getFeaturedNews } from "@/services/newsService";
 import type { NewsArticle } from "@/services/newsService";
+import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
 const der = "/icons/derecha.svg";
@@ -17,6 +18,7 @@ const ArticulosDestacados = () => {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
   const [direction, setDirection] = useState(0);
 
@@ -39,9 +41,16 @@ const ArticulosDestacados = () => {
         const response = await getFeaturedNews();
         setArticles(response.results);
         setError(null);
+        setApiUrl(null);
       } catch (err) {
         console.error('Error fetching featured news:', err);
-        setError('No se pudieron cargar los artículos');
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudieron cargar los artículos');
+          setApiUrl(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -87,9 +96,16 @@ const ArticulosDestacados = () => {
       <div className='w-full bg-dark text-white py-10'>
         <div className='max-w-7xl mx-auto'>
           <h2 className='text-xl font-primary mb-6'>Artículos destacados</h2>
-          <p className='text-texInactivo text-center py-8'>
-            {error || 'No hay artículos destacados disponibles'}
-          </p>
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>
+              {error || 'No hay artículos destacados disponibles'}
+            </p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
         </div>
       </div>
     );

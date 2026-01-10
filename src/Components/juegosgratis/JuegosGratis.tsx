@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { getFreeGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
+import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
 const izq = "/icons/izquierdaC.svg";
@@ -21,6 +22,7 @@ const JuegosGratis = () => {
   const [juegos, setJuegos] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
   // dirección de la transición: 1 = next (entra desde la derecha), -1 = prev (entra desde la izquierda)
   const [direction, setDirection] = useState(0);
@@ -42,9 +44,16 @@ const JuegosGratis = () => {
         const response = await getFreeGames();
         setJuegos(response.results);
         setError(null);
+        setApiUrl(null);
       } catch (err) {
         console.error('Error fetching free games:', err);
-        setError('No se pudieron cargar los juegos gratis');
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudieron cargar los juegos gratis');
+          setApiUrl(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -88,9 +97,16 @@ const JuegosGratis = () => {
     return (
       <div className="my-4 rounded-3xl bg-deep text-white py-10 px-6">
         <h2 className="text-xl font-primary mb-6">Juegos gratis</h2>
-        <p className='text-texInactivo text-center py-8'>
-          {error || 'No hay juegos gratis disponibles'}
-        </p>
+        <div className='text-center py-8'>
+          <p className='text-texInactivo mb-2'>
+            {error || 'No hay juegos gratis disponibles'}
+          </p>
+          {apiUrl && (
+            <p className='text-texInactivo text-xs mt-2'>
+              URL: <span className='text-primary'>{apiUrl}</span>
+            </p>
+          )}
+        </div>
       </div>
     );
   }

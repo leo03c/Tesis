@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { getLibrary } from "@/services/libraryService";
 import type { LibraryGame } from "@/services/libraryService";
+import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
 const pic4 = "/pic4.jpg";
@@ -14,6 +15,7 @@ const LibreriaApp = () => {
   const [libreria, setLibreria] = useState<LibraryGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLibrary = async () => {
@@ -22,9 +24,16 @@ const LibreriaApp = () => {
         const response = await getLibrary();
         setLibreria(response.results);
         setError(null);
+        setApiUrl(null);
       } catch (err) {
         console.error('Error fetching library:', err);
-        setError('No se pudo cargar la librería');
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudo cargar la librería');
+          setApiUrl(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -107,9 +116,16 @@ const LibreriaApp = () => {
         {loading ? (
           <Loading message="Cargando tu librería..." />
         ) : error || libreria.length === 0 ? (
-          <p className='text-texInactivo text-center py-8'>
-            {error || 'Tu librería está vacía'}
-          </p>
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>
+              {error || 'Tu librería está vacía'}
+            </p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
         ) : filteredGames.length === 0 ? (
           <p className='text-texInactivo text-center py-8'>
             No hay juegos que coincidan con el filtro seleccionado

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { getProjects } from "@/services/catalogService";
 import type { Project } from "@/services/catalogService";
+import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
 const pic4 = "/pic4.jpg";
@@ -13,6 +14,7 @@ const CatalogoApp = () => {
   const [miCatalogo, setMiCatalogo] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -21,9 +23,16 @@ const CatalogoApp = () => {
         const response = await getProjects();
         setMiCatalogo(response.results);
         setError(null);
+        setApiUrl(null);
       } catch (err) {
         console.error('Error fetching projects:', err);
-        setError('No se pudieron cargar los proyectos');
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudieron cargar los proyectos');
+          setApiUrl(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -89,9 +98,16 @@ const CatalogoApp = () => {
         {loading ? (
           <Loading message="Cargando proyectos..." />
         ) : error || miCatalogo.length === 0 ? (
-          <p className='text-texInactivo text-center py-8'>
-            {error || 'No tienes proyectos en tu catálogo'}
-          </p>
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>
+              {error || 'No tienes proyectos en tu catálogo'}
+            </p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
         ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {miCatalogo.map((proyecto, i) => (

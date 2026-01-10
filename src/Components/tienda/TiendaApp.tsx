@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { getGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
+import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
 const izq = "/icons/izquierdaC.svg";
@@ -22,6 +23,7 @@ const TiendaApp = () => {
   const [juegos, setJuegos] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [apiUrl, setApiUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -40,9 +42,16 @@ const TiendaApp = () => {
         const response = await getGames();
         setJuegos(response.results);
         setError(null);
+        setApiUrl(null);
       } catch (err) {
         console.error('Error fetching games:', err);
-        setError('No se pudieron cargar los juegos');
+        if (err instanceof APIError) {
+          setError(err.message);
+          setApiUrl(err.url);
+        } else {
+          setError('No se pudieron cargar los juegos');
+          setApiUrl(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -85,9 +94,16 @@ const TiendaApp = () => {
         {loading ? (
           <Loading message="Cargando juegos de la tienda..." />
         ) : error || juegos.length === 0 ? (
-          <p className='text-texInactivo text-center py-8'>
-            {error || 'No hay juegos disponibles en la tienda'}
-          </p>
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>
+              {error || 'No hay juegos disponibles en la tienda'}
+            </p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
         ) : (
         <div className="max-w-7xl mx-auto relative">
           {/* Header */}

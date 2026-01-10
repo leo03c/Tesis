@@ -48,6 +48,21 @@ function getAuthToken(): string | null {
 }
 
 /**
+ * Custom API Error that includes the URL
+ */
+export class APIError extends Error {
+  url: string;
+  status?: number;
+  
+  constructor(message: string, url: string, status?: number) {
+    super(message);
+    this.name = 'APIError';
+    this.url = url;
+    this.status = status;
+  }
+}
+
+/**
  * Make an API request
  */
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -64,23 +79,36 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
     defaultHeaders['Authorization'] = `Bearer ${token}`;
   }
   
-  const response = await fetch(url, {
-    method,
-    headers: { ...defaultHeaders, ...headers },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+  try {
+    const response = await fetch(url, {
+      method,
+      headers: { ...defaultHeaders, ...headers },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData.detail || `HTTP error! status: ${response.status}`;
+      throw new APIError(errorMessage, url, response.status);
+    }
+    
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return {} as T;
+    }
+    
+    return response.json();
+  } catch (error) {
+    // If it's already an APIError, rethrow it
+    if (error instanceof APIError) {
+      throw error;
+    }
+    // For network errors, create a new APIError
+    throw new APIError(
+      error instanceof Error ? error.message : 'Network error',
+      url
+    );
   }
-  
-  // Handle 204 No Content
-  if (response.status === 204) {
-    return {} as T;
-  }
-  
-  return response.json();
 }
 
 /**
