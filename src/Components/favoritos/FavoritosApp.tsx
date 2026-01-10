@@ -19,7 +19,6 @@ const FavoritosApp = () => {
   const [direction, setDirection] = useState(0);
   const [allGames, setAllGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -27,10 +26,8 @@ const FavoritosApp = () => {
         setLoading(true);
         const response = await getFavorites();
         setAllGames(response.results);
-        setError(null);
       } catch (err) {
         console.error('Error fetching favorites:', err);
-        setError('No se pudieron cargar los favoritos');
       } finally {
         setLoading(false);
       }
@@ -42,7 +39,7 @@ const FavoritosApp = () => {
   // Filter games to only show favorites (memoized for performance)
   const favoritos = useMemo(() => 
     allGames.filter(game => isFavorite(game.id)),
-    [allGames, favorites] // Use both allGames and favorites Set as dependencies
+    [allGames, favorites, isFavorite] // Include all dependencies
   );
 
   useEffect(() => {

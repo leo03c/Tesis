@@ -164,7 +164,7 @@ const ArticulosDestacados = () => {
           </div>
         </div>
       </div>
-      <style jsx>{\`
+      <style jsx>{`
         .slide-from-right {
           animation: slideFromRight 300ms ease both;
         }
@@ -191,7 +191,7 @@ const ArticulosDestacados = () => {
             opacity: 1;
           }
         }
-      \`}</style>
+      `}</style>
     </div>
   );
 };
