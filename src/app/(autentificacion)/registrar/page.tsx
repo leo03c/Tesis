@@ -22,7 +22,7 @@ interface RegisterFormData {
   name: string;
   email: string;
   username: string;
-  password1: string;
+  password: string;
   password2: string;
   privacyAccepted: boolean;
 }
@@ -32,7 +32,7 @@ export default function RegisterPage() {
     name: "",
     email: "",
     username: "",
-    password1: "",
+    password: "",
     password2: "",
     privacyAccepted: false,
   });
@@ -52,14 +52,15 @@ export default function RegisterPage() {
       return;
     }
 
-    if (form.password1 !== form.password2) {
-      setError("Las contraseñas no coinciden");
+    if (form.password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres");
       setLoading(false);
       return;
     }
 
-    if (form.password1.length < 8) {
-      setError("La contraseña debe tener al menos 8 caracteres");
+    // Validación de contraseñas coincidentes
+    if (form.password !== form.password2) {
+      setError("Las contraseñas no coinciden");
       setLoading(false);
       return;
     }
@@ -72,16 +73,23 @@ export default function RegisterPage() {
       return;
     }
 
+    // Validación de username
+    if (/\s/.test(form.username)) {
+      setError("El nombre de usuario no debe contener espacios");
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Preparar datos para enviar a Django
+      // Preparar datos para enviar a Django (alineado con RegisterSerializer)
       const registerData = {
-        username: form.username,
+        username: form.username.trim().toLowerCase(),
         email: form.email,
-        first_name: form.name.split(' ')[0] || form.name,
-        last_name: form.name.split(' ').slice(1).join(' ') || '',
-        password1: form.password1,
+        name: form.name, // El serializer lo dividirá en first_name y last_name
+        // El endpoint espera password1 y password2; incluir también el consentimiento de privacidad
+        password1: form.password,
         password2: form.password2,
-        rol: 'basico', // Rol por defecto según el modelo
+        privacyAccepted: form.privacyAccepted,
       };
 
       await register(registerData);
@@ -90,7 +98,7 @@ export default function RegisterPage() {
       const res = await signIn("credentials", {
         redirect: false,
         username: form.username,
-        password: form.password1,
+        password: form.password,
       });
 
       if (res?.error) {
@@ -107,23 +115,42 @@ export default function RegisterPage() {
     } catch (err: unknown) {
       // Manejo de errores específicos de Django REST
       if (err && typeof err === 'object' && 'response' in err) {
-        const errorResponse = err as { response?: { data?: any } };
-        if (errorResponse.response?.data) {
-          const data = errorResponse.response.data;
-          
-          // Manejar errores comunes de Django
-          if (data.username) {
-            setError(`Usuario: ${Array.isArray(data.username) ? data.username[0] : data.username}`);
-          } else if (data.email) {
-            setError(`Email: ${Array.isArray(data.email) ? data.email[0] : data.email}`);
-          } else if (data.password1) {
-            setError(`Contraseña: ${Array.isArray(data.password1) ? data.password1[0] : data.password1}`);
-          } else if (data.non_field_errors) {
-            setError(Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors);
-          } else if (typeof data === 'string') {
+        const errorResponse = err as { response?: { data?: unknown } };
+        const data = errorResponse.response?.data;
+
+        if (data !== undefined) {
+          // Si la respuesta es una cadena simple
+          if (typeof data === 'string') {
             setError(data);
-          } else if (data.detail) {
-            setError(data.detail);
+          } else if (typeof data === 'object' && data !== null) {
+            const d = data as Record<string, unknown>;
+
+            // Helper para extraer mensajes de campos que pueden ser string o array
+            const extractMsg = (field: unknown) => {
+              if (Array.isArray(field) && field.length > 0) return String(field[0]);
+              if (typeof field === 'string') return field;
+              return undefined;
+            };
+
+            const usernameMsg = extractMsg(d['username']);
+            const emailMsg = extractMsg(d['email']);
+            const passwordMsg = extractMsg(d['password']) ?? extractMsg(d['password1']);
+            const nonFieldMsg = extractMsg(d['non_field_errors']);
+            const detailMsg = typeof d['detail'] === 'string' ? d['detail'] as string : undefined;
+
+            if (usernameMsg) {
+              setError(`Usuario: ${usernameMsg}`);
+            } else if (emailMsg) {
+              setError(`Email: ${emailMsg}`);
+            } else if (passwordMsg) {
+              setError(`Contraseña: ${passwordMsg}`);
+            } else if (nonFieldMsg) {
+              setError(nonFieldMsg);
+            } else if (detailMsg) {
+              setError(detailMsg);
+            } else {
+              setError("Error en el registro. Por favor verifica tus datos.");
+            }
           } else {
             setError("Error en el registro. Por favor verifica tus datos.");
           }
@@ -239,7 +266,7 @@ export default function RegisterPage() {
                   required
                   minLength={3}
                   pattern="[A-Za-z0-9_]+"
-                  title="Solo letras, números y guiones bajos"
+                  title="Solo letras, números y guiones bajos (sin espacios)"
                 />
               </div>
   
@@ -249,9 +276,9 @@ export default function RegisterPage() {
                 </div>
                 <input
                   type="password"
-                  placeholder="Contraseña"
-                  value={form.password1}
-                  onChange={(e) => handleInputChange("password1", e.target.value)}
+                  placeholder="Contraseña (mínimo 8 caracteres)"
+                  value={form.password}
+                  onChange={(e) => handleInputChange("password", e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-deep text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
                   required
                   minLength={8}
@@ -264,7 +291,7 @@ export default function RegisterPage() {
                 </div>
                 <input
                   type="password"
-                  placeholder="Confirmación de contraseña"
+                  placeholder="Confirmar contraseña"
                   value={form.password2}
                   onChange={(e) => handleInputChange("password2", e.target.value)}
                   className="w-full pl-12 pr-4 py-3 rounded-xl bg-deep text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
