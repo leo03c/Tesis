@@ -28,7 +28,7 @@ export const authOptions = {
         try {
           console.log('Attempting login with:', credentials?.username);
           
-          const res = await fetch(`${API_BASE_URL}/api/login/`, {
+          const res = await fetch(`${API_BASE_URL}/api/auth/login/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -51,14 +51,22 @@ export const authOptions = {
             throw new Error(errorDetail);
           }
 
-          const userData = JSON.parse(responseText);
-          console.log('Parsed user data:', userData);
+          const data = JSON.parse(responseText);
+          console.log('Parsed login data:', data);
+          
+          // Backend returns JWT format: { access, refresh, user }
+          // Store tokens in localStorage for API requests
+          if (typeof window !== 'undefined') {
+            if (data.access) localStorage.setItem('access_token', data.access);
+            if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+          }
           
           return {
-            id: userData.id?.toString() || userData.user?.id?.toString() || '1',
-            name: userData.username || userData.name || credentials?.username,
-            email: userData.email || `${credentials?.username}@example.com`,
-            token: userData.token,
+            id: data.user?.id?.toString() || '1',
+            name: data.user?.username || data.user?.name || credentials?.username,
+            email: data.user?.email || `${credentials?.username}@example.com`,
+            token: data.access, // Use access token
+            refreshToken: data.refresh,
           };
         } catch (error: any) {
           console.error('Authorize error:', error.message);
@@ -77,11 +85,13 @@ export const authOptions = {
         try {
           console.log('Processing Google sign in...');
           
-          const res = await fetch(`${API_BASE_URL}/api/google-auth/`, {
+          // Note: Backend endpoint for Google OAuth might be different
+          // Check API documentation for the correct endpoint
+          const res = await fetch(`${API_BASE_URL}/api/auth/login/google/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              token: account.id_token,
+              googleToken: account.id_token,
             }),
           });
 
@@ -96,10 +106,17 @@ export const authOptions = {
           const data = JSON.parse(responseText);
           console.log('Google auth data:', data);
           
-          user.id = data.id?.toString() || data.user?.id?.toString() || user.id;
-          user.name = data.username || data.name || user.name;
-          user.email = data.email || user.email;
-          user.token = data.token || user.token;
+          // Backend returns JWT format: { access, refresh, user }
+          if (typeof window !== 'undefined') {
+            if (data.access) localStorage.setItem('access_token', data.access);
+            if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+          }
+          
+          user.id = data.user?.id?.toString() || user.id;
+          user.name = data.user?.username || data.user?.name || user.name;
+          user.email = data.user?.email || user.email;
+          user.token = data.access;
+          (user as any).refreshToken = data.refresh;
           
           console.log('Updated user for Google:', user);
           return true;
@@ -121,6 +138,7 @@ export const authOptions = {
         token.name = user.name;
         token.email = user.email;
         token.accessToken = user.token;
+        token.refreshToken = (user as any).refreshToken;
         console.log('JWT - Setting user data:', token);
       }
       
