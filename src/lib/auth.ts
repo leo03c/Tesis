@@ -45,7 +45,7 @@ export const authOptions = {
             try {
               const errorData = JSON.parse(responseText);
               errorDetail = errorData.detail || errorDetail;
-            } catch (e) {
+            } catch {
               errorDetail = responseText || errorDetail;
             }
             throw new Error(errorDetail);
@@ -68,8 +68,8 @@ export const authOptions = {
             token: data.access, // Use access token
             refreshToken: data.refresh,
           };
-        } catch (error: any) {
-          console.error('Authorize error:', error.message);
+        } catch (error: unknown) {
+          console.error('Authorize error:', (error as Error).message);
           throw error;
         }
       },
@@ -116,6 +116,7 @@ export const authOptions = {
           user.name = data.user?.username || data.user?.name || user.name;
           user.email = data.user?.email || user.email;
           user.token = data.access;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (user as any).refreshToken = data.refresh;
           
           console.log('Updated user for Google:', user);
@@ -138,6 +139,7 @@ export const authOptions = {
         token.name = user.name;
         token.email = user.email;
         token.accessToken = user.token;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         token.refreshToken = (user as any).refreshToken;
         console.log('JWT - Setting user data:', token);
       }
