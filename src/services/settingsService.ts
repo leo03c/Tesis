@@ -1,8 +1,9 @@
 /**
  * Settings Service - API endpoints for user settings
- * Backend base: /api/users/me/
+ * Backend base: /api/users/profile/
  * 
- * NOTE: Frontend was calling /api/settings which should be /api/users/me/
+ * NOTE: Backend currently only has /api/users/profile/ endpoint.
+ * Settings like notifications, privacy, and appearance are not yet implemented separately.
  */
 import api from './api';
 
@@ -10,8 +11,19 @@ export interface UserSettings {
   id: number;
   username: string;
   email: string;
-  name?: string;
+  first_name?: string;
+  last_name?: string;
   avatar?: string;
+  bio?: string;
+  fecha_nacimiento?: string;
+  pais?: string;
+  profile?: {
+    nombre_estudio?: string;
+    sitio_web?: string;
+    descripcion?: string;
+    es_desarrollador?: boolean;
+    verificado?: boolean;
+  };
 }
 
 export interface NotificationSettings {
@@ -34,76 +46,138 @@ export interface AppearanceSettings {
 
 /**
  * Get current user's profile/settings
- * Backend endpoint: /api/users/me/
+ * Backend endpoint: /api/users/profile/
  */
 export const getSettings = () => 
-  api.get<UserSettings>('/users/me');
+  api.get<UserSettings>('/users/profile');
 
 /**
  * Update current user's profile/settings
- * Backend endpoint: /api/users/me/
+ * Backend endpoint: /api/users/profile/
  */
 export const updateSettings = (data: Partial<UserSettings>) => 
-  api.patch<UserSettings>('/users/me', data);
+  api.patch<UserSettings>('/users/profile', data);
 
 /**
  * Get notification settings
- * Backend endpoint: /api/users/me/notifications/
+ * NOTE: This endpoint is not yet implemented in the backend.
+ * Settings will be stored locally until backend implementation is ready.
  */
-export const getNotificationSettings = () => 
-  api.get<NotificationSettings>('/users/me/notifications');
+export const getNotificationSettings = (): Promise<NotificationSettings> => {
+  // Return default settings from localStorage or defaults
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('notification_settings');
+    if (stored) {
+      return Promise.resolve(JSON.parse(stored));
+    }
+  }
+  return Promise.resolve({
+    email: true,
+    push: true,
+    updates: true,
+    newsletter: false,
+  });
+};
 
 /**
  * Update notification settings
- * Backend endpoint: /api/users/me/notifications/
+ * NOTE: This endpoint is not yet implemented in the backend.
+ * Settings will be stored locally until backend implementation is ready.
  */
-export const updateNotificationSettings = (data: Partial<NotificationSettings>) => 
-  api.patch<NotificationSettings>('/users/me/notifications', data);
+export const updateNotificationSettings = (data: Partial<NotificationSettings>): Promise<NotificationSettings> => {
+  if (typeof window !== 'undefined') {
+    const current = JSON.parse(localStorage.getItem('notification_settings') || '{}');
+    const updated = { ...current, ...data };
+    localStorage.setItem('notification_settings', JSON.stringify(updated));
+    return Promise.resolve(updated);
+  }
+  return Promise.resolve(data as NotificationSettings);
+};
 
 /**
  * Get privacy settings
- * Backend endpoint: /api/users/me/privacy/
+ * NOTE: This endpoint is not yet implemented in the backend.
+ * Settings will be stored locally until backend implementation is ready.
  */
-export const getPrivacySettings = () => 
-  api.get<PrivacySettings>('/users/me/privacy');
+export const getPrivacySettings = (): Promise<PrivacySettings> => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('privacy_settings');
+    if (stored) {
+      return Promise.resolve(JSON.parse(stored));
+    }
+  }
+  return Promise.resolve({
+    profile_visibility: 'public',
+    game_history_visibility: 'public',
+  });
+};
 
 /**
  * Update privacy settings
- * Backend endpoint: /api/users/me/privacy/
+ * NOTE: This endpoint is not yet implemented in the backend.
+ * Settings will be stored locally until backend implementation is ready.
  */
-export const updatePrivacySettings = (data: Partial<PrivacySettings>) => 
-  api.patch<PrivacySettings>('/users/me/privacy', data);
+export const updatePrivacySettings = (data: Partial<PrivacySettings>): Promise<PrivacySettings> => {
+  if (typeof window !== 'undefined') {
+    const current = JSON.parse(localStorage.getItem('privacy_settings') || '{}');
+    const updated = { ...current, ...data };
+    localStorage.setItem('privacy_settings', JSON.stringify(updated));
+    return Promise.resolve(updated);
+  }
+  return Promise.resolve(data as PrivacySettings);
+};
 
 /**
  * Get appearance settings
- * Backend endpoint: /api/users/me/appearance/
+ * NOTE: This endpoint is not yet implemented in the backend.
+ * Settings will be stored locally until backend implementation is ready.
  */
-export const getAppearanceSettings = () => 
-  api.get<AppearanceSettings>('/users/me/appearance');
+export const getAppearanceSettings = (): Promise<AppearanceSettings> => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('appearance_settings');
+    if (stored) {
+      return Promise.resolve(JSON.parse(stored));
+    }
+  }
+  return Promise.resolve({
+    theme: 'dark',
+    accent_color: '#2993FA',
+    language: 'es',
+  });
+};
 
 /**
  * Update appearance settings
- * Backend endpoint: /api/users/me/appearance/
+ * NOTE: This endpoint is not yet implemented in the backend.
+ * Settings will be stored locally until backend implementation is ready.
  */
-export const updateAppearanceSettings = (data: Partial<AppearanceSettings>) => 
-  api.patch<AppearanceSettings>('/users/me/appearance', data);
+export const updateAppearanceSettings = (data: Partial<AppearanceSettings>): Promise<AppearanceSettings> => {
+  if (typeof window !== 'undefined') {
+    const current = JSON.parse(localStorage.getItem('appearance_settings') || '{}');
+    const updated = { ...current, ...data };
+    localStorage.setItem('appearance_settings', JSON.stringify(updated));
+    return Promise.resolve(updated);
+  }
+  return Promise.resolve(data as AppearanceSettings);
+};
 
 /**
  * Change password
- * Backend endpoint: /api/users/me/password/
+ * NOTE: This endpoint is not yet implemented in the backend.
  */
-export const changePassword = (oldPassword: string, newPassword: string) => 
-  api.post<{ success: boolean }>('/users/me/password', { 
-    old_password: oldPassword, 
-    new_password: newPassword 
-  });
+export const changePassword = (oldPassword: string, newPassword: string): Promise<{ success: boolean }> => {
+  console.warn('Password change endpoint not yet implemented in backend');
+  return Promise.resolve({ success: false });
+};
 
 /**
  * Delete account
- * Backend endpoint: /api/users/me/
+ * NOTE: This endpoint is not yet implemented in the backend.
  */
-export const deleteAccount = () => 
-  api.delete<void>('/users/me');
+export const deleteAccount = (): Promise<void> => {
+  console.warn('Account deletion endpoint not yet implemented in backend');
+  return Promise.resolve();
+};
 
 const settingsService = {
   getSettings,

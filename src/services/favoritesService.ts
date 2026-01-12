@@ -31,10 +31,10 @@ export const getFavorites = (params?: Record<string, string | number | boolean>)
 /**
  * Add a game to favorites
  * Backend endpoint: POST /api/favorites/
- * Django expects { game: gameId }
+ * Django expects { game_id: gameId }
  */
 export const addFavorite = (gameId: number) => 
-  api.post<FavoriteGame>('/favorites', { game: gameId });
+  api.post<FavoriteGame>('/favorites', { game_id: gameId });
 
 /**
  * Remove a game from favorites

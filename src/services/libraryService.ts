@@ -39,10 +39,10 @@ export const getLibraryGame = (id: number) =>
 /**
  * Add a game to the library (after purchase)
  * Backend endpoint: /api/library/
- * Django expects { game: gameId } not { game_id: gameId }
+ * Django expects { game_id: gameId }
  */
 export const addToLibrary = (gameId: number) => 
-  api.post<LibraryGame>('/library', { game: gameId });
+  api.post<LibraryGame>('/library', { game_id: gameId });
 
 /**
  * Remove a game from the library
