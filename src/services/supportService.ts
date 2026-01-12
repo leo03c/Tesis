@@ -21,7 +21,7 @@ export interface FAQResponse {
 export interface SupportTicket {
   id: number;
   subject: string;
-  description: string;
+  message: string;
   status: 'open' | 'in_progress' | 'resolved' | 'closed';
   created_at: string;
   updated_at?: string;
@@ -36,7 +36,7 @@ export interface TicketsResponse {
 
 export interface CreateTicketData {
   subject: string;
-  description: string;
+  message: string;
   category?: string;
 }
 

@@ -32,10 +32,10 @@ export const getNews = (params?: Record<string, string | number | boolean>) =>
 
 /**
  * Get featured news articles
- * Backend endpoint: /api/news/featured/
+ * Backend endpoint: /api/news/ with featured filter
  */
 export const getFeaturedNews = () => 
-  api.get<NewsResponse>('/news/featured');
+  api.get<NewsResponse>('/news', { featured: true });
 
 /**
  * Get a specific news article by ID
