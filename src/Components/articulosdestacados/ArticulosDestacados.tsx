@@ -15,10 +15,9 @@ const ArticulosDestacados = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [isMobile, setIsMobile] = useState(false);
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
+  const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [apiUrl, setApiUrl] = useState<string | null>(null);
+  const [error, setError] = useState(null);
 
   const [direction, setDirection] = useState(0);
 
@@ -38,19 +37,25 @@ const ArticulosDestacados = () => {
     const fetchArticles = async () => {
       try {
         setLoading(true);
-        const response = await getFeaturedNews();
-        setArticles(response.results);
-        setError(null);
-        setApiUrl(null);
-      } catch (err) {
-        console.error('Error fetching featured news:', err);
-        if (err instanceof APIError) {
-          setError(err.message);
-          setApiUrl(err.url);
-        } else {
-          setError('No se pudieron cargar los artículos');
-          setApiUrl(null);
+        
+        // Endpoint correcto sin parámetro featured (que no existe en la API)
+        const response = await fetch('http://localhost:8000/api/news/');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        // La API devuelve estructura paginada: { count, next, previous, results }
+        // Tomar solo los primeros 3-5 artículos como "destacados"
+        const featuredArticles = (data.results || []).slice(0, 3);
+        
+        setArticles(featuredArticles);
+      } catch (err) {
+        console.error('Error fetching articles:', err);
+        setError(err.message);
+        setArticles([]);
       } finally {
         setLoading(false);
       }
@@ -80,33 +85,27 @@ const ArticulosDestacados = () => {
   const startIndex = currentPage * itemsPerPage;
   const visibleArticles = articles.slice(startIndex, startIndex + itemsPerPage);
 
+  // Renderizado con validaciones
   if (loading) {
     return (
-      <div className='w-full bg-dark text-white py-10'>
-        <div className='max-w-7xl mx-auto'>
-          <h2 className='text-xl font-primary mb-6'>Artículos destacados</h2>
-          <Loading message="Cargando artículos destacados..." />
-        </div>
+      <div className="flex justify-center items-center p-8">
+        <p>Cargando artículos...</p>
       </div>
     );
   }
 
-  if (error || articles.length === 0) {
+  if (error) {
     return (
-      <div className='w-full bg-dark text-white py-10'>
-        <div className='max-w-7xl mx-auto'>
-          <h2 className='text-xl font-primary mb-6'>Artículos destacados</h2>
-          <div className='text-center py-8'>
-            <p className='text-texInactivo mb-2'>
-              {error || 'No hay artículos destacados disponibles'}
-            </p>
-            {apiUrl && (
-              <p className='text-texInactivo text-xs mt-2'>
-                URL: <span className='text-primary'>{apiUrl}</span>
-              </p>
-            )}
-          </div>
-        </div>
+      <div className="text-red-500 p-4">
+        Error al cargar artículos: {error}
+      </div>
+    );
+  }
+
+  if (!articles || articles.length === 0) {
+    return (
+      <div className="p-4">
+        No hay artículos disponibles
       </div>
     );
   }

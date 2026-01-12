@@ -19,7 +19,7 @@ const JuegosGratis = () => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
-  const [juegos, setJuegos] = useState<Game[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [apiUrl, setApiUrl] = useState<string | null>(null);
@@ -41,8 +41,17 @@ const JuegosGratis = () => {
     const fetchFreeGames = async () => {
       try {
         setLoading(true);
-        const response = await getFreeGames();
-        setJuegos(response.results);
+        // Cambiar el endpoint según tu API
+        const response = await fetch('/api/games/games/?price=0&featured=true');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // La API devuelve datos paginados con estructura { count, results }
+        setGames(data.results || []);
         setError(null);
         setApiUrl(null);
       } catch (err) {
@@ -62,7 +71,7 @@ const JuegosGratis = () => {
     fetchFreeGames();
   }, []);
 
-  const totalPages = Math.ceil(juegos.length / itemsPerPage);
+  const totalPages = Math.ceil(games.length / itemsPerPage);
 
   const nextPage = () => {
     if (currentPage < totalPages - 1) {
@@ -82,7 +91,7 @@ const JuegosGratis = () => {
   };
 
   const startIndex = currentPage * itemsPerPage;
-  const visibleGames = juegos.slice(startIndex, startIndex + itemsPerPage);
+  const visibleGames = games.slice(startIndex, startIndex + itemsPerPage);
 
   if (loading) {
     return (
@@ -93,7 +102,7 @@ const JuegosGratis = () => {
     );
   }
 
-  if (error || juegos.length === 0) {
+  if (error || games.length === 0) {
     return (
       <div className="my-4 rounded-3xl bg-deep text-white py-10 px-6">
         <h2 className="text-xl font-primary mb-6">Juegos gratis</h2>

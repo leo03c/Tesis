@@ -70,7 +70,7 @@ export interface TagsResponse {
  * Backend endpoint: /api/games/
  */
 export const getGames = (params?: Record<string, string | number | boolean>) => 
-  api.get<GamesResponse>('/games', params);
+  api.get<GamesResponse>('/games/games/', params);
 
 /**
  * Get free games
@@ -91,7 +91,7 @@ export const getGame = (id: number) =>
  * Backend endpoint: /api/games/tags/
  */
 export const getTags = () => 
-  api.get<TagsResponse>('/games/tags');
+  api.get<TagsResponse>('games/tags/');
 
 /**
  * Get games by tag
