@@ -164,8 +164,15 @@ export const updateAppearanceSettings = (data: Partial<AppearanceSettings>): Pro
 /**
  * Change password
  * NOTE: This endpoint is not yet implemented in the backend.
+ * Parameters are maintained for API contract compatibility.
  */
-export const changePassword = (): Promise<{ success: boolean }> => {
+export const changePassword = (
+  oldPassword: string,
+  newPassword: string
+): Promise<{ success: boolean }> => {
+  // Parameters are intentionally unused until backend implements this endpoint
+  void oldPassword;
+  void newPassword;
   console.warn('Password change endpoint not yet implemented in backend');
   return Promise.resolve({ success: false });
 };

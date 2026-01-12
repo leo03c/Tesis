@@ -85,8 +85,8 @@ export const authOptions = {
         try {
           console.log('Processing Google sign in...');
           
-          // Note: Backend endpoint for Google OAuth might be different
-          // Check API documentation for the correct endpoint
+          // Using /api/auth/login/google/ as per API documentation
+          // Backend expects { googleToken: string } based on API_ENDPOINTS_COSMOX_COMPLETO.txt
           const res = await fetch(`${API_BASE_URL}/api/auth/login/google/`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
