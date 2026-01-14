@@ -103,6 +103,20 @@ if (!res.ok && res.status !== 409 && res.status !== 200 && res.status !== 201) {
 
 Para que la autenticación con Google funcione correctamente, el backend **DEBE** implementar los siguientes endpoints:
 
+### Variables de Entorno
+
+Asegúrate de que `.env.local` contenga:
+
+```env
+GOOGLE_CLIENT_ID=tu-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=tu-client-secret
+NEXTAUTH_SECRET=tu-secret-aleatorio
+NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:8000/api
+```
+
+**⚠️ IMPORTANTE**: La variable `NEXT_PUBLIC_API_URL` debe apuntar a la URL base de tu API backend (incluyendo `/api`).
+
 ### 1. **POST `/api/auth/google-auth/`**
 
 **Request Body:**
@@ -266,6 +280,11 @@ Para probar la autenticación con Google:
 ## Archivos Modificados
 
 - ✅ `src/lib/auth.ts` - Callbacks de NextAuth corregidos y mejorados
+  - Reemplazadas URLs hardcodeadas con `process.env.NEXT_PUBLIC_API_URL`
+  - Simplificada validación de códigos HTTP
+  - Mejorado logging y manejo de errores
+- ✅ `.env.local` - Agregada variable `NEXT_PUBLIC_API_URL`
+- ✅ `GOOGLE_AUTH_FIX.md` - Documentación completa
 
 ## Próximos Pasos
 
