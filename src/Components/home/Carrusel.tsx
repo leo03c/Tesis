@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
 import Image from "next/image";
+import Link from "next/link";
 import { getFeaturedGames, getGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
 import { APIError } from "@/services/api";
@@ -15,18 +16,20 @@ interface ICardProps {
 
 const Card = ({ game }: ICardProps) => {
   return (
-    <div className="w-full min-w-[200px] max-w-[263px] h-[70px] md:h-[84px] flex items-center gap-3 md:gap-4 p-2 md:p-3 bg-[#1C2C3B] rounded-2xl md:rounded-3xl text-white hover:bg-[#283B4C] transition-colors cursor-pointer">
-      <div className="relative w-[50px] h-[50px] md:w-[67px] md:h-[70px] flex-shrink-0">
-        <Image 
-          src={game.image || pic4} 
-          alt={game.title} 
-          fill
-          className="object-cover rounded-lg md:rounded-xl"
-          sizes="(max-width: 768px) 50px, 67px"
-        />
+    <Link href={`/juego/${game.slug}`}>
+      <div className="w-full min-w-[200px] max-w-[263px] h-[70px] md:h-[84px] flex items-center gap-3 md:gap-4 p-2 md:p-3 bg-[#1C2C3B] rounded-2xl md:rounded-3xl text-white hover:bg-[#283B4C] transition-colors cursor-pointer">
+        <div className="relative w-[50px] h-[50px] md:w-[67px] md:h-[70px] flex-shrink-0">
+          <Image 
+            src={game.image || pic4} 
+            alt={game.title} 
+            fill
+            className="object-cover rounded-lg md:rounded-xl"
+            sizes="(max-width: 768px) 50px, 67px"
+          />
+        </div>
+        <span className="text-xs md:text-sm font-medium truncate pr-2">{game.title}</span>
       </div>
-      <span className="text-xs md:text-sm font-medium truncate pr-2">{game.title}</span>
-    </div>
+    </Link>
   );
 };
 
@@ -88,12 +91,12 @@ const Carrusel = () => {
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 w-full">
       {/* Tarjeta principal */}
-      <div className="relative w-full lg:w-[50%] aspect-[1.65] rounded-2xl overflow-hidden">
+      <Link href={`/juego/${featuredGame.slug}`} className="relative w-full lg:w-[50%] aspect-[1.65] rounded-2xl overflow-hidden cursor-pointer group">
         <Image 
           src={featuredGame.image || pic4} 
           alt={featuredGame.title}
           fill
-          className="object-cover"
+          className="object-cover group-hover:scale-105 transition-transform duration-300"
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -110,7 +113,10 @@ const Carrusel = () => {
             ))}
           </div>
           <button 
-            onClick={() => toggleFavorite(featuredGame.id)}
+            onClick={(e) => {
+              e.preventDefault();
+              toggleFavorite(featuredGame.id);
+            }}
             className="w-10 h-10 lg:w-14 lg:h-14 flex justify-center items-center bg-[#283B4C] rounded-2xl hover:bg-[#1C2C3B] transition-colors"
           >
             <Image 
@@ -129,9 +135,9 @@ const Carrusel = () => {
           <p className="w-full lg:w-[55%] text-white text-sm lg:text-base line-clamp-3">
             {featuredGame.description}
           </p>
-          <button className="w-40 lg:w-44 h-12 lg:h-14 text-white bg-[#2993FA] hover:bg-[#2380E0] rounded-md text-sm lg:text-base transition-colors">
+          <span className="w-40 lg:w-44 h-12 lg:h-14 text-white bg-[#2993FA] hover:bg-[#2380E0] rounded-md text-sm lg:text-base transition-colors flex items-center justify-center">
             {parseFloat(featuredGame.price) === 0 ? 'GRATIS' : 'DESCARGAR'}
-          </button>
+          </span>
         </div>
       </div>
 

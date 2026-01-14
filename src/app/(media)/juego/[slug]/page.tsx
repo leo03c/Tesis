@@ -1,6 +1,11 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import { useParams } from "next/navigation";
+import { getGameBySlug } from "@/services/gamesService";
+import type { Game } from "@/services/gamesService";
+import { APIError } from "@/services/api";
+import Loading from "@/Components/loading/Loading";
 
 const der = "/icons/derecha.svg";
 const izq = "/icons/izquierda.svg";
@@ -16,8 +21,82 @@ const win = "/windows.svg";
 const laT = "/laT.svg";
 const star = "/icons/Star 5.svg";
 const yt = "/yt.svg";
+const pic4 = "/pic4.jpg";
 
 const Juego = () => {
+  const params = useParams();
+  const slug = params.slug as string;
+  const [game, setGame] = useState<Game | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [game, setGame] = useState<Game | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const carrImages = [carr1, carr2, carr3, carr4, carr5, carr1];
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchGame = async () => {
+      try {
+        setLoading(true);
+        const gameData = await getGameBySlug(slug);
+        setGame(gameData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching game:', err);
+        if (err instanceof APIError) {
+          setError(err.message);
+        } else {
+          setError('No se pudo cargar el juego');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (slug) {
+      fetchGame();
+    }
+  }, [slug]);
+
+  const scroll = (dir: "left" | "right") => {
+    if (scrollRef.current) {
+      const scrollAmount = 140;
+      scrollRef.current.scrollBy({
+        left: dir === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const youtube = () => {
+    window.open("https://www.youtube.com", "_blank");
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loading message="Cargando juego..." />
+      </div>
+    );
+  }
+
+  if (error || !game) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        <div className="text-center">
+          <p className="text-texInactivo mb-2">{error || 'Juego no encontrado'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Helper para formatear rating
+  const formatRating = (rating: string | number | undefined): string => {
+    const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
+    return (numRating || 0).toFixed(1);
+  };
+
   const carrImages = [carr1, carr2, carr3, carr4, carr5, carr1];
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -34,27 +113,26 @@ const youtube = () => {
   window.open("https://www.youtube.com", "_blank");
 };
 
-
   return (
     <div className="bg-dark text-white mb-4 rounded-3xl max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
       {/* Imagen principal y galería */}
       <div className="md:col-span-2">
         {/* Encabezado */}
         <div className="mb-4">
-          <h1 className="text-2xl font-bold">LEAGUE OF LEGENDS</h1>
+          <h1 className="text-2xl font-bold">{game.title.toUpperCase()}</h1>
           <div className="flex items-center gap-1 mt-2">
             {[...Array(5)].map((_, i) => (
               <Image key={i} src={star} alt="Estrella" width={16} height={16} />
             ))}
-            <span className="text-sm font-medium ml-1">5.0</span>
+            <span className="text-sm font-medium ml-1">{formatRating(game.rating)}</span>
           </div>
         </div>
 
         {/* Imagen principal con botón */}
         <div className="relative w-full h-64 sm:h-96 rounded-2xl overflow-hidden mb-4">
           <Image
-            src={principal}
-            alt="Imagen principal del juego"
+            src={game.image || pic4}
+            alt={game.title}
             fill
             className="object-cover"
           />
@@ -90,33 +168,27 @@ const youtube = () => {
 
         {/* Descripción */}
         <p className="text-sm text-gray-300 mt-4">
-          Conviértete en una leyenda. Encuentra a tu campeón, domina sus habilidades y supera
-          a tus oponentes en una épica batalla de 5 contra 5 para destruir la base enemiga.
+          {game.description}
         </p>
       </div>
 
       {/* Información lateral */}
       <div className="space-y-4">
-        <Image src={title} alt="League of Legends" width={180} height={60} />
-
-        {/* Clasificación ESRB */}
-        <div className="bg-transparent border border-deep rounded-xl p-4 text-sm">
-          <div className="flex items-start gap-3">
-            <Image src={laT} alt="Clasificación ESRB" width={40} height={40} />
-            <p className="text-gray-300">
-              Adolescente<br />
-              Sangre, Violencia fantástica, Temas insinuantes leves, Consumo de alcohol y tabaco.
-            </p>
-          </div>
-          <p className="mt-2 text-xs text-gray-500">
-            Interacciones en línea no calificadas por la ESRB
-          </p>
-        </div>
+        <h2 className="text-xl font-bold">{game.title}</h2>
 
         {/* Precio y botones */}
         <div className="text-sm">
-          <p className="inline-block text-xs text-gray-400 mb-1 bg-subdeep px-2 py-0.5 rounded-md">JUEGO BASE</p>
-          <p className="text-white font-semibold">GRATIS</p>
+          <p className="inline-block text-xs text-gray-400 mb-1 bg-subdeep px-2 py-0.5 rounded-md">
+            {game.final_price === "0.00" ? "JUEGO GRATIS" : "JUEGO BASE"}
+          </p>
+          <p className="text-white font-semibold">
+            {game.final_price === "0.00" ? "GRATIS" : `$${game.final_price}`}
+          </p>
+          {game.discount > 0 && (
+            <p className="text-xs text-primary mb-2">
+              -{game.discount}% de descuento
+            </p>
+          )}
           <p className="text-xs text-gray-500 mb-4">
             Puede incluir compras dentro de la aplicación
           </p>
@@ -137,19 +209,35 @@ const youtube = () => {
         {/* Detalles */}
         <div className="text-xs text-gray-400 space-y-1 pt-2">
           <p className="border-b border-deep py-1">
-            <span className="text-white">DESARROLLADOR:</span> Riot Games
+            <span className="text-white">DESARROLLADOR:</span> {game.developer_name}
           </p>
           <p className="border-b border-deep py-1">
-            <span className="text-white">EDITOR:</span> Riot Games
+            <span className="text-white">EDITOR:</span> {game.editor}
           </p>
           <p className="border-b border-deep py-1">
-            <span className="text-white">FECHA DE ESTRENO:</span> 11/04/2021
+            <span className="text-white">FECHA DE ESTRENO:</span> {new Date(game.release_date).toLocaleDateString()}
           </p>
           <p className="flex items-center gap-2 border-b border-deep py-1">
             <span className="text-white">PLATAFORMA:</span>
-            <Image src={win} alt="Windows" width={14} height={14} />
-            <Image src={apple} alt="Apple" width={14} height={14} />
+            {game.plataformas.map((plat) => (
+              <Image key={plat.id} src={plat.icono || win} alt={plat.nombre} width={14} height={14} />
+            ))}
           </p>
+          {game.tags && game.tags.length > 0 && (
+            <div className="pt-2">
+              <p className="text-white mb-1">CATEGORÍAS:</p>
+              <div className="flex flex-wrap gap-1">
+                {game.tags.map((tag) => (
+                  <span
+                    key={tag.id}
+                    className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
+                  >
+                    {tag.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

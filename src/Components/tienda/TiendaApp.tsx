@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { getGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
@@ -131,33 +132,37 @@ const TiendaApp = () => {
               } grid grid-cols-1 sm:grid-cols-3 gap-6`}
             >
               {visibleGames.map((juego, i) => (
-                <div key={i} className="bg-subdeep rounded-xl overflow-hidden md:shadow-md relative">
-                  {/* Image */}
-                  <div className="w-full aspect-[4/3] relative">
-                    <Image
-                      src={juego.image || pic4}
-                      alt={juego.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-cover rounded-t-xl"
-                    />
-                    <button 
-                      onClick={() => toggleFavorite(juego.id)}
-                      className="absolute top-2 right-2 transition-transform hover:scale-110"
-                    >
-                      <Image 
-                        src={isFavorite(juego.id) ? coraR : coraB} 
-                        alt="heart" 
-                        width={56} 
-                        height={56} 
+                <Link key={i} href={`/juego/${juego.slug}`}>
+                  <div className="bg-subdeep rounded-xl overflow-hidden md:shadow-md relative cursor-pointer hover:scale-105 transition-transform">
+                    {/* Image */}
+                    <div className="w-full aspect-[4/3] relative">
+                      <Image
+                        src={juego.image || pic4}
+                        alt={juego.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover rounded-t-xl"
                       />
-                    </button>
-                    {juego.price && juego.price > 0 && (
-                      <div className="absolute top-2 left-2 bg-primary px-3 py-1 rounded-lg text-sm font-bold">
-                        OFERTA
-                      </div>
-                    )}
-                  </div>
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleFavorite(juego.id);
+                        }}
+                        className="absolute top-2 right-2 transition-transform hover:scale-110 z-10"
+                      >
+                        <Image 
+                          src={isFavorite(juego.id) ? coraR : coraB} 
+                          alt="heart" 
+                          width={56} 
+                          height={56} 
+                        />
+                      </button>
+                      {juego.price && juego.price > 0 && (
+                        <div className="absolute top-2 left-2 bg-primary px-3 py-1 rounded-lg text-sm font-bold">
+                          OFERTA
+                        </div>
+                      )}
+                    </div>
 
                   {/* Content */}
                   <div className="p-4 pb-6">
@@ -199,7 +204,7 @@ const TiendaApp = () => {
                       </button>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
