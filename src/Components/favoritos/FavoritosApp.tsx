@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useSession } from 'next-auth/react';
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { getFavorites } from "@/services/favoritesService";
@@ -207,58 +208,63 @@ const FavoritosApp = () => {
                   } grid grid-cols-1 sm:grid-cols-3 gap-6`}
                 >
                   {visibleGames.map((juego) => (
-                    <div key={juego.id} className="bg-subdeep rounded-xl overflow-hidden md:shadow-md relative group">
-                      <div className="w-full aspect-[4/3] relative">
-                        <Image
-                          src={juego.image || pic4}
-                          alt={juego.title}
-                          fill
-                          sizes="(max-width: 640px) 100vw, 33vw"
-                          className="object-cover rounded-t-xl"
-                        />
-                        <button 
-                          onClick={() => toggleFavorite(juego.id)}
-                          className="absolute top-2 right-2 bg-red-500 p-2 rounded-full opacity-0 group-hover:opacity-100 transition"
-                        >
-                          <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                      </div>
+                    <Link key={juego.id} href={`/juego/${juego.slug}`}>
+                      <div className="bg-subdeep rounded-xl overflow-hidden md:shadow-md relative group cursor-pointer hover:scale-105 transition-transform">
+                        <div className="w-full aspect-[4/3] relative">
+                          <Image
+                            src={juego.image || pic4}
+                            alt={juego.title}
+                            fill
+                            sizes="(max-width: 640px) 100vw, 33vw"
+                            className="object-cover rounded-t-xl"
+                          />
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              toggleFavorite(juego.id);
+                            }}
+                            className="absolute top-2 right-2 bg-red-500 p-2 rounded-full opacity-0 group-hover:opacity-100 transition z-10"
+                          >
+                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                            </svg>
+                          </button>
+                        </div>
 
-                      <div className="p-4 pb-6">
-                        <div className="flex gap-2 mb-2 flex-wrap">
-                          {(juego.tags || []).slice(0, 3).map((tag) => (
-                            <span
-                              key={tag.id}
-                              className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
-                            >
-                              {tag.name}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex justify-between items-center mb-2">
-                          <h3 className="text-base font-semibold">{juego.title}</h3>
-                          <div className="flex items-center gap-1">
-                            {[...Array(5)].map((_, k) => (
-                              <Image
-                                key={k}
-                                src={star}
-                                alt="estrella"
-                                width={14}
-                                height={14}
-                              />
+                        <div className="p-4 pb-6">
+                          <div className="flex gap-2 mb-2 flex-wrap">
+                            {(juego.tags || []).slice(0, 3).map((tag) => (
+                              <span
+                                key={tag.id}
+                                className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
+                              >
+                                {tag.name}
+                              </span>
                             ))}
-                            <span className="text-xs font-medium ml-1">
-                              {formatRating(juego.rating)}
-                            </span>
                           </div>
+                          <div className="flex justify-between items-center mb-2">
+                            <h3 className="text-base font-semibold">{juego.title}</h3>
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, k) => (
+                                <Image
+                                  key={k}
+                                  src={star}
+                                  alt="estrella"
+                                  width={14}
+                                  height={14}
+                                />
+                              ))}
+                              <span className="text-xs font-medium ml-1">
+                                {formatRating(juego.rating)}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-texInactivo text-xs">
+                            {parseFloat(juego.price) === 0 ? 'GRATIS' : `$${juego.final_price}`}
+                          </p>
                         </div>
-                        <p className="text-texInactivo text-xs">
-                          {parseFloat(juego.price) === 0 ? 'GRATIS' : `$${juego.final_price}`}
-                        </p>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               </div>

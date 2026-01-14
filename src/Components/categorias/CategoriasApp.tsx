@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { getTags } from "@/services/gamesService";
 import type { Tag } from "@/services/gamesService";
 import { APIError } from "@/services/api";
@@ -94,30 +95,29 @@ const CategoriasApp = () => {
       <div className="rounded-3xl bg-deep py-10 px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {categorias.map((categoria, i) => (
-            <div
-              key={categoria.id}
-              className="group bg-subdeep hover:bg-categorico rounded-2xl p-6 cursor-pointer transition-all duration-300 transform hover:scale-105"
-            >
-              <div className="flex items-center gap-4">
-                <div className={`${getColorClass(i)} p-3 rounded-xl`}>
-                  <Image
-                    src="/category.svg"
-                    alt={categoria.name}
-                    width={32}
-                    height={32}
-                    className="filter brightness-0 invert"
-                  />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white group-hover:text-primary transition">
-                    {categoria.name}
-                  </h3>
-                  <p className="text-texInactivo text-sm">
-                    {categoria.games_count || '0'} juegos
-                  </p>
+            <Link key={categoria.id} href={`/categoria/${categoria.slug}`}>
+              <div className="group bg-subdeep hover:bg-categorico rounded-2xl p-6 cursor-pointer transition-all duration-300 transform hover:scale-105">
+                <div className="flex items-center gap-4">
+                  <div className={`${getColorClass(i)} p-3 rounded-xl`}>
+                    <Image
+                      src="/category.svg"
+                      alt={categoria.name}
+                      width={32}
+                      height={32}
+                      className="filter brightness-0 invert"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white group-hover:text-primary transition">
+                      {categoria.name}
+                    </h3>
+                    <p className="text-texInactivo text-sm">
+                      {categoria.games_count || '0'} juegos
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
@@ -128,12 +128,11 @@ const CategoriasApp = () => {
           <h2 className="text-xl font-bold mb-6">Categorías Populares</h2>
           <div className="flex flex-wrap gap-3">
             {categorias.slice(0, 6).map((cat) => (
-              <span
-                key={cat.id}
-                className="bg-primary/20 text-primary px-4 py-2 rounded-full text-sm font-medium hover:bg-primary hover:text-white cursor-pointer transition"
-              >
-                {cat.name}
-              </span>
+              <Link key={cat.id} href={`/categoria/${cat.slug}`}>
+                <span className="bg-primary/20 text-primary px-4 py-2 rounded-full text-sm font-medium hover:bg-primary hover:text-white cursor-pointer transition">
+                  {cat.name}
+                </span>
+              </Link>
             ))}
           </div>
         </div>

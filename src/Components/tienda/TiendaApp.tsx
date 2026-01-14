@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { getGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
@@ -131,75 +132,80 @@ const TiendaApp = () => {
               } grid grid-cols-1 sm:grid-cols-3 gap-6`}
             >
               {visibleGames.map((juego, i) => (
-                <div key={i} className="bg-subdeep rounded-xl overflow-hidden md:shadow-md relative">
-                  {/* Image */}
-                  <div className="w-full aspect-[4/3] relative">
-                    <Image
-                      src={juego.image || pic4}
-                      alt={juego.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-cover rounded-t-xl"
-                    />
-                    <button 
-                      onClick={() => toggleFavorite(juego.id)}
-                      className="absolute top-2 right-2 transition-transform hover:scale-110"
-                    >
-                      <Image 
-                        src={isFavorite(juego.id) ? coraR : coraB} 
-                        alt="heart" 
-                        width={56} 
-                        height={56} 
+                <Link key={i} href={`/juego/${juego.slug}`}>
+                  <div className="bg-subdeep rounded-xl overflow-hidden md:shadow-md relative cursor-pointer hover:scale-105 transition-transform">
+                    {/* Image */}
+                    <div className="w-full aspect-[4/3] relative">
+                      <Image
+                        src={juego.image || pic4}
+                        alt={juego.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover rounded-t-xl"
                       />
-                    </button>
-                    {juego.price && juego.price > 0 && (
-                      <div className="absolute top-2 left-2 bg-primary px-3 py-1 rounded-lg text-sm font-bold">
-                        OFERTA
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4 pb-6">
-                    <div className="flex gap-2 mb-2 flex-wrap">
-                      {(juego.tags || []).slice(0, 3).map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
-                        >
-                          {tag.name}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="text-base font-semibold">{juego.title}</h3>
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, k) => (
-                          <Image
-                            key={k}
-                            src={star}
-                            alt="estrella"
-                            width={14}
-                            height={14}
-                          />
-                        ))}
-                        <span className="text-xs font-medium ml-1">
-                          {parseFloat(juego.rating || '0').toFixed(1)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex gap-2 items-baseline">
-                        <span className="text-xl font-bold text-primary">
-                          {parseFloat(juego.price) === 0 ? "GRATIS" : `$${juego.final_price}`}
-                        </span>
-                      </div>
-                      <button className="bg-primary text-white px-4 py-2 rounded-xl text-sm hover:bg-subprimary transition">
-                        Comprar
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleFavorite(juego.id);
+                        }}
+                        className="absolute top-2 right-2 transition-transform hover:scale-110 z-10"
+                      >
+                        <Image 
+                          src={isFavorite(juego.id) ? coraR : coraB} 
+                          alt="heart" 
+                          width={56} 
+                          height={56} 
+                        />
                       </button>
+                      {juego.price && juego.price > 0 && (
+                        <div className="absolute top-2 left-2 bg-primary px-3 py-1 rounded-lg text-sm font-bold">
+                          OFERTA
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-4 pb-6">
+                      <div className="flex gap-2 mb-2 flex-wrap">
+                        {(juego.tags || []).slice(0, 3).map((tag) => (
+                          <span
+                            key={tag.id}
+                            className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
+                          >
+                            {tag.name}
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="text-base font-semibold">{juego.title}</h3>
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, k) => (
+                            <Image
+                              key={k}
+                              src={star}
+                              alt="estrella"
+                              width={14}
+                              height={14}
+                            />
+                          ))}
+                          <span className="text-xs font-medium ml-1">
+                            {parseFloat(juego.rating || '0').toFixed(1)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-2 items-baseline">
+                          <span className="text-xl font-bold text-primary">
+                            {parseFloat(juego.price) === 0 ? "GRATIS" : `$${juego.final_price}`}
+                          </span>
+                        </div>
+                        <button className="bg-primary text-white px-4 py-2 rounded-xl text-sm hover:bg-subprimary transition">
+                          Comprar
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

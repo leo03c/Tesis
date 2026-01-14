@@ -86,6 +86,13 @@ export const getGame = (id: number) =>
   api.get<Game>(`/games/games/${id}`);
 
 /**
+ * Get a specific game by slug
+ * Backend endpoint: /api/games/games/{slug}/
+ */
+export const getGameBySlug = (slug: string) => 
+  api.get<Game>(`/games/games/${slug}`);
+
+/**
  * Get featured/popular games
  * Backend endpoint: /api/games/games/?featured=true
  */
@@ -106,13 +113,22 @@ export const getTags = () =>
 export const getGamesByTag = (tagId: number) => 
   api.get<GamesResponse>('/games/games/', { tags: tagId });
 
+/**
+ * Get games by tag slug
+ * Backend endpoint: /api/games/games/?tags={tagSlug}
+ */
+export const getGamesByTagSlug = (tagSlug: string) => 
+  api.get<GamesResponse>('/games/games/', { tags: tagSlug });
+
 const gamesService = {
   getGames,
   getFreeGames,
   getGame,
+  getGameBySlug,
   getFeaturedGames,
   getTags,
   getGamesByTag,
+  getGamesByTagSlug,
 };
 
 export default gamesService;
