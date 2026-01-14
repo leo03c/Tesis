@@ -9,16 +9,12 @@ import Loading from "@/Components/loading/Loading";
 
 const der = "/icons/derecha.svg";
 const izq = "/icons/izquierda.svg";
-const principal = "/principal.png";
-const title = "/title.png";
 const carr1 = "/carr1.png";
 const carr2 = "/carr2.png";
 const carr3 = "/carr3.png";
 const carr4 = "/carr4.png";
 const carr5 = "/carr5.png";
-const apple = "/apple.svg";
 const win = "/windows.svg";
-const laT = "/laT.svg";
 const star = "/icons/Star 5.svg";
 const yt = "/yt.svg";
 const pic4 = "/pic4.jpg";
@@ -26,9 +22,6 @@ const pic4 = "/pic4.jpg";
 const Juego = () => {
   const params = useParams();
   const slug = params.slug as string;
-  const [game, setGame] = useState<Game | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,20 +88,6 @@ const Juego = () => {
   const formatRating = (rating: string | number | undefined): string => {
     const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
     return (numRating || 0).toFixed(1);
-  };
-
-  const scroll = (dir: "left" | "right") => {
-    if (scrollRef.current) {
-      const scrollAmount = 140;
-      scrollRef.current.scrollBy({
-        left: dir === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const youtube = () => {
-    window.open("https://www.youtube.com", "_blank");
   };
 
   return (
