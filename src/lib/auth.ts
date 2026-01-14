@@ -98,7 +98,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       if (user) {
         console.log('🔑 JWT callback - user login:', { provider: account?.provider, email: user.email });
-        
+
         // Si es login por credenciales
         if (account?.provider === 'credentials') {
           console.log('🔐 Credentials login - storing tokens');
@@ -109,37 +109,45 @@ export const authOptions: NextAuthOptions = {
         // Si es login por Google
         else if (account?.provider === 'google' && user.email) {
           try {
-            console.log('🔍 Fetching user data from backend for Google user');
-            // Consultar el backend para obtener el id del usuario por email y tokens
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/user-by-email/?email=${encodeURIComponent(user.email)}`);
-            
+            console.log('🔍 Fetching Google tokens from backend');
+            // Consultar el backend para obtener los tokens y datos del usuario
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google-auth/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: user.email,
+                name: user.name,
+                googleId: account?.providerAccountId,
+              }),
+            });
+
             if (res.ok) {
               const data = await res.json();
-              console.log('📥 User data received:', { id: data.id, hasAccess: !!data.access });
-              
-              token.id = data.id?.toString();
-              // El backend debe devolver tokens JWT para este usuario
+              console.log('📥 Google auth response:', data);
+
+              token.id = data.user?.id?.toString();
               token.accessToken = data.access;
               token.refreshToken = data.refresh;
-              
+
               if (!token.accessToken) {
                 console.warn('⚠️ No access token received from backend for Google user');
               }
             } else {
-              console.error('❌ Failed to fetch user data:', res.status);
+              const errorText = await res.text();
+              console.error('❌ Failed to fetch Google tokens:', res.status, errorText);
             }
           } catch (e) {
-            console.error('❌ Error obteniendo datos de usuario Google:', e);
+            console.error('❌ Error obteniendo tokens de usuario Google:', e);
           }
         }
       }
-      
-      console.log('🎫 JWT token state:', { 
-        hasId: !!token.id, 
+
+      console.log('🎫 JWT token state:', {
+        hasId: !!token.id,
         hasAccessToken: !!token.accessToken,
-        hasRefreshToken: !!token.refreshToken 
+        hasRefreshToken: !!token.refreshToken
       });
-      
+
       return token;
     },
     async session({ session, token }) {

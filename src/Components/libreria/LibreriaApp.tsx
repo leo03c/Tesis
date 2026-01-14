@@ -19,6 +19,14 @@ const LibreriaApp = () => {
 
   useEffect(() => {
     const fetchLibrary = async () => {
+      // Verificar si el usuario está autenticado antes de llamar a la API
+      const session = await import('next-auth/react').then(mod => mod.getSession());
+      if (!session) {
+        setError('Debes iniciar sesión para ver tu librería.');
+        setApiUrl(null);
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         const response = await getLibrary();
@@ -28,7 +36,11 @@ const LibreriaApp = () => {
       } catch (err) {
         console.error('Error fetching library:', err);
         if (err instanceof APIError) {
-          setError(err.message);
+          if (err.status === 401) {
+            setError('No autorizado. Por favor, inicia sesión para acceder a tu librería.');
+          } else {
+            setError(err.message);
+          }
           setApiUrl(err.url);
         } else {
           setError('No se pudo cargar la librería');
@@ -139,7 +151,7 @@ const LibreriaApp = () => {
                 <div className="w-full aspect-[4/3] relative">
                   <Image
                     src={game.image || pic4}
-                    alt={game.title}
+                    alt={game.title || `Imagen de ${game.title || 'juego'}`}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className="object-cover group-hover:scale-105 transition duration-300"
@@ -171,7 +183,7 @@ const LibreriaApp = () => {
                 <div className="w-20 h-14 relative flex-shrink-0">
                   <Image
                     src={game.image || pic4}
-                    alt={game.title}
+                    alt={game.title || `Imagen de ${game.title || 'juego'}`}
                     fill
                     sizes="80px"
                     className="object-cover rounded-lg"

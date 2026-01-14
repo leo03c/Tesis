@@ -99,7 +99,7 @@ const Juego = () => {
           <h1 className="text-2xl font-bold">{game.title.toUpperCase()}</h1>
           <div className="flex items-center gap-1 mt-2">
             {[...Array(5)].map((_, i) => (
-              <Image key={i} src={star} alt="Estrella" width={16} height={16} />
+              <Image key={i} src={star} alt={`Estrella ${i + 1}`} width={16} height={16} />
             ))}
             <span className="text-sm font-medium ml-1">{formatRating(game.rating)}</span>
           </div>
@@ -109,13 +109,13 @@ const Juego = () => {
         <div className="relative w-full h-64 sm:h-96 rounded-2xl overflow-hidden mb-4">
           <Image
             src={game.image || pic4}
-            alt={game.title}
+            alt={game.title || "Imagen principal del juego"}
             fill
             className="object-cover"
           />
           <button className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-primary text-white font-bold py-3 px-6 rounded-xl shadow-md text-sm flex items-center "
           onClick={()=> youtube()}>
-            <Image src={yt} alt="youtube" width={16} height={16} className="me-2" />
+            <Image src={yt} alt="Logo de YouTube" width={16} height={16} className="me-2" />
             REPRODUCIR
           </button>
         </div>
@@ -123,7 +123,7 @@ const Juego = () => {
         {/* Carrusel */}
         <div className="flex items-center gap-2">
           <button onClick={() => scroll("left")}>
-            <Image src={izq} alt="izquierda" width={44} height={44} />
+            <Image src={izq} alt="Flecha izquierda" width={44} height={44} />
           </button>
           <div
             ref={scrollRef}
@@ -134,12 +134,12 @@ const Juego = () => {
                 key={i}
                 className="relative w-28 h-20 rounded-xl overflow-hidden border border-deep flex-shrink-0"
               >
-                <Image src={src} alt={`Galería ${i}`} fill sizes="112px" className="object-cover" />
+                <Image src={src} alt={`Imagen carrusel ${i + 1}`} fill sizes="112px" className="object-cover" />
               </div>
             ))}
           </div>
           <button onClick={() => scroll("right")}>
-            <Image src={der} alt="derecha" width={44} height={44} />
+            <Image src={der} alt="Flecha derecha" width={44} height={44} />
           </button>
         </div>
 
@@ -197,7 +197,7 @@ const Juego = () => {
           <p className="flex items-center gap-2 border-b border-deep py-1">
             <span className="text-white">PLATAFORMA:</span>
             {game.plataformas.map((plat) => (
-              <Image key={plat.id} src={plat.icono || win} alt={plat.nombre} width={14} height={14} />
+              <Image key={plat.id} src={plat.icono || win} alt={`Icono plataforma ${plat.nombre}`} width={14} height={14} />
             ))}
           </p>
           {game.tags && game.tags.length > 0 && (

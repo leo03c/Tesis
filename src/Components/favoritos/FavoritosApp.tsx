@@ -49,10 +49,17 @@ const FavoritosApp = () => {
         console.log('Fetching favorites...');
         const response = await getFavorites();
         console.log('Favorites response:', response);
-        
+
+        if (!response || !Array.isArray(response.results)) {
+          console.error('La respuesta de la API de favoritos no tiene el formato esperado:', response);
+          setAllGames([]);
+          setApiUrl(null);
+          return;
+        }
+
         const games = response.results.map(fav => fav.game);
         console.log('Games extracted:', games);
-        
+
         setAllGames(games);
         setApiUrl(null);
       } catch (err) {
