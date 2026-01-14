@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
         try {
           console.log('🔄 Intentando login con:', credentials.username);
           
-          const response = await fetch("http://localhost:8000/api/auth/login/", {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/login/`, {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
@@ -60,11 +60,14 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log('🔐 SignIn callback:', { provider: account?.provider, email: user?.email });
+      
       // Solo guardar en backend si es login con Google
       if (account?.provider === 'google' && user?.email) {
         try {
+          console.log('📤 Enviando datos a backend google-auth');
           // Solo enviamos los campos estrictamente necesarios
-          const res = await fetch('http://localhost:8000/api/auth/google-auth/', {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google-auth/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -73,50 +76,91 @@ export const authOptions: NextAuthOptions = {
               googleId: profile?.sub,
             }),
           });
-          // Si el usuario ya existe, el backend debe devolver un error controlado (por ejemplo, 409),
-          // pero permitimos el login igualmente
+          
+          console.log('📥 Respuesta google-auth:', res.status);
+          
+          // Aceptar 200-299 (res.ok) o 409 (usuario existente)
           if (!res.ok && res.status !== 409) {
-            // Si es otro error, lo mostramos y bloqueamos el login
-            console.error('Error guardando usuario Google en backend:', await res.text());
+            const errorText = await res.text();
+            console.error('❌ Error guardando usuario Google en backend:', errorText);
             return false;
           }
+          
+          console.log('✅ Usuario Google procesado correctamente');
         } catch (e) {
           // Si el error es de red, permitimos el login pero lo registramos
-          console.error('Error guardando usuario Google en backend:', e);
+          console.error('❌ Error de red guardando usuario Google:', e);
+          // Permitir login aunque falle el backend
         }
       }
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
+        console.log('🔑 JWT callback - user login:', { provider: account?.provider, email: user.email });
+        
         // Si es login por credenciales
         if (account?.provider === 'credentials') {
-          token.accessToken = user.accessToken;
-          token.refreshToken = user.refreshToken;
+          console.log('🔐 Credentials login - storing tokens');
+          token.accessToken = (user as any).accessToken;
+          token.refreshToken = (user as any).refreshToken;
           token.id = user.id;
         }
         // Si es login por Google
         else if (account?.provider === 'google' && user.email) {
           try {
-            // Consultar el backend para obtener el id del usuario por email
-            const res = await fetch(`http://localhost:8000/api/auth/user-by-email/?email=${encodeURIComponent(user.email)}`);
+            console.log('🔍 Fetching user data from backend for Google user');
+            // Consultar el backend para obtener el id del usuario por email y tokens
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/user-by-email/?email=${encodeURIComponent(user.email)}`);
+            
             if (res.ok) {
               const data = await res.json();
+              console.log('📥 User data received:', { id: data.id, hasAccess: !!data.access });
+              
               token.id = data.id?.toString();
+              // El backend debe devolver tokens JWT para este usuario
+              token.accessToken = data.access;
+              token.refreshToken = data.refresh;
+              
+              if (!token.accessToken) {
+                console.warn('⚠️ No access token received from backend for Google user');
+              }
+            } else {
+              console.error('❌ Failed to fetch user data:', res.status);
             }
           } catch (e) {
-            console.error('Error obteniendo id de usuario Google:', e);
+            console.error('❌ Error obteniendo datos de usuario Google:', e);
           }
         }
       }
+      
+      console.log('🎫 JWT token state:', { 
+        hasId: !!token.id, 
+        hasAccessToken: !!token.accessToken,
+        hasRefreshToken: !!token.refreshToken 
+      });
+      
       return token;
     },
     async session({ session, token }) {
+      console.log('📋 Session callback:', { 
+        hasToken: !!token,
+        hasUser: !!session.user,
+        tokenId: token?.id,
+        hasAccessToken: !!token?.accessToken
+      });
+      
       if (token && session.user) {
-        session.user.id = token.id as string;
-        session.accessToken = token.accessToken as string;
-        session.refreshToken = token.refreshToken as string;
+        (session.user as any).id = token.id as string;
+        (session as any).accessToken = token.accessToken as string;
+        (session as any).refreshToken = token.refreshToken as string;
       }
+      
+      console.log('✅ Session created:', {
+        userId: (session.user as any)?.id,
+        hasAccessToken: !!(session as any).accessToken
+      });
+      
       return session;
     }
   },
