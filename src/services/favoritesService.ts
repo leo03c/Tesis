@@ -3,45 +3,44 @@
  * Backend base: /api/favorites/
  */
 import api from './api';
+import type { Game } from './gamesService';
 
 export interface FavoriteGame {
   id: number;
-  game: number;
-  title: string;
-  image?: string;
-  tags?: string[];
-  rating?: number;
-  added_at?: string;
+  game: Game;
+  added_date: string;
 }
 
 export interface FavoritesResponse {
-  results: FavoriteGame[];
   count: number;
-  next?: string;
-  previous?: string;
+  next: string | null;
+  previous: string | null;
+  results: FavoriteGame[];
 }
 
 /**
  * Get user's favorite games
  * Backend endpoint: GET /api/favorites/
+ * Requires authentication
  */
 export const getFavorites = (params?: Record<string, string | number | boolean>) => 
-  api.get<FavoritesResponse>('/favorites', params);
+  api.get<FavoritesResponse>('/favorites/', params);
 
 /**
  * Add a game to favorites
  * Backend endpoint: POST /api/favorites/
- * Django expects { game_id: gameId }
+ * Requires authentication
  */
 export const addFavorite = (gameId: number) => 
-  api.post<FavoriteGame>('/favorites', { game_id: gameId });
+  api.post<FavoriteGame>('/favorites/', { game_id: gameId });
 
 /**
  * Remove a game from favorites
  * Backend endpoint: DELETE /api/favorites/{id}/
+ * Requires authentication
  */
 export const removeFavorite = (id: number) => 
-  api.delete<void>(`/favorites/${id}`);
+  api.delete<void>(`/favorites/${id}/`);
 
 const favoritesService = {
   getFavorites,

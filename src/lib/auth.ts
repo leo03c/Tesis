@@ -1,186 +1,82 @@
-import GoogleProvider from "next-auth/providers/google";
+import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import type { JWT } from "next-auth/jwt";
-import type { Session, User, Account } from "next-auth";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-        },
-      },
-    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
         username: { label: "Username", type: "text" },
-        password: { label: "Password", type: "password" },
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) {
+          console.log('❌ Credenciales vacías');
+          return null;
+        }
+
         try {
-          console.log('Attempting login with:', credentials?.username);
+          console.log('🔄 Intentando login con:', credentials.username);
           
-          const res = await fetch(`${API_BASE_URL}/api/auth/login/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
+          const response = await fetch("http://localhost:8000/api/auth/login/", {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+            },
             body: JSON.stringify({
-              username: credentials?.username,
-              password: credentials?.password,
+              username: credentials.username,
+              password: credentials.password,
             }),
           });
 
-          const responseText = await res.text();
-          console.log('Login response:', responseText);
+          const data = await response.json();
+          console.log('📥 Respuesta del backend:', { status: response.status, data });
 
-          if (!res.ok) {
-            let errorDetail = "Error en el login";
-            try {
-              const errorData = JSON.parse(responseText);
-              errorDetail = errorData.detail || errorDetail;
-            } catch {
-              errorDetail = responseText || errorDetail;
-            }
-            throw new Error(errorDetail);
+          if (!response.ok) {
+            console.error('❌ Error del backend:', data);
+            return null;
           }
 
-          const data = JSON.parse(responseText);
-          console.log('Parsed login data:', data);
-          
-          // Backend returns JWT format: { access, refresh, user }
-          // Store tokens in localStorage for API requests
-          if (typeof window !== 'undefined') {
-            if (data.access) localStorage.setItem('access_token', data.access);
-            if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
-          }
-          
+          console.log('✅ Login exitoso');
+
           return {
-            id: data.user?.id?.toString() || '1',
-            name: data.user?.username || data.user?.name || credentials?.username,
-            email: data.user?.email || `${credentials?.username}@example.com`,
-            token: data.access, // Use access token
+            id: data.user.id.toString(),
+            email: data.user.email,
+            name: data.user.username,
+            accessToken: data.access,
             refreshToken: data.refresh,
           };
-        } catch (error: unknown) {
-          console.error('Authorize error:', (error as Error).message);
-          throw error;
-        }
-      },
-    }),
-  ],
-
-  callbacks: {
-    async signIn({ user, account }: { user: User; account: Account | null }) {
-      console.log('SignIn callback - User:', user);
-      console.log('SignIn callback - Account:', account);
-      
-      if (account?.provider === "google" && account.id_token) {
-        try {
-          console.log('Processing Google sign in...');
-          
-          // Using /api/auth/login/google/ as per API documentation
-          // Backend expects { googleToken: string } based on API_ENDPOINTS_COSMOX_COMPLETO.txt
-          const res = await fetch(`${API_BASE_URL}/api/auth/login/google/`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              googleToken: account.id_token,
-            }),
-          });
-
-          const responseText = await res.text();
-          console.log('Google auth response:', responseText);
-
-          if (!res.ok) {
-            console.error("Google auth backend error:", responseText);
-            return false;
-          }
-
-          const data = JSON.parse(responseText);
-          console.log('Google auth data:', data);
-          
-          // Backend returns JWT format: { access, refresh, user }
-          if (typeof window !== 'undefined') {
-            if (data.access) localStorage.setItem('access_token', data.access);
-            if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
-          }
-          
-          user.id = data.user?.id?.toString() || user.id;
-          user.name = data.user?.username || data.user?.name || user.name;
-          user.email = data.user?.email || user.email;
-          user.token = data.access;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (user as any).refreshToken = data.refresh;
-          
-          console.log('Updated user for Google:', user);
-          return true;
         } catch (error) {
-          console.error("Error during Google authentication:", error);
-          return false;
+          console.error('❌ Error en authorize:', error);
+          return null;
         }
       }
-      return true;
-    },
-    
-    async jwt({ token, user, account }: { token: JWT; user?: User; account?: Account | null }) {
-      console.log('JWT callback - User:', user);
-      console.log('JWT callback - Token:', token);
-      
-      // Initial sign in
+    })
+  ],
+  callbacks: {
+    async jwt({ token, user }) {
       if (user) {
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
         token.id = user.id;
-        token.name = user.name;
-        token.email = user.email;
-        token.accessToken = user.token;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        token.refreshToken = (user as any).refreshToken;
-        console.log('JWT - Setting user data:', token);
       }
-      
-      // Store the provider for reference
-      if (account?.provider) {
-        token.provider = account.provider;
-      }
-      
       return token;
     },
-    
-    async session({ session, token }: { session: Session; token: JWT }) {
-      console.log('Session callback - Token:', token);
-      console.log('Session callback - Session before:', session);
-      
-      // Send properties to the client
+    async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
-        session.user.name = token.name as string;
-        session.user.email = token.email as string;
         session.accessToken = token.accessToken as string;
-        session.provider = token.provider as string;
+        session.refreshToken = token.refreshToken as string;
       }
-      
-      console.log('Session callback - Session after:', session);
       return session;
-    },
+    }
   },
-
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 días
-  },
-
   pages: {
-    signIn: "/login",
-    error: "/login",
+    signIn: '/login',
   },
-
+  session: {
+    strategy: 'jwt',
+  },
   secret: process.env.NEXTAUTH_SECRET,
-  
-  debug: process.env.NODE_ENV === 'development',
+  debug: true,
 };

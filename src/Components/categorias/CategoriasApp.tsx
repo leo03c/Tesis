@@ -46,6 +46,42 @@ const CategoriasApp = () => {
     ];
     return colors[index % colors.length];
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen text-white">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Categorías</h1>
+          <p className="text-texInactivo">Explora juegos por género</p>
+        </div>
+        <div className="rounded-3xl bg-deep py-10 px-6">
+          <Loading message="Cargando categorías..." />
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen text-white">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Categorías</h1>
+          <p className="text-texInactivo">Explora juegos por género</p>
+        </div>
+        <div className="rounded-3xl bg-deep py-10 px-6">
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-2'>{error}</p>
+            {apiUrl && (
+              <p className='text-texInactivo text-xs mt-2'>
+                URL: <span className='text-primary'>{apiUrl}</span>
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen text-white">
       {/* Header */}
@@ -56,24 +92,10 @@ const CategoriasApp = () => {
 
       {/* Categories Grid */}
       <div className="rounded-3xl bg-deep py-10 px-6">
-        {loading ? (
-          <Loading message="Cargando categorías..." />
-        ) : error || categorias.length === 0 ? (
-          <div className='text-center py-8'>
-            <p className='text-texInactivo mb-2'>
-              {error || 'No hay categorías disponibles'}
-            </p>
-            {apiUrl && (
-              <p className='text-texInactivo text-xs mt-2'>
-                URL: <span className='text-primary'>{apiUrl}</span>
-              </p>
-            )}
-          </div>
-        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {categorias.map((categoria, i) => (
             <div
-              key={i}
+              key={categoria.id}
               className="group bg-subdeep hover:bg-categorico rounded-2xl p-6 cursor-pointer transition-all duration-300 transform hover:scale-105"
             >
               <div className="flex items-center gap-4">
@@ -90,30 +112,31 @@ const CategoriasApp = () => {
                   <h3 className="text-lg font-semibold text-white group-hover:text-primary transition">
                     {categoria.name}
                   </h3>
-                  <p className="text-texInactivo text-sm">{categoria.game_count || 0} juegos</p>
+                  <p className="text-texInactivo text-sm">
+                    {categoria.games_count || '0'} juegos
+                  </p>
                 </div>
               </div>
             </div>
           ))}
         </div>
-        )}
       </div>
 
       {/* Popular Categories */}
-      {!loading && categorias.length > 0 && (
-      <div className="mt-8 rounded-3xl bg-deep py-10 px-6">
-        <h2 className="text-xl font-bold mb-6">Categorías Populares</h2>
-        <div className="flex flex-wrap gap-3">
-          {categorias.slice(0, 6).map((cat, i) => (
-            <span
-              key={i}
-              className="bg-primary/20 text-primary px-4 py-2 rounded-full text-sm font-medium hover:bg-primary hover:text-white cursor-pointer transition"
-            >
-              {cat.name}
-            </span>
-          ))}
+      {categorias.length > 0 && (
+        <div className="mt-8 rounded-3xl bg-deep py-10 px-6">
+          <h2 className="text-xl font-bold mb-6">Categorías Populares</h2>
+          <div className="flex flex-wrap gap-3">
+            {categorias.slice(0, 6).map((cat) => (
+              <span
+                key={cat.id}
+                className="bg-primary/20 text-primary px-4 py-2 rounded-full text-sm font-medium hover:bg-primary hover:text-white cursor-pointer transition"
+              >
+                {cat.name}
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
       )}
     </div>
   );

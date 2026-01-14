@@ -1,13 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
 import { signIn } from "next-auth/react";
+import { getUserProfile, updateUserProfile, updateUserAvatar } from "@/services/authService";
 
 const ConfiguracionApp = () => {
-  const { user, isAuthenticated } = useUser();
+  const { user, isAuthenticated, refreshSession } = useUser();
   const [activeTab, setActiveTab] = useState("cuenta");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [profileData, setProfileData] = useState({
+    username: "",
+    email: "",
+    first_name: "",
+    last_name: "",
+    avatar: "",
+  });
+
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
@@ -19,8 +33,95 @@ const ConfiguracionApp = () => {
     { id: "cuenta", label: "Cuenta", icon: "/setting.svg" },
     { id: "notificaciones", label: "Notificaciones", icon: "/setting.svg" },
     { id: "privacidad", label: "Privacidad", icon: "/setting.svg" },
-    { id: "apariencia", label: "Apariencia", icon: "/setting.svg" },
   ];
+
+  // Cargar perfil del usuario
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const profile = await getUserProfile();
+        setProfileData({
+          username: profile.username,
+          email: profile.email,
+          first_name: profile.first_name || "",
+          last_name: profile.last_name || "",
+          avatar: profile.avatar || "",
+        });
+      } catch (err: any) {
+        console.error("Error loading profile:", err);
+        setError("No se pudo cargar el perfil");
+      }
+    };
+
+    loadProfile();
+  }, [isAuthenticated]);
+
+  // Manejar cambio de foto
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Por favor selecciona una imagen válida');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('La imagen no debe superar los 5MB');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const data = await updateUserAvatar(file);
+      
+      setProfileData(prev => ({ ...prev, avatar: data.avatar }));
+      setSuccess('Foto actualizada correctamente');
+      await refreshSession();
+
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      console.error('Error uploading avatar:', err);
+      setError(err.message || 'Error al cambiar la foto');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Guardar cambios del perfil
+  const handleSaveProfile = async () => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      await updateUserProfile({
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+      });
+      
+      setSuccess("Perfil actualizado correctamente");
+      await refreshSession();
+      
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      console.error("Error updating profile:", err);
+      setError(err.message || "Error al actualizar el perfil");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setProfileData({ ...profileData, [field]: value });
+    setError(null);
+    setSuccess(null);
+  };
 
   return (
     <div className="min-h-screen text-white">
@@ -69,38 +170,113 @@ const ConfiguracionApp = () => {
                 </div>
               ) : (
                 <>
+                  {/* Avatar */}
                   <div className="flex items-center gap-4 p-4 bg-subdeep rounded-xl">
-                    <div className="w-20 h-20 bg-categorico rounded-full flex items-center justify-center text-2xl font-bold">
-                      {user?.name?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? 'U'}
+                    <div className="relative">
+                      {profileData.avatar ? (
+                        <div className="w-20 h-20 rounded-full overflow-hidden relative">
+                          <Image
+                            src={profileData.avatar.startsWith('http') ? profileData.avatar : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${profileData.avatar}`}
+                            alt="Avatar"
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 bg-categorico rounded-full flex items-center justify-center text-2xl font-bold">
+                          {profileData.first_name?.[0]?.toUpperCase() || profileData.username?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                      )}
+                      {loading && (
+                        <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                          <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      )}
                     </div>
                     <div>
-                      <h3 className="font-semibold">{user?.name ?? 'Usuario'}</h3>
-                      <p className="text-texInactivo text-sm">{user?.email ?? 'Sin email'}</p>
-                      <button className="text-primary text-sm mt-1 hover:underline">
-                        Cambiar foto
+                      <h3 className="font-semibold">{profileData.username}</h3>
+                      <p className="text-texInactivo text-sm">{profileData.email}</p>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarChange}
+                        className="hidden"
+                      />
+                      <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={loading}
+                        className="text-primary text-sm mt-1 hover:underline disabled:opacity-50"
+                      >
+                        {loading ? 'Subiendo...' : 'Cambiar foto'}
                       </button>
                     </div>
                   </div>
 
+                  {/* Mensajes */}
+                  {error && (
+                    <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-lg text-sm">
+                      {error}
+                    </div>
+                  )}
+                  {success && (
+                    <div className="bg-green-500/10 border border-green-500 text-green-500 px-4 py-3 rounded-lg text-sm">
+                      {success}
+                    </div>
+                  )}
+
+                  {/* Formulario */}
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm text-texInactivo mb-2">Nombre de usuario</label>
                       <input
                         type="text"
-                        defaultValue={user?.name ?? ''}
-                        className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
+                        value={profileData.username}
+                        disabled
+                        className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-texInactivo cursor-not-allowed"
                       />
+                      <p className="text-xs text-texInactivo mt-1">El nombre de usuario no se puede cambiar</p>
                     </div>
+
                     <div>
                       <label className="block text-sm text-texInactivo mb-2">Email</label>
                       <input
                         type="email"
-                        defaultValue={user?.email ?? ''}
+                        value={profileData.email}
+                        disabled
+                        className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-texInactivo cursor-not-allowed"
+                      />
+                      <p className="text-xs text-texInactivo mt-1">El email no se puede cambiar</p>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm text-texInactivo mb-2">Nombre</label>
+                      <input
+                        type="text"
+                        value={profileData.first_name}
+                        onChange={(e) => handleInputChange('first_name', e.target.value)}
                         className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
+                        placeholder="Tu nombre"
                       />
                     </div>
-                    <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition">
-                      Guardar cambios
+
+                    <div>
+                      <label className="block text-sm text-texInactivo mb-2">Apellido</label>
+                      <input
+                        type="text"
+                        value={profileData.last_name}
+                        onChange={(e) => handleInputChange('last_name', e.target.value)}
+                        className="w-full bg-subdeep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none"
+                        placeholder="Tu apellido"
+                      />
+                    </div>
+
+                    <button 
+                      onClick={handleSaveProfile}
+                      disabled={loading}
+                      className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loading ? 'Guardando...' : 'Guardar cambios'}
                     </button>
                   </div>
                 </>
@@ -126,12 +302,12 @@ const ConfiguracionApp = () => {
                     </div>
                     <button
                       onClick={() => setNotifications({ ...notifications, [item.key]: !notifications[item.key] })}
-                      className={`w-12 h-6 rounded-full transition ${
+                      className={`relative w-12 h-6 rounded-full transition ${
                         notifications[item.key] ? "bg-primary" : "bg-categorico"
                       }`}
                     >
                       <div
-                        className={`w-5 h-5 bg-white rounded-full transition transform ${
+                        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
                           notifications[item.key] ? "translate-x-6" : "translate-x-0.5"
                         }`}
                       />
@@ -168,47 +344,6 @@ const ConfiguracionApp = () => {
                 <button className="text-red-500 hover:text-red-400 text-sm">
                   Eliminar cuenta permanentemente
                 </button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "apariencia" && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold mb-4">Personalización</h2>
-              
-              <div className="space-y-4">
-                <div className="p-4 bg-subdeep rounded-xl">
-                  <h3 className="font-medium mb-4">Tema</h3>
-                  <div className="flex gap-4">
-                    <button className="w-24 h-16 bg-dark rounded-xl border-2 border-primary flex items-center justify-center">
-                      <span className="text-sm">Oscuro</span>
-                    </button>
-                    <button className="w-24 h-16 bg-gray-200 rounded-xl border-2 border-transparent flex items-center justify-center opacity-50">
-                      <span className="text-sm text-gray-800">Claro</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-subdeep rounded-xl">
-                  <h3 className="font-medium mb-4">Color de acento</h3>
-                  <div className="flex gap-3">
-                    {["bg-blue-500", "bg-purple-500", "bg-green-500", "bg-red-500", "bg-yellow-500"].map((color, i) => (
-                      <button
-                        key={i}
-                        className={`w-8 h-8 ${color} rounded-full ${i === 0 ? "ring-2 ring-white" : ""}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                <div className="p-4 bg-subdeep rounded-xl">
-                  <h3 className="font-medium mb-2">Idioma</h3>
-                  <select className="w-full bg-deep border border-categorico rounded-xl px-4 py-3 text-white focus:border-primary focus:outline-none">
-                    <option>Español</option>
-                    <option>English</option>
-                    <option>Português</option>
-                  </select>
-                </div>
               </div>
             </div>
           )}

@@ -2,7 +2,8 @@
  * Auth Service - API endpoints for authentication
  * Backend base: /api/auth/login/, /api/auth/register/, /api/auth/me/, /api/auth/token/refresh/
  */
-import { API_BASE_URL } from './api';
+import api from './api';
+import { getSession } from 'next-auth/react';
 
 export interface LoginCredentials {
   username: string;
@@ -10,261 +11,113 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
-  name: string;
-  email: string;
   username: string;
-  password1: string;
+  email: string;
+  password: string;
   password2: string;
-  privacyAccepted: boolean;
 }
 
-export interface User {
+export interface UserProfile {
   id: number;
   username: string;
-  email?: string;
-  name?: string;
-}
-
-export interface JWTAuthResponse {
-  access: string;
-  refresh: string;
-  user: User;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  avatar?: string;
+  created_at: string;
 }
 
 export interface AuthResponse {
-  id: number;
-  username: string;
-  email?: string;
-  token: string;
+  user: UserProfile;
+  access: string;
+  refresh: string;
+}
+
+export interface RefreshTokenResponse {
+  access: string;
 }
 
 /**
- * Extract error message from Django API response
- * Handles different error response formats from Django REST Framework
- */
-const extractErrorMessage = (data: Record<string, unknown>, defaultMessage: string): string => {
-  if (typeof data.detail === 'string') return data.detail;
-  if (typeof data.error === 'object' && data.error !== null && 'message' in data.error) {
-    return (data.error as { message: string }).message;
-  }
-  if (typeof data.message === 'string') return data.message;
-  // Handle field-level validation errors from Django
-  if (typeof data === 'object' && data !== null) {
-    const values = Object.values(data);
-    if (values.length > 0 && Array.isArray(values[0])) {
-      return values.flat().join(', ');
-    }
-  }
-  return defaultMessage;
-};
-
-/**
- * Store JWT tokens in localStorage
- */
-const storeTokens = (access: string, refresh: string): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('access_token', access);
-    localStorage.setItem('refresh_token', refresh);
-  }
-};
-
-/**
- * Clear tokens from localStorage
- */
-const clearTokens = (): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('token'); // Clear legacy token
-  }
-};
-
-/**
- * Get the access token from localStorage
- */
-const getAccessToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('access_token');
-  }
-  return null;
-};
-
-/**
- * Get the refresh token from localStorage
- */
-const getRefreshToken = (): string | null => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('refresh_token');
-  }
-  return null;
-};
-
-/**
  * Login user
- * Backend endpoint: /api/auth/login/
- * Returns JWT tokens: { access, refresh, user }
+ * Backend endpoint: POST /api/auth/login/
  */
-export const login = async (credentials: LoginCredentials): Promise<JWTAuthResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/auth/login/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(credentials),
-  });
-  
-  const data = await response.json();
-  
-  if (!response.ok) {
-    throw new Error(extractErrorMessage(data, 'Error en el login'));
-  }
-  
-  // Store JWT tokens
-  if (data.access && data.refresh) {
-    storeTokens(data.access, data.refresh);
-  }
-  
-  return data;
-};
+export const login = (credentials: LoginCredentials) =>
+  api.post<AuthResponse>('/auth/login/', credentials);
 
 /**
  * Register new user
- * Backend endpoint: /api/auth/register/
- * Django expects password1 and password2 for confirmation
+ * Backend endpoint: POST /api/auth/register/
  */
-export const register = async (userData: RegisterData): Promise<JWTAuthResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/auth/register/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(userData),
-  });
-  
-  const data = await response.json();
-  
-  if (!response.ok) {
-    throw new Error(extractErrorMessage(data, 'Error en el registro'));
-  }
-  
-  // Store JWT tokens if returned
-  if (data.access && data.refresh) {
-    storeTokens(data.access, data.refresh);
-  }
-  
-  return data;
-};
+export const register = (data: RegisterData) =>
+  api.post<AuthResponse>('/auth/register/', data);
 
 /**
- * Refresh JWT access token
- * Backend endpoint: /api/auth/token/refresh/
+ * Get current user profile
+ * Backend endpoint: GET /api/auth/me/
+ * Requires authentication
  */
-export const refreshToken = async (): Promise<{ access: string }> => {
-  const refresh = getRefreshToken();
-  
-  if (!refresh) {
-    throw new Error('No refresh token available');
-  }
-  
-  const response = await fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refresh }),
-  });
-  
-  const data = await response.json();
-  
-  if (!response.ok) {
-    clearTokens();
-    throw new Error(extractErrorMessage(data, 'Error al renovar el token'));
-  }
-  
-  // Update access token
-  if (data.access && typeof window !== 'undefined') {
-    localStorage.setItem('access_token', data.access);
-  }
-  
-  return data;
-};
+export const getUserProfile = () =>
+  api.get<UserProfile>('/auth/me/');
 
 /**
- * Get current authenticated user
- * Backend endpoint: /api/auth/me/
+ * Update user profile (text fields)
+ * Backend endpoint: PATCH /api/auth/me/
+ * Requires authentication
  */
-export const getCurrentUser = async (): Promise<User> => {
-  const token = getAccessToken();
-  
-  if (!token) {
-    throw new Error('No access token available');
-  }
-  
-  const response = await fetch(`${API_BASE_URL}/api/auth/me/`, {
-    method: 'GET',
+export const updateUserProfile = (data: Partial<UserProfile>) =>
+  api.patch<UserProfile>('/auth/me/', data);
+
+/**
+ * Update user avatar
+ * Backend endpoint: PATCH /api/auth/me/
+ * Requires authentication
+ * Uses multipart/form-data
+ */
+export const updateUserAvatar = async (file: File) => {
+  const session = await getSession();
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/me/`, {
+    method: 'PATCH',
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${session?.accessToken}`,
     },
+    body: formData,
   });
-  
-  const data = await response.json();
-  
+
   if (!response.ok) {
-    throw new Error(extractErrorMessage(data, 'Error al obtener usuario'));
+    const error = await response.json();
+    throw new Error(error.detail || 'Error al actualizar avatar');
   }
-  
-  return data;
+
+  return response.json();
 };
 
 /**
- * Logout user
- * Backend endpoint: /api/auth/logout/
+ * Refresh access token
+ * Backend endpoint: POST /api/auth/token/refresh/
  */
-export const logout = async (): Promise<void> => {
-  const token = getAccessToken();
-  
-  if (token) {
-    await fetch(`${API_BASE_URL}/api/auth/logout/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-  }
-  
-  clearTokens();
-};
+export const refreshToken = (refreshToken: string) =>
+  api.post<RefreshTokenResponse>('/auth/token/refresh/', { refresh: refreshToken });
 
 /**
- * Verify token is valid
- * Backend endpoint: /api/auth/verify/
+ * Logout user (client-side only, clears session)
  */
-export const verifyToken = async (): Promise<boolean> => {
-  const token = getAccessToken();
-  
-  if (!token) return false;
-  
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/verify/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
-    
-    return response.ok;
-  } catch {
-    return false;
-  }
+export const logout = () => {
+  // Next-auth maneja el logout
+  // Esta función puede usarse para limpiar estado adicional si es necesario
+  return Promise.resolve();
 };
 
 const authService = {
   login,
   register,
+  getUserProfile,
+  updateUserProfile,
+  updateUserAvatar,
   refreshToken,
-  getCurrentUser,
   logout,
-  verifyToken,
-  getAccessToken,
-  getRefreshToken,
-  clearTokens,
 };
 
 export default authService;

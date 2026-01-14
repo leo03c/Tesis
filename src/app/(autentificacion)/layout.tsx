@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "@/app/globals.css";
-
+import Providers from "@/app/providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'COSMOX - Tienda de Juegos',
-  description: 'La mejor tienda de juegos digitales',
+  title: 'COSMOX - Autenticación',
+  description: 'Inicia sesión o regístrate en COSMOX',
 };
 
 export default function RootLayout({
@@ -24,9 +24,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <div className={`${geistSans.variable} ${geistMono.variable}`}>
+      <Providers>
         <main>
           {children}
         </main>
+      </Providers>
+    </div>
   );
 }
 

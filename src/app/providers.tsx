@@ -1,13 +1,12 @@
 'use client';
+
 import { SessionProvider } from 'next-auth/react';
-import type { Session } from 'next-auth';
-import React from 'react';
 import { UserProvider } from '@/contexts/UserContext';
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
 
-export default function Providers({ children, session }: { children: React.ReactNode; session?: Session | null }) {
+export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider session={session}>
+    <SessionProvider>
       <UserProvider>
         <FavoritesProvider>
           {children}

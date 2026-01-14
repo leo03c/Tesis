@@ -14,20 +14,22 @@ interface FavoritesContextType {
 const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [favorites, setFavorites] = useState<Set<number>>(new Set());
-  const [favoriteIds, setFavoriteIds] = useState<Map<number, number>>(new Map()); // gameId -> favoriteId
+  const [favoriteIds, setFavoriteIds] = useState<Map<number, number>>(new Map());
   const [isLoading, setIsLoading] = useState(false);
 
-  // Load favorites when user is authenticated
   useEffect(() => {
-    if (session) {
+    // Solo cargar favoritos si el usuario está autenticado
+    if (status === 'authenticated' && session?.accessToken) {
       loadFavorites();
     } else {
+      // Limpiar favoritos si no está autenticado
       setFavorites(new Set());
       setFavoriteIds(new Map());
+      setIsLoading(false);
     }
-  }, [session]);
+  }, [session, status]);
 
   const loadFavorites = async () => {
     setIsLoading(true);
@@ -37,39 +39,50 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
       const idMap = new Map<number, number>();
       
       response.results.forEach(fav => {
-        gameIds.add(fav.game);
-        idMap.set(fav.game, fav.id);
+        gameIds.add(fav.game.id);
+        idMap.set(fav.game.id, fav.id);
       });
       
       setFavorites(gameIds);
       setFavoriteIds(idMap);
     } catch (error) {
       console.error('Error loading favorites:', error);
+      setFavorites(new Set());
+      setFavoriteIds(new Map());
     } finally {
       setIsLoading(false);
     }
   };
 
   const toggleFavorite = async (gameId: number) => {
-    if (!session) {
-      console.warn('Please log in to manage your favorites');
-      // TODO: Show user-friendly notification/toast
+    // Verificar autenticación
+    if (status !== 'authenticated' || !session?.accessToken) {
+      console.warn('User not authenticated');
+      // Redirigir al login o mostrar modal
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
       return;
     }
 
     const isFav = favorites.has(gameId);
 
+    // Actualización optimista de UI
+    if (isFav) {
+      setFavorites(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(gameId);
+        return newSet;
+      });
+    } else {
+      setFavorites(prev => new Set(prev).add(gameId));
+    }
+
     try {
       if (isFav) {
-        // Remove from favorites
         const favoriteId = favoriteIds.get(gameId);
         if (favoriteId) {
           await favoritesService.removeFavorite(favoriteId);
-          setFavorites(prev => {
-            const newSet = new Set(prev);
-            newSet.delete(gameId);
-            return newSet;
-          });
           setFavoriteIds(prev => {
             const newMap = new Map(prev);
             newMap.delete(gameId);
@@ -77,15 +90,21 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
           });
         }
       } else {
-        // Add to favorites
         const response = await favoritesService.addFavorite(gameId);
-        setFavorites(prev => new Set(prev).add(gameId));
         setFavoriteIds(prev => new Map(prev).set(gameId, response.id));
       }
     } catch (error) {
       console.error('Error toggling favorite:', error);
-      // TODO: Implement toast notification to show error to user
-      // For now, we just log the error
+      // Revertir cambio optimista si falla
+      if (isFav) {
+        setFavorites(prev => new Set(prev).add(gameId));
+      } else {
+        setFavorites(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(gameId);
+          return newSet;
+        });
+      }
     }
   };
 

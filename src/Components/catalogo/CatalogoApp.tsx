@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { getProjects } from "@/services/catalogService";
 import type { Project } from "@/services/catalogService";
-import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
+import { useUser } from "@/contexts/UserContext";
 
 const pic4 = "/pic4.jpg";
 
@@ -14,32 +14,34 @@ const CatalogoApp = () => {
   const [miCatalogo, setMiCatalogo] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [apiUrl, setApiUrl] = useState<string | null>(null);
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchProjects = async () => {
+      // Solo cargar si hay usuario autenticado
+      if (!user) {
+        setLoading(false);
+        setError("Debes iniciar sesión para ver tus proyectos");
+        return;
+      }
+
       try {
         setLoading(true);
-        const response = await getProjects();
-        setMiCatalogo(response.results);
         setError(null);
-        setApiUrl(null);
-      } catch (err) {
+        const response = await getProjects();
+        setMiCatalogo(response.results || []);
+      } catch (err: any) {
         console.error('Error fetching projects:', err);
-        if (err instanceof APIError) {
-          setError(err.message);
-          setApiUrl(err.url);
-        } else {
-          setError('No se pudieron cargar los proyectos');
-          setApiUrl(null);
-        }
+        const errorMessage = err?.message || err?.detail || 'No se pudieron cargar los proyectos';
+        setError(errorMessage);
+        setMiCatalogo([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProjects();
-  }, []);
+  }, [user]);
 
   const statusTranslation: Record<Project['status'], string> = {
     'published': 'Publicado',
@@ -62,6 +64,17 @@ const CatalogoApp = () => {
         return "bg-gray-600";
     }
   };
+
+  const filteredProjects = miCatalogo.filter((proyecto) => {
+    if (filter === "todos") return true;
+    const statusMap: Record<string, Project['status']> = {
+      "publicado": "published",
+      "en desarrollo": "in_development",
+      "en revisión": "in_review",
+      "borrador": "draft"
+    };
+    return proyecto.status === statusMap[filter];
+  });
 
   return (
     <div className="min-h-screen text-white">
@@ -97,21 +110,29 @@ const CatalogoApp = () => {
       <div className="rounded-3xl bg-deep py-10 px-6">
         {loading ? (
           <Loading message="Cargando proyectos..." />
-        ) : error || miCatalogo.length === 0 ? (
+        ) : error ? (
           <div className='text-center py-8'>
-            <p className='text-texInactivo mb-2'>
-              {error || 'No tienes proyectos en tu catálogo'}
+            <div className="bg-red-500/10 border border-red-500 text-red-500 px-6 py-4 rounded-lg inline-block">
+              <p className="font-semibold mb-1">Error al cargar proyectos</p>
+              <p className="text-sm">{error}</p>
+            </div>
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className='text-center py-8'>
+            <p className='text-texInactivo mb-4'>
+              {filter === "todos" 
+                ? 'No tienes proyectos en tu catálogo' 
+                : `No tienes proyectos con el estado "${filter}"`
+              }
             </p>
-            {apiUrl && (
-              <p className='text-texInactivo text-xs mt-2'>
-                URL: <span className='text-primary'>{apiUrl}</span>
-              </p>
-            )}
+            <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition">
+              + Crear tu primer proyecto
+            </button>
           </div>
         ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {miCatalogo.map((proyecto, i) => (
-            <div key={i} className="bg-subdeep rounded-2xl overflow-hidden">
+          {filteredProjects.map((proyecto) => (
+            <div key={proyecto.id} className="bg-subdeep rounded-2xl overflow-hidden hover:transform hover:scale-105 transition-transform">
               {/* Image */}
               <div className="w-full aspect-video relative">
                 <Image
@@ -146,7 +167,7 @@ const CatalogoApp = () => {
 
                 <div className="flex justify-between items-center">
                   <span className="text-texInactivo text-sm">
-                    {proyecto.last_updated ? new Date(proyecto.last_updated).toLocaleDateString() : 'Sin fecha'}
+                    {proyecto.last_updated ? new Date(proyecto.last_updated).toLocaleDateString('es-ES') : 'Sin fecha'}
                   </span>
                   <button className="text-primary hover:text-subprimary text-sm font-medium">
                     Editar →

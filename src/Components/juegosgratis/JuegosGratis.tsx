@@ -10,8 +10,8 @@ import Loading from "@/Components/loading/Loading";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
-const coraB = "/icons/coraB.svg"; // Blank/gray heart
-const coraR = "/icons/coraR.svg"; // Red heart
+const coraB = "/icons/coraB.svg";
+const coraR = "/icons/coraR.svg";
 const star = "/icons/star 5.svg";
 const pic4 = "/pic4.jpg";
 
@@ -23,9 +23,13 @@ const JuegosGratis = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [apiUrl, setApiUrl] = useState<string | null>(null);
-
-  // dirección de la transición: 1 = next (entra desde la derecha), -1 = prev (entra desde la izquierda)
   const [direction, setDirection] = useState(0);
+
+  // Helper para formatear rating
+  const formatRating = (rating: string | number | undefined): string => {
+    const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
+    return (numRating || 0).toFixed(1);
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -41,17 +45,10 @@ const JuegosGratis = () => {
     const fetchFreeGames = async () => {
       try {
         setLoading(true);
-        // Cambiar el endpoint según tu API
-        const response = await fetch('/api/games/games/?price=0&featured=true');
+        const response = await getFreeGames();
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        // La API devuelve datos paginados con estructura { count, results }
-        setGames(data.results || []);
+        // La API devuelve un array directamente, no estructura paginada
+        setGames(response || []);
         setError(null);
         setApiUrl(null);
       } catch (err) {
@@ -77,7 +74,6 @@ const JuegosGratis = () => {
     if (currentPage < totalPages - 1) {
       setDirection(1);
       setCurrentPage((p) => p + 1);
-      // limpiar clase de dirección después de la animación
       setTimeout(() => setDirection(0), 350);
     }
   };
@@ -139,17 +135,16 @@ const JuegosGratis = () => {
           </div>
         </div>
 
-        {/* Tarjetas - envoltorio con animación según dirección */}
+        {/* Tarjetas */}
         <div className="overflow-hidden">
           <div
-            // al cambiar currentPage se monta una nueva grid con la clase de animación
             key={currentPage}
             className={`${
               direction === 1 ? "slide-from-right" : direction === -1 ? "slide-from-left" : ""
             } grid grid-cols-1 sm:grid-cols-3 gap-6`}
           >
-            {visibleGames.map((juego, i) => (
-              <div key={i} className="bg-deep rounded-xl overflow-hidden md:shadow-md relative">
+            {visibleGames.map((juego) => (
+              <div key={juego.id} className="bg-deep rounded-xl overflow-hidden md:shadow-md relative">
                 {/* Imagen */}
                 <div className="w-full aspect-[4/3] relative">
                   <Image
@@ -175,12 +170,12 @@ const JuegosGratis = () => {
                 {/* Contenido */}
                 <div className="p-4 pb-6">
                   <div className="flex gap-2 mb-2 flex-wrap">
-                    {(juego.tags || []).map((tag, j) => (
+                    {(juego.tags || []).slice(0, 3).map((tag) => (
                       <span
-                        key={j}
+                        key={tag.id}
                         className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
                       >
-                        {tag}
+                        {tag.name}
                       </span>
                     ))}
                   </div>
@@ -197,7 +192,7 @@ const JuegosGratis = () => {
                         />
                       ))}
                       <span className="text-xs font-medium ml-1">
-                        {(juego.rating || 0).toFixed(1)}
+                        {formatRating(juego.rating)}
                       </span>
                     </div>
                   </div>
@@ -218,7 +213,7 @@ const JuegosGratis = () => {
         </div>
       </div>
 
-      {/* Estilos de la animación (puedes mover esto a tu CSS global si prefieres) */}
+      {/* Estilos de la animación */}
       <style jsx>{`
         .slide-from-right {
           animation: slideFromRight 300ms ease both;

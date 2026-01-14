@@ -8,128 +8,111 @@ export interface Tag {
   id: number;
   name: string;
   slug: string;
-  game_count?: number;
+  games_count?: string; // Agregado según la API
+}
+
+export interface Platform {
+  id: number;
+  nombre: string;
+  icono: string;
+}
+
+export interface Review {
+  id: number;
+  user: string;
+  rating: number;
+  comment: string;
+  created_at: string;
 }
 
 export interface Game {
   id: number;
   title: string;
-  description?: string;
-  image?: string;
-  price?: number;
-  rating?: number;
-  tags?: string[];
-  is_free?: boolean;
-  developer?: string;
-  release_date?: string;
-}
-
-export interface GameDetail extends Game {
-  short_description?: string;
-  images?: {
-    cover?: string;
-    screenshots?: string[];
-    banner?: string;
-  };
-  videos?: {
-    trailers?: string[];
-    gameplay?: string[];
-  };
-  original_price?: number;
-  discount?: number;
-  genres?: string[];
-  publisher?: string;
-  platforms?: string[];
-  requirements?: {
-    minimum?: Record<string, string>;
-    recommended?: Record<string, string>;
-  };
-  languages?: string[];
-  age_rating?: string;
-  review_count?: number;
-  is_in_wishlist?: boolean;
-  is_owned?: boolean;
+  slug: string;
+  description: string;
+  image: string;
+  price: string;
+  discount: number;
+  final_price: string;
+  rating: string;
+  download_count: number;
+  release_date: string;
+  developer_name: string;
+  idiomas_disponibles: string[];
+  editor: string;
+  tamano_descarga_mb: number;
+  tags: Tag[];
+  plataformas: Platform[];
+  featured: boolean;
+  reviews: Review[];
+  created_at: string;
+  updated_at: string;
 }
 
 export interface GamesResponse {
-  results: Game[];
   count: number;
-  next?: string;
-  previous?: string;
+  next: string | null;
+  previous: string | null;
+  results: Game[];
 }
 
 export interface TagsResponse {
-  results: Tag[];
   count: number;
-  next?: string;
-  previous?: string;
+  next: string | null;
+  previous: string | null;
+  results: Tag[];
 }
 
 /**
  * Get all games with optional filters
- * Backend endpoint: /api/games/
+ * Backend endpoint: /api/games/games/
  */
 export const getGames = (params?: Record<string, string | number | boolean>) => 
   api.get<GamesResponse>('/games/games/', params);
 
 /**
  * Get free games
- * Backend endpoint: /api/games/?is_free=true
+ * Backend endpoint: /api/games/games/freegames/
+ * Returns array directly, not paginated
  */
 export const getFreeGames = () => 
-  api.get<GamesResponse>('/games', { is_free: true });
+  api.get<Game[]>('/games/games/freegames/');
 
 /**
  * Get a specific game by ID
- * Backend endpoint: /api/games/{id}/
+ * Backend endpoint: /api/games/games/{id}/
  */
 export const getGame = (id: number) => 
-  api.get<GameDetail>(`/games/${id}`);
-
-/**
- * Get all available tags
- * Backend endpoint: /api/games/tags/
- */
-export const getTags = () => 
-  api.get<TagsResponse>('games/tags/');
-
-/**
- * Get games by tag
- * Backend endpoint: /api/games/?tag=slug
- */
-export const getGamesByTag = (tagSlug: string) => 
-  api.get<GamesResponse>('/games', { tag: tagSlug });
-
-/**
- * Get games by category (alias for getGamesByTag for compatibility)
- * @deprecated Use getGamesByTag instead
- */
-export const getGamesByCategory = (category: string) => 
-  api.get<GamesResponse>('/games', { tag: category });
-
-/**
- * Search games
- * Backend endpoint: /api/games/search/?q=term
- */
-export const searchGames = (query: string) => 
-  api.get<GamesResponse>('/games/search', { q: query });
+  api.get<Game>(`/games/games/${id}`);
 
 /**
  * Get featured/popular games
- * Backend endpoint: /api/games/?featured=true
+ * Backend endpoint: /api/games/games/?featured=true
  */
 export const getFeaturedGames = () => 
-  api.get<GamesResponse>('/games', { featured: true });
+  api.get<GamesResponse>('/games/games/', { featured: true });
+
+/**
+ * Get all tags/categories
+ * Backend endpoint: /api/games/tags/
+ */
+export const getTags = () => 
+  api.get<TagsResponse>('/games/tags/');
+
+/**
+ * Get games by tag
+ * Backend endpoint: /api/games/games/?tags={tagId}
+ */
+export const getGamesByTag = (tagId: number) => 
+  api.get<GamesResponse>('/games/games/', { tags: tagId });
 
 const gamesService = {
   getGames,
   getFreeGames,
   getGame,
+  getFeaturedGames,
   getTags,
   getGamesByTag,
-  getGamesByCategory,
-  searchGames,
-  getFeaturedGames,
 };
 
 export default gamesService;

@@ -17,10 +17,10 @@ export interface NewsArticle {
 }
 
 export interface NewsResponse {
-  results: NewsArticle[];
   count: number;
-  next?: string;
-  previous?: string;
+  next: string | null;
+  previous: string | null;
+  results: NewsArticle[];
 }
 
 /**
@@ -37,31 +37,9 @@ export const getNews = (params?: Record<string, string | number | boolean>) =>
 export const getFeaturedNews = () => 
   api.get<NewsResponse>('/news', { featured: true });
 
-/**
- * Get a specific news article by ID
- * Backend endpoint: /api/news/{id}/
- */
-export const getNewsArticle = (id: number) => 
-  api.get<NewsArticle>(`/news/${id}`);
-
-/**
- * Get news by category
- */
-export const getNewsByCategory = (category: string) => 
-  api.get<NewsResponse>('/news', { category });
-
-/**
- * Search news articles
- */
-export const searchNews = (query: string) => 
-  api.get<NewsResponse>('/news', { search: query });
-
 const newsService = {
   getNews,
   getFeaturedNews,
-  getNewsArticle,
-  getNewsByCategory,
-  searchNews,
 };
 
 export default newsService;

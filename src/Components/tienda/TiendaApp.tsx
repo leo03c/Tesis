@@ -162,12 +162,12 @@ const TiendaApp = () => {
                   {/* Content */}
                   <div className="p-4 pb-6">
                     <div className="flex gap-2 mb-2 flex-wrap">
-                      {(juego.tags || []).map((tag, j) => (
+                      {(juego.tags || []).slice(0, 3).map((tag) => (
                         <span
-                          key={j}
+                          key={tag.id}
                           className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
                         >
-                          {tag}
+                          {tag.name}
                         </span>
                       ))}
                     </div>
@@ -184,14 +184,14 @@ const TiendaApp = () => {
                           />
                         ))}
                         <span className="text-xs font-medium ml-1">
-                          {(juego.rating || 0).toFixed(1)}
+                          {parseFloat(juego.rating || '0').toFixed(1)}
                         </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <div className="flex gap-2 items-baseline">
                         <span className="text-xl font-bold text-primary">
-                          {juego.price === 0 || !juego.price ? "GRATIS" : `$${juego.price}`}
+                          {parseFloat(juego.price) === 0 ? "GRATIS" : `$${juego.final_price}`}
                         </span>
                       </div>
                       <button className="bg-primary text-white px-4 py-2 rounded-xl text-sm hover:bg-subprimary transition">

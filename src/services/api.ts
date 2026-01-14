@@ -1,135 +1,185 @@
-/**
- * Base API configuration for making HTTP requests to the Django backend.
- * All endpoints must end with a trailing slash as Django requires it.
- */
+import { getSession } from 'next-auth/react';
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+/**
+ * Lista de endpoints públicos que NO requieren autenticación
+ */
+const PUBLIC_ENDPOINTS = [
+  '/games/games/freegames',
+  '/games/games',
+  '/games/tags',
+  '/news',
+];
+
+/**
+ * Verifica si un endpoint es público
+ */
+function isPublicEndpoint(endpoint: string): boolean {
+  const cleanEndpoint = endpoint.split('?')[0].replace(/\/$/, '');
+  
+  return PUBLIC_ENDPOINTS.some(publicEndpoint => {
+    const cleanPublic = publicEndpoint.replace(/\/$/, '');
+    return cleanEndpoint === cleanPublic || cleanEndpoint.startsWith(cleanPublic + '/');
+  });
+}
+
+/**
+ * Asegura que la URL tenga trailing slash antes de query params
+ */
+function ensureTrailingSlash(url: string): string {
+  const [path, query] = url.split('?');
+  const pathWithSlash = path.endsWith('/') ? path : `${path}/`;
+  return query ? `${pathWithSlash}?${query}` : pathWithSlash;
+}
+
+export class APIError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public data?: any,
+    public url?: string
+  ) {
+    super(message);
+    this.name = 'APIError';
+  }
+}
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-  headers?: Record<string, string>;
-  body?: unknown;
+  body?: any;
   params?: Record<string, string | number | boolean>;
 }
 
-/**
- * Ensures the URL has a trailing slash (required by Django)
- */
-function ensureTrailingSlash(url: string): string {
-  return url.endsWith('/') ? url : `${url}/`;
-}
+async function request<T>(
+  endpoint: string,
+  options: RequestOptions = {}
+): Promise<T> {
+  const { method = 'GET', body, params } = options;
 
-/**
- * Build URL with query parameters
- */
-function buildUrl(endpoint: string, params?: Record<string, string | number | boolean>): string {
-  let url = `${API_BASE_URL}/api${ensureTrailingSlash(endpoint)}`;
-  
-  if (params && Object.keys(params).length > 0) {
-    const searchParams = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      searchParams.append(key, String(value));
-    });
-    url = `${url}?${searchParams.toString()}`;
+  // Construir URL base
+  let url = `${API_BASE_URL}${endpoint}`;
+
+  // Agregar query params si existen
+  if (params) {
+    const queryString = new URLSearchParams(
+      Object.entries(params).reduce((acc, [key, value]) => {
+        acc[key] = String(value);
+        return acc;
+      }, {} as Record<string, string>)
+    ).toString();
+    url = `${url}?${queryString}`;
   }
-  
-  return url;
-}
 
-/**
- * Get the authentication token from localStorage
- * Supports both JWT access_token (preferred) and legacy token
- */
-function getAuthToken(): string | null {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('access_token') || localStorage.getItem('token');
-  }
-  return null;
-}
+  // Asegurar trailing slash (DRF lo requiere)
+  url = ensureTrailingSlash(url);
 
-/**
- * Custom API Error that includes the URL
- */
-export class APIError extends Error {
-  url: string;
-  status?: number;
-  
-  constructor(message: string, url: string, status?: number) {
-    super(message);
-    this.name = 'APIError';
-    this.url = url;
-    this.status = status;
-  }
-}
-
-/**
- * Make an API request
- */
-async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', headers = {}, body, params } = options;
-  
-  const url = buildUrl(endpoint, params);
-  
-  const token = getAuthToken();
-  const defaultHeaders: Record<string, string> = {
+  // Headers base
+  const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
-  
-  if (token) {
-    defaultHeaders['Authorization'] = `Bearer ${token}`;
-  }
-  
-  try {
-    const response = await fetch(url, {
-      method,
-      headers: { ...defaultHeaders, ...headers },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.detail || `HTTP error! status: ${response.status}`;
-      throw new APIError(errorMessage, url, response.status);
+
+  // Agregar token de autenticación si el endpoint lo requiere
+  if (!isPublicEndpoint(endpoint)) {
+    try {
+      const session = await getSession();
+      console.log('[API] Session for auth:', session);
+      console.log('[API] Session accessToken:', session?.accessToken);
+      
+      if (session?.accessToken) {
+        headers['Authorization'] = `Bearer ${session.accessToken}`;
+        console.log('[API] Token added to headers');
+      } else {
+        console.warn('[API] No access token found for authenticated endpoint:', endpoint);
+      }
+    } catch (error) {
+      console.error('[API] Error getting session:', error);
     }
+  } else {
+    console.log('[API] Public endpoint, no auth required:', endpoint);
+  }
+
+  // Configuración de la petición
+  const config: RequestInit = {
+    method,
+    headers,
+    credentials: 'include',
+  };
+
+  if (body) {
+    config.body = JSON.stringify(body);
+  }
+
+  try {
+    console.log(`[API] ${method} ${url}`);
+    console.log('[API] Headers:', JSON.stringify(headers, null, 2));
     
-    // Handle 204 No Content
-    if (response.status === 204) {
+    const response = await fetch(url, config);
+    
+    console.log('[API] Response status:', response.status);
+    console.log('[API] Response headers:', response.headers);
+
+    // Manejar respuesta sin contenido (204, 205)
+    if (response.status === 204 || response.status === 205) {
       return {} as T;
     }
-    
-    return response.json();
+
+    // Intentar parsear JSON
+    let data;
+    try {
+      data = await response.json();
+      console.log('[API] Response data:', data);
+    } catch {
+      data = null;
+      console.log('[API] No JSON data in response');
+    }
+
+    if (!response.ok) {
+      console.error('[API] Error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        url,
+        data,
+        hasAuthHeader: !!headers['Authorization']
+      });
+      
+      throw new APIError(
+        `HTTP error! status: ${response.status}`,
+        response.status,
+        data,
+        url
+      );
+    }
+
+    return data;
   } catch (error) {
-    // If it's already an APIError, rethrow it
     if (error instanceof APIError) {
       throw error;
     }
-    // For network errors, create a new APIError
     throw new APIError(
-      error instanceof Error ? error.message : 'Network error',
+      error instanceof Error ? error.message : 'Unknown error',
+      0,
+      null,
       url
     );
   }
 }
 
-/**
- * API client with methods for each HTTP verb
- */
-export const api = {
-  get: <T>(endpoint: string, params?: Record<string, string | number | boolean>) => 
+const api = {
+  get: <T>(endpoint: string, params?: Record<string, string | number | boolean>) =>
     request<T>(endpoint, { method: 'GET', params }),
   
-  post: <T>(endpoint: string, body?: unknown) => 
+  post: <T>(endpoint: string, body?: any) =>
     request<T>(endpoint, { method: 'POST', body }),
   
-  put: <T>(endpoint: string, body?: unknown) => 
+  put: <T>(endpoint: string, body?: any) =>
     request<T>(endpoint, { method: 'PUT', body }),
   
-  patch: <T>(endpoint: string, body?: unknown) => 
+  patch: <T>(endpoint: string, body?: any) =>
     request<T>(endpoint, { method: 'PATCH', body }),
   
-  delete: <T>(endpoint: string) => 
+  delete: <T>(endpoint: string) =>
     request<T>(endpoint, { method: 'DELETE' }),
 };
 
-export { API_BASE_URL };
 export default api;
