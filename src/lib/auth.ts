@@ -87,22 +87,24 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         // Si es login por credenciales
         if (account?.provider === 'credentials') {
-          token.accessToken = user.accessToken;
-          token.refreshToken = user.refreshToken;
+          token.accessToken = (user as any).accessToken;
+          token.refreshToken = (user as any).refreshToken;
           token.id = user.id;
         }
         // Si es login por Google
         else if (account?.provider === 'google' && user.email) {
           try {
-            // Consultar el backend para obtener el id del usuario por email
+            // Consultar el backend para obtener el id del usuario por email y tokens
             const res = await fetch(`http://localhost:8000/api/auth/user-by-email/?email=${encodeURIComponent(user.email)}`);
             if (res.ok) {
               const data = await res.json();
               token.id = data.id?.toString();
+              token.accessToken = data.access || account.access_token;
+              token.refreshToken = data.refresh || account.refresh_token;
             }
           } catch (e) {
             console.error('Error obteniendo id de usuario Google:', e);
@@ -113,9 +115,9 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token && session.user) {
-        session.user.id = token.id as string;
-        session.accessToken = token.accessToken as string;
-        session.refreshToken = token.refreshToken as string;
+        (session.user as any).id = token.id as string;
+        (session as any).accessToken = token.accessToken as string;
+        (session as any).refreshToken = token.refreshToken as string;
       }
       return session;
     }
