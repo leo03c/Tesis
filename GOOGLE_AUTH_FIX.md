@@ -48,7 +48,7 @@ async jwt({ token, user, account }) {
       try {
         console.log('🔍 Fetching user data from backend for Google user');
         // Consultar el backend para obtener el id del usuario por email y tokens
-        const res = await fetch(`http://localhost:8000/api/auth/user-by-email/?email=${encodeURIComponent(user.email)}`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/user-by-email/?email=${encodeURIComponent(user.email)}`);
         
         if (res.ok) {
           const data = await res.json();
@@ -91,12 +91,18 @@ Se agregaron logs detallados en `signIn`, `jwt`, y `session` callbacks para faci
 
 #### 3. **Manejo mejorado de errores**
 ```typescript
-// Aceptar tanto 200/201 (nuevo usuario) como 409 (usuario existente)
-if (!res.ok && res.status !== 409 && res.status !== 200 && res.status !== 201) {
+// Aceptar 200-299 (res.ok) o 409 (usuario existente)
+if (!res.ok && res.status !== 409) {
   const errorText = await res.text();
   console.error('❌ Error guardando usuario Google en backend:', errorText);
   return false;
 }
+```
+
+#### 4. **URLs configurables mediante variables de entorno**
+```typescript
+// ✅ Usando variable de entorno en lugar de URL hardcodeada
+const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/user-by-email/?email=${encodeURIComponent(user.email)}`);
 ```
 
 ## Requisitos del Backend
