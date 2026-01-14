@@ -60,9 +60,12 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log('🔐 SignIn callback:', { provider: account?.provider, email: user?.email });
+      
       // Solo guardar en backend si es login con Google
       if (account?.provider === 'google' && user?.email) {
         try {
+          console.log('📤 Enviando datos a backend google-auth');
           // Solo enviamos los campos estrictamente necesarios
           const res = await fetch('http://localhost:8000/api/auth/google-auth/', {
             method: 'POST',
@@ -73,24 +76,32 @@ export const authOptions: NextAuthOptions = {
               googleId: profile?.sub,
             }),
           });
-          // Si el usuario ya existe, el backend debe devolver un error controlado (por ejemplo, 409),
-          // pero permitimos el login igualmente
-          if (!res.ok && res.status !== 409) {
-            // Si es otro error, lo mostramos y bloqueamos el login
-            console.error('Error guardando usuario Google en backend:', await res.text());
+          
+          console.log('📥 Respuesta google-auth:', res.status);
+          
+          // Aceptar tanto 200/201 (nuevo usuario) como 409 (usuario existente)
+          if (!res.ok && res.status !== 409 && res.status !== 200 && res.status !== 201) {
+            const errorText = await res.text();
+            console.error('❌ Error guardando usuario Google en backend:', errorText);
             return false;
           }
+          
+          console.log('✅ Usuario Google procesado correctamente');
         } catch (e) {
           // Si el error es de red, permitimos el login pero lo registramos
-          console.error('Error guardando usuario Google en backend:', e);
+          console.error('❌ Error de red guardando usuario Google:', e);
+          // Permitir login aunque falle el backend
         }
       }
       return true;
     },
     async jwt({ token, user, account }) {
       if (user) {
+        console.log('🔑 JWT callback - user login:', { provider: account?.provider, email: user.email });
+        
         // Si es login por credenciales
         if (account?.provider === 'credentials') {
+          console.log('🔐 Credentials login - storing tokens');
           token.accessToken = (user as any).accessToken;
           token.refreshToken = (user as any).refreshToken;
           token.id = user.id;
@@ -98,27 +109,58 @@ export const authOptions: NextAuthOptions = {
         // Si es login por Google
         else if (account?.provider === 'google' && user.email) {
           try {
+            console.log('🔍 Fetching user data from backend for Google user');
             // Consultar el backend para obtener el id del usuario por email y tokens
             const res = await fetch(`http://localhost:8000/api/auth/user-by-email/?email=${encodeURIComponent(user.email)}`);
+            
             if (res.ok) {
               const data = await res.json();
+              console.log('📥 User data received:', { id: data.id, hasAccess: !!data.access });
+              
               token.id = data.id?.toString();
-              token.accessToken = data.access || account.access_token;
-              token.refreshToken = data.refresh || account.refresh_token;
+              // El backend debe devolver tokens JWT para este usuario
+              token.accessToken = data.access;
+              token.refreshToken = data.refresh;
+              
+              if (!token.accessToken) {
+                console.warn('⚠️ No access token received from backend for Google user');
+              }
+            } else {
+              console.error('❌ Failed to fetch user data:', res.status);
             }
           } catch (e) {
-            console.error('Error obteniendo id de usuario Google:', e);
+            console.error('❌ Error obteniendo datos de usuario Google:', e);
           }
         }
       }
+      
+      console.log('🎫 JWT token state:', { 
+        hasId: !!token.id, 
+        hasAccessToken: !!token.accessToken,
+        hasRefreshToken: !!token.refreshToken 
+      });
+      
       return token;
     },
     async session({ session, token }) {
+      console.log('📋 Session callback:', { 
+        hasToken: !!token,
+        hasUser: !!session.user,
+        tokenId: token?.id,
+        hasAccessToken: !!token?.accessToken
+      });
+      
       if (token && session.user) {
         (session.user as any).id = token.id as string;
         (session as any).accessToken = token.accessToken as string;
         (session as any).refreshToken = token.refreshToken as string;
       }
+      
+      console.log('✅ Session created:', {
+        userId: (session.user as any)?.id,
+        hasAccessToken: !!(session as any).accessToken
+      });
+      
       return session;
     }
   },
