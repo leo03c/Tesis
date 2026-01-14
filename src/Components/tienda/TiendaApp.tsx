@@ -164,44 +164,45 @@ const TiendaApp = () => {
                       )}
                     </div>
 
-                  {/* Content */}
-                  <div className="p-4 pb-6">
-                    <div className="flex gap-2 mb-2 flex-wrap">
-                      {(juego.tags || []).slice(0, 3).map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
-                        >
-                          {tag.name}
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex justify-between items-center mb-3">
-                      <h3 className="text-base font-semibold">{juego.title}</h3>
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, k) => (
-                          <Image
-                            key={k}
-                            src={star}
-                            alt="estrella"
-                            width={14}
-                            height={14}
-                          />
+                    {/* Content */}
+                    <div className="p-4 pb-6">
+                      <div className="flex gap-2 mb-2 flex-wrap">
+                        {(juego.tags || []).slice(0, 3).map((tag) => (
+                          <span
+                            key={tag.id}
+                            className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
+                          >
+                            {tag.name}
+                          </span>
                         ))}
-                        <span className="text-xs font-medium ml-1">
-                          {parseFloat(juego.rating || '0').toFixed(1)}
-                        </span>
                       </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex gap-2 items-baseline">
-                        <span className="text-xl font-bold text-primary">
-                          {parseFloat(juego.price) === 0 ? "GRATIS" : `$${juego.final_price}`}
-                        </span>
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="text-base font-semibold">{juego.title}</h3>
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, k) => (
+                            <Image
+                              key={k}
+                              src={star}
+                              alt="estrella"
+                              width={14}
+                              height={14}
+                            />
+                          ))}
+                          <span className="text-xs font-medium ml-1">
+                            {parseFloat(juego.rating || '0').toFixed(1)}
+                          </span>
+                        </div>
                       </div>
-                      <button className="bg-primary text-white px-4 py-2 rounded-xl text-sm hover:bg-subprimary transition">
-                        Comprar
-                      </button>
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-2 items-baseline">
+                          <span className="text-xl font-bold text-primary">
+                            {parseFloat(juego.price) === 0 ? "GRATIS" : `$${juego.final_price}`}
+                          </span>
+                        </div>
+                        <button className="bg-primary text-white px-4 py-2 rounded-xl text-sm hover:bg-subprimary transition">
+                          Comprar
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </Link>

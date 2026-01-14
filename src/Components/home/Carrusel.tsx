@@ -139,7 +139,7 @@ const Carrusel = () => {
             {parseFloat(featuredGame.price) === 0 ? 'GRATIS' : 'DESCARGAR'}
           </span>
         </div>
-      </div>
+      </Link>
 
       {/* Contenedor secundario */}
       <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 w-full lg:w-[35%]">

@@ -97,21 +97,19 @@ const Juego = () => {
     return (numRating || 0).toFixed(1);
   };
 
-  const carrImages = [carr1, carr2, carr3, carr4, carr5, carr1];
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   const scroll = (dir: "left" | "right") => {
-  if (scrollRef.current) {
-    const scrollAmount = 140; // Asegura que un ítem completo se desplace
-    scrollRef.current.scrollBy({
-      left: dir === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
-  }  
-};
-const youtube = () => {
-  window.open("https://www.youtube.com", "_blank");
-};
+    if (scrollRef.current) {
+      const scrollAmount = 140;
+      scrollRef.current.scrollBy({
+        left: dir === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const youtube = () => {
+    window.open("https://www.youtube.com", "_blank");
+  };
 
   return (
     <div className="bg-dark text-white mb-4 rounded-3xl max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">

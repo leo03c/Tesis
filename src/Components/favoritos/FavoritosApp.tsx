@@ -231,37 +231,38 @@ const FavoritosApp = () => {
                           </button>
                         </div>
 
-                      <div className="p-4 pb-6">
-                        <div className="flex gap-2 mb-2 flex-wrap">
-                          {(juego.tags || []).slice(0, 3).map((tag) => (
-                            <span
-                              key={tag.id}
-                              className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
-                            >
-                              {tag.name}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="flex justify-between items-center mb-2">
-                          <h3 className="text-base font-semibold">{juego.title}</h3>
-                          <div className="flex items-center gap-1">
-                            {[...Array(5)].map((_, k) => (
-                              <Image
-                                key={k}
-                                src={star}
-                                alt="estrella"
-                                width={14}
-                                height={14}
-                              />
+                        <div className="p-4 pb-6">
+                          <div className="flex gap-2 mb-2 flex-wrap">
+                            {(juego.tags || []).slice(0, 3).map((tag) => (
+                              <span
+                                key={tag.id}
+                                className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
+                              >
+                                {tag.name}
+                              </span>
                             ))}
-                            <span className="text-xs font-medium ml-1">
-                              {formatRating(juego.rating)}
-                            </span>
                           </div>
+                          <div className="flex justify-between items-center mb-2">
+                            <h3 className="text-base font-semibold">{juego.title}</h3>
+                            <div className="flex items-center gap-1">
+                              {[...Array(5)].map((_, k) => (
+                                <Image
+                                  key={k}
+                                  src={star}
+                                  alt="estrella"
+                                  width={14}
+                                  height={14}
+                                />
+                              ))}
+                              <span className="text-xs font-medium ml-1">
+                                {formatRating(juego.rating)}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-texInactivo text-xs">
+                            {parseFloat(juego.price) === 0 ? 'GRATIS' : `$${juego.final_price}`}
+                          </p>
                         </div>
-                        <p className="text-texInactivo text-xs">
-                          {parseFloat(juego.price) === 0 ? 'GRATIS' : `$${juego.final_price}`}
-                        </p>
                       </div>
                     </Link>
                   ))}
