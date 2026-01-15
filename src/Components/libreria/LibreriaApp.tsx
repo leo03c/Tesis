@@ -19,7 +19,6 @@ const LibreriaApp = () => {
 
   useEffect(() => {
     const fetchLibrary = async () => {
-      // Verificar si el usuario está autenticado antes de llamar a la API
       const session = await import('next-auth/react').then(mod => mod.getSession());
       if (!session) {
         setError('Debes iniciar sesión para ver tu librería.');
@@ -74,6 +73,10 @@ const LibreriaApp = () => {
     return `Hace ${Math.floor(diffDays / 30)} meses`;
   };
 
+  const totalHoursPlayed = libreria
+    .filter((g) => g.installed)
+    .reduce((acc, g) => acc + Number(g.hours_played || 0), 0);
+
   return (
     <div className="min-h-screen text-white">
       {/* Header */}
@@ -87,6 +90,7 @@ const LibreriaApp = () => {
             onClick={() => setViewMode("grid")}
             className={`p-2 rounded-lg transition ${viewMode === "grid" ? "bg-primary" : "bg-subdeep"}`}
           >
+            {/* Grid icon */}
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
             </svg>
@@ -95,6 +99,7 @@ const LibreriaApp = () => {
             onClick={() => setViewMode("list")}
             className={`p-2 rounded-lg transition ${viewMode === "list" ? "bg-primary" : "bg-subdeep"}`}
           >
+            {/* List icon */}
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
             </svg>
@@ -143,98 +148,102 @@ const LibreriaApp = () => {
             No hay juegos que coincidan con el filtro seleccionado
           </p>
         ) : (
-        <>
-        {viewMode === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {filteredGames.map((game, i) => (
-              <div key={i} className="bg-subdeep rounded-2xl overflow-hidden group">
-                <div className="w-full aspect-[4/3] relative">
-                  <Image
-                    src={game.image || pic4}
-                    alt={game.title || `Imagen de ${game.title || 'juego'}`}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    className="object-cover group-hover:scale-105 transition duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                    <button className="bg-primary text-white px-6 py-2 rounded-xl font-semibold hover:bg-subprimary transition">
+          <>
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredGames.map((game, i) => (
+                <div key={i} className="bg-subdeep rounded-2xl overflow-hidden group">
+                  <div className="w-full aspect-[4/3] relative">
+                    <Image
+                      src={game.image || pic4}
+                      alt={game.title || `Imagen de ${game.title || 'juego'}`}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      className="object-cover group-hover:scale-105 transition duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                      <button className="bg-primary text-white px-6 py-2 rounded-xl font-semibold hover:bg-subprimary transition">
+                        {game.installed ? "Jugar" : "Instalar"}
+                      </button>
+                    </div>
+                    {game.installed && (
+                      <div className="absolute top-2 right-2 bg-green-500 w-3 h-3 rounded-full" />
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold mb-1 truncate">{game.title}</h3>
+                    <p className="text-texInactivo text-sm">
+                      {Number(game.hours_played || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}h jugadas
+                    </p>
+                    <p className="text-texInactivo text-xs">{formatLastPlayed(game.last_played)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredGames.map((game, i) => (
+                <div
+                  key={i}
+                  className="bg-subdeep rounded-xl p-4 flex items-center gap-4 hover:bg-categorico transition"
+                >
+                  <div className="w-20 h-14 relative flex-shrink-0">
+                    <Image
+                      src={game.image || pic4}
+                      alt={game.title || `Imagen de ${game.title || 'juego'}`}
+                      fill
+                      sizes="80px"
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold truncate">{game.title}</h3>
+                    <p className="text-texInactivo text-sm">{formatLastPlayed(game.last_played)}</p>
+                  </div>
+                  <div className="text-right hidden sm:block">
+                    <p className="text-white font-medium">
+                      {Number(game.hours_played || 0).toLocaleString('es-ES', { maximumFractionDigits: 0 })}h
+                    </p>
+                    <p className="text-texInactivo text-xs">Tiempo jugado</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {game.installed && (
+                      <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs">
+                        Instalado
+                      </span>
+                    )}
+                    <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-subprimary transition">
                       {game.installed ? "Jugar" : "Instalar"}
                     </button>
                   </div>
-                  {game.installed && (
-                    <div className="absolute top-2 right-2 bg-green-500 w-3 h-3 rounded-full" />
-                  )}
                 </div>
-                <div className="p-4">
-                  <h3 className="font-semibold mb-1 truncate">{game.title}</h3>
-                  <p className="text-texInactivo text-sm">{game.hours_played}h jugadas</p>
-                  <p className="text-texInactivo text-xs">{formatLastPlayed(game.last_played)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredGames.map((game, i) => (
-              <div
-                key={i}
-                className="bg-subdeep rounded-xl p-4 flex items-center gap-4 hover:bg-categorico transition"
-              >
-                <div className="w-20 h-14 relative flex-shrink-0">
-                  <Image
-                    src={game.image || pic4}
-                    alt={game.title || `Imagen de ${game.title || 'juego'}`}
-                    fill
-                    sizes="80px"
-                    className="object-cover rounded-lg"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold truncate">{game.title}</h3>
-                  <p className="text-texInactivo text-sm">{formatLastPlayed(game.last_played)}</p>
-                </div>
-                <div className="text-right hidden sm:block">
-                  <p className="text-white font-medium">{game.hours_played}h</p>
-                  <p className="text-texInactivo text-xs">Tiempo jugado</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {game.installed && (
-                    <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs">
-                      Instalado
-                    </span>
-                  )}
-                  <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-subprimary transition">
-                    {game.installed ? "Jugar" : "Instalar"}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        </>
+              ))}
+            </div>
+          )}
+          </>
         )}
       </div>
 
       {/* Stats */}
       {!loading && libreria.length > 0 && (
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-deep rounded-2xl p-6 text-center">
-          <p className="text-3xl font-bold text-primary">
-            {libreria.reduce((acc, g) => acc + g.hours_played, 0)}h
-          </p>
-          <p className="text-texInactivo">Total jugado</p>
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="bg-deep rounded-2xl p-6 text-center">
+            <p className="text-3xl font-bold text-primary">
+              {totalHoursPlayed.toLocaleString('es-ES', { maximumFractionDigits: 0 })}h
+            </p>
+            <p className="text-texInactivo">Total jugado</p>
+          </div>
+          <div className="bg-deep rounded-2xl p-6 text-center">
+            <p className="text-3xl font-bold text-primary">{libreria.length}</p>
+            <p className="text-texInactivo">Juegos</p>
+          </div>
+          <div className="bg-deep rounded-2xl p-6 text-center">
+            <p className="text-3xl font-bold text-primary">
+              {libreria.filter((g) => g.installed).length}
+            </p>
+            <p className="text-texInactivo">Instalados</p>
+          </div>
         </div>
-        <div className="bg-deep rounded-2xl p-6 text-center">
-          <p className="text-3xl font-bold text-primary">{libreria.length}</p>
-          <p className="text-texInactivo">Juegos</p>
-        </div>
-        <div className="bg-deep rounded-2xl p-6 text-center">
-          <p className="text-3xl font-bold text-primary">
-            {libreria.filter((g) => g.installed).length}
-          </p>
-          <p className="text-texInactivo">Instalados</p>
-        </div>
-      </div>
       )}
     </div>
   );
