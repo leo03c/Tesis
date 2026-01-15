@@ -20,12 +20,50 @@ const filterMap: Record<string, string | null> = {
 };
 
 const CatalogoApp: React.FC = () => {
-  const { user } = useUser();
+  const { user, isAuthenticated, isLoading } = useUser();
   const [miCatalogo, setMiCatalogo] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [isForbidden, setIsForbidden] = useState(false);
   const [filter, setFilter] = useState("todos");
   const [showModal, setShowModal] = useState(false);
+
+  // Mostrar loading mientras se verifica la sesión
+  if (isLoading) {
+    return (
+      <div className="min-h-screen text-white flex items-center justify-center">
+        <Loading message="Verificando sesión..." />
+      </div>
+    );
+  }
+
+  // Mostrar mensaje de login si no está autenticado
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen text-white">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Mi Catálogo</h1>
+          <p className="text-texInactivo">Inicia sesión para ver tus proyectos</p>
+        </div>
+        <div className="my-4 rounded-3xl bg-deep text-white py-20 px-6">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-subdeep rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-texInactivo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Inicia sesión</h3>
+            <p className="text-texInactivo mb-4">Debes iniciar sesión para ver tus proyectos</p>
+            <button
+              onClick={() => window.location.href = '/login'}
+              className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition"
+            >
+              Iniciar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     const fetchProjects = async () => {
