@@ -149,11 +149,8 @@ const FavoritosApp = () => {
             </div>
             <h3 className="text-xl font-semibold mb-2">Inicia sesión</h3>
             <p className="text-texInactivo mb-4">Debes iniciar sesión para ver tus juegos favoritos</p>
-            <p className="text-xs text-texInactivo mb-4">
-              Estado actual: {status}
-            </p>
             <button 
-              onClick={() => window.location.href = '/auth/signin'}
+              onClick={() => window.location.href = '/login'}
               className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition"
             >
               Iniciar sesión

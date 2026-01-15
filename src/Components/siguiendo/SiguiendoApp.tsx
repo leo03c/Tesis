@@ -4,10 +4,12 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import followService, { UserProfile } from "@/services/followService";
 import Loading from "@/Components/loading/Loading";
+import { useSession } from "next-auth/react"; // <-- importamos useSession
 
 const pic4 = "/pic4.jpg"; // imagen por defecto
 
 const SiguiendoApp: React.FC = () => {
+  const { data: session, status } = useSession(); // <-- obtenemos sesión
   const [activeTab, setActiveTab] = useState<"siguiendo" | "sugerencias">("siguiendo");
   const [followingList, setFollowingList] = useState<UserProfile[]>([]);
   const [suggestions, setSuggestions] = useState<UserProfile[]>([]);
@@ -23,6 +25,11 @@ const SiguiendoApp: React.FC = () => {
   };
 
   useEffect(() => {
+    if (status !== "authenticated") {
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         setLoading(true);
@@ -75,7 +82,7 @@ const SiguiendoApp: React.FC = () => {
     };
 
     fetchData();
-  }, []);
+  }, [status]);
 
   const handleUnfollow = (id: number) => {
     const user = followingList.find(u => u.id === id);
@@ -128,6 +135,36 @@ const SiguiendoApp: React.FC = () => {
     </div>
   );
 
+  // --- MENSAJE DE LOGIN SI NO ESTÁ AUTENTICADO ---
+  if (status === "unauthenticated") {
+    return (
+      <div className="min-h-screen text-white">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Siguiendo</h1>
+          <p className="text-texInactivo">Inicia sesión para ver a quién sigues</p>
+        </div>
+        <div className="my-4 rounded-3xl bg-deep text-white py-20 px-6">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-subdeep rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-texInactivo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Inicia sesión</h3>
+            <p className="text-texInactivo mb-4">Debes iniciar sesión para ver tus seguimientos y sugerencias</p>
+            <button 
+              onClick={() => window.location.href = '/login'}
+              className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition"
+            >
+              Iniciar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // --- Renderizado normal cuando está autenticado ---
   return (
     <div className="min-h-screen text-white">
       <div className="mb-8">

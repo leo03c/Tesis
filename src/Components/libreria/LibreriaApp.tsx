@@ -6,10 +6,12 @@ import { getLibrary } from "@/services/libraryService";
 import type { LibraryGame } from "@/services/libraryService";
 import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
+import { useSession } from "next-auth/react"; // <-- importamos useSession
 
 const pic4 = "/pic4.jpg";
 
 const LibreriaApp = () => {
+  const { data: session, status } = useSession(); // <-- obtenemos sesión
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filter, setFilter] = useState("todos");
   const [libreria, setLibreria] = useState<LibraryGame[]>([]);
@@ -18,14 +20,12 @@ const LibreriaApp = () => {
   const [apiUrl, setApiUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    if (status !== "authenticated") {
+      setLoading(false);
+      return;
+    }
+
     const fetchLibrary = async () => {
-      const session = await import('next-auth/react').then(mod => mod.getSession());
-      if (!session) {
-        setError('Debes iniciar sesión para ver tu librería.');
-        setApiUrl(null);
-        setLoading(false);
-        return;
-      }
       try {
         setLoading(true);
         const response = await getLibrary();
@@ -33,16 +33,16 @@ const LibreriaApp = () => {
         setError(null);
         setApiUrl(null);
       } catch (err) {
-        console.error('Error fetching library:', err);
+        console.error("Error fetching library:", err);
         if (err instanceof APIError) {
           if (err.status === 401) {
-            setError('No autorizado. Por favor, inicia sesión para acceder a tu librería.');
+            setError("No autorizado. Por favor, inicia sesión para acceder a tu librería.");
           } else {
             setError(err.message);
           }
           setApiUrl(err.url);
         } else {
-          setError('No se pudo cargar la librería');
+          setError("No se pudo cargar la librería");
           setApiUrl(null);
         }
       } finally {
@@ -51,7 +51,36 @@ const LibreriaApp = () => {
     };
 
     fetchLibrary();
-  }, []);
+  }, [status]);
+
+  // Mostrar mensaje de login si no está autenticado
+  if (status === "unauthenticated") {
+    return (
+      <div className="min-h-screen text-white">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Mi Librería</h1>
+          <p className="text-texInactivo">Inicia sesión para ver tus favoritos</p>
+        </div>
+        <div className="my-4 rounded-3xl bg-deep text-white py-20 px-6">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-subdeep rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-texInactivo" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold mb-2">Inicia sesión</h3>
+            <p className="text-texInactivo mb-4">Debes iniciar sesión para ver su librería</p>
+            <button 
+              onClick={() => window.location.href = '/login'}
+              className="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-semibold transition"
+            >
+              Iniciar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const filteredGames = libreria.filter((game) => {
     if (filter === "instalados") return game.installed;
