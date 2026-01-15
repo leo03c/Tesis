@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { getGames, getTags } from '@/services/gamesService';
 import Link from 'next/link';
 import { FiSearch, FiUser } from 'react-icons/fi';
 import Image from 'next/image';
@@ -17,7 +18,42 @@ const Navbar = () => {
         console.log('Navbar User:', session?.user);
     }, [session, status]);
 
-    // Función para obtener el nombre de usuario a mostrar
+    // Estado para búsqueda y resultados
+    const [search, setSearch] = useState("");
+    const [showModal, setShowModal] = useState(false);
+    const [loadingResults, setLoadingResults] = useState(false);
+    const [gameResults, setGameResults] = useState([]);
+    const [tagResults, setTagResults] = useState([]);
+    const inputRef = useRef(null);
+
+    // Búsqueda asíncrona debounced
+    useEffect(() => {
+        if (!search.trim()) {
+            setGameResults([]);
+            setTagResults([]);
+            setShowModal(false);
+            return;
+        }
+        setLoadingResults(true);
+        const handler = setTimeout(async () => {
+            try {
+                const [gamesRes, tagsRes] = await Promise.all([
+                    getGames({ search, page_size: 5 }),
+                    getTags()
+                ]);
+                setGameResults(gamesRes?.results || []);
+                setTagResults((tagsRes?.results || []).filter(tag => tag.name.toLowerCase().includes(search.toLowerCase())).slice(0, 5));
+                setShowModal(true);
+            } catch (e) {
+                setGameResults([]);
+                setTagResults([]);
+                setShowModal(false);
+            } finally {
+                setLoadingResults(false);
+            }
+        }, 350);
+        return () => clearTimeout(handler);
+    }, [search]);
     const getDisplayName = () => {
         if (status === 'loading') return 'Cargando...';
         if (!session?.user) return 'INVITADO';
@@ -51,13 +87,69 @@ const Navbar = () => {
                                 <FiSearch className="text-gray-400" />
                             </div>
                             <input
+                                ref={inputRef}
                                 type="text"
-                                placeholder="Buscar..."
+                                placeholder="Buscar juegos, categorías..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                onFocus={() => { if (search.trim() && (gameResults.length > 0 || tagResults.length > 0)) setShowModal(true); }}
                                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                autoComplete="off"
                             />
-                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                <Image width={15} height={15} alt='setting' src={'setting-2.svg'} />
-                            </div>
+
+                            {/* Modal de resultados de búsqueda */}
+                            {showModal && (
+                                <div className="absolute left-0 right-0 mt-2 bg-gray-900 border border-gray-700 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                                    {loadingResults ? (
+                                        <div className="p-4 text-gray-300 text-center">Buscando...</div>
+                                    ) : (
+                                        <>
+                                            {gameResults.length === 0 && tagResults.length === 0 ? (
+                                                <div className="p-4 text-gray-400 text-center">Sin resultados</div>
+                                            ) : (
+                                                <>
+                                                    {gameResults.length > 0 && (
+                                                        <div>
+                                                            <div className="px-4 pt-3 pb-1 text-xs text-primary font-bold uppercase">Juegos</div>
+                                                            <ul>
+                                                                {gameResults.map(game => (
+                                                                    <li key={game.id}>
+                                                                        <Link
+                                                                            href={`/juego/${game.slug}`}
+                                                                            className="block px-4 py-2 text-sm text-gray-200 hover:bg-primary hover:text-white rounded-lg transition-colors"
+                                                                            onClick={() => { setShowModal(false); setSearch(""); }}
+                                                                        >
+                                                                            {game.title}
+                                                                        </Link>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                    {tagResults.length > 0 && (
+                                                        <div>
+                                                            <div className="px-4 pt-3 pb-1 text-xs text-primary font-bold uppercase">Categorías</div>
+                                                            <ul>
+                                                                {tagResults.map(tag => (
+                                                                    <li key={tag.id}>
+                                                                        <Link
+                                                                            href={`/categoria/${tag.slug}`}
+                                                                            className="block px-4 py-2 text-sm text-gray-200 hover:bg-primary hover:text-white rounded-lg transition-colors"
+                                                                            onClick={() => { setShowModal(false); setSearch(""); }}
+                                                                        >
+                                                                            {tag.name}
+                                                                        </Link>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Navigation Links */}
@@ -75,10 +167,10 @@ const Navbar = () => {
                     <div className="flex items-center gap-6">
                         <div className='flex gap-4'>
                             <button className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
-                                <Image width={15} height={15} alt='bag' src={'bag.svg'} />
+                                <Image width={15} height={15} alt='bag' src={'/bag.svg'} />
                             </button>
                             <button className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
-                                <Image width={15} height={15} alt='translate' src={'translate.svg'} />
+                                <Image width={15} height={15} alt='translate' src={'/translate.svg'} />
                             </button>
                         </div>
 
@@ -117,7 +209,7 @@ const Navbar = () => {
                             onClick={() => console.log('Abrir configuración')}
                             className="absolute inset-y-0 right-0 flex items-center"
                         >
-                            <Image width={80} height={70} alt="setting" src="setting-2.svg" />
+                            <Image width={80} height={70} alt="setting" src="/setting-2.svg" />
                         </button>
                     </div>
                 </div>

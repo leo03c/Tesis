@@ -15,17 +15,17 @@ const Footer = () => {
                 {/* Parte superior con logo y redes */}
                 <div className="flex flex-col md:flex-row justify-between border-b border-gray-400 py-10">
                     <div className="p-5">
-                        <Image width={353} height={88} alt='logo' src={'logo.svg'} />
+                        <Image width={353} height={88} alt='logo' src={'/logo.svg'} />
                     </div>
                     <div className="flex gap-5 p-5 items-center justify-center">
                         <div className="w-8 h-8 flex border border-gray-400 rounded-full items-center justify-center">
-                            <Image width={15} height={15} alt='Facebook' src={'f.svg'} />
+                            <Image width={15} height={15} alt='Facebook' src={'/f.svg'} />
                         </div>
                         <div className="w-8 h-8 flex border border-gray-400 rounded-full items-center justify-center">
-                            <Image width={15} height={15} alt='Twitter' src={'x.svg'} />
+                            <Image width={15} height={15} alt='Twitter' src={'/x.svg'} />
                         </div>
                         <div className="w-8 h-8 flex border border-gray-400 rounded-full items-center justify-center">
-                            <Image width={15} height={15} alt='Youtube' src={'y.svg'} />
+                            <Image width={15} height={15} alt='Youtube' src={'/y.svg'} />
                         </div>
                     </div>
                 </div>
@@ -79,7 +79,7 @@ const Footer = () => {
                         <button onClick={handleScrollTop} className="w-full md:w-[275px] h-[66px] bg-[#283B4C] rounded-lg flex items-center justify-center text-white">
                             <p className="flex gap-2 items-center text-sm">
                                 VOLVER AL PRINCIPIO
-                                <Image width={15} height={15} alt='up' src={'up.svg'} />
+                                <Image width={15} height={15} alt='up' src={'/up.svg'} />
                             </p>
                         </button>
                     </div>
