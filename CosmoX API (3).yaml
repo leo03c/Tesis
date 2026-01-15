@@ -1,0 +1,4995 @@
+openapi: 3.0.3
+info:
+  title: CosmoX API
+  version: 1.0.0
+  description: API Backend para la plataforma de distribución de videojuegos CosmoX
+paths:
+  /api/auth/google-auth/:
+    post:
+      operationId: auth_google_auth_create
+      description: |-
+        Endpoint para registrar/loguear usuarios de Google.
+        Si el usuario ya existe, retorna 200 OK y los datos del usuario.
+        Si no existe, lo crea y retorna 201 Created.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Check the credentials and return the REST Token
+        if the credentials are valid and authenticated.
+        Calls Django Auth login method to register User ID
+        in Django session framework
+
+        Accept the following POST parameters: username, password
+        Return the REST Framework Token Object's key.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWT'
+          description: ''
+  /api/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: |-
+        Calls Django logout method and delete the Token object
+        assigned to the current User object.
+
+        Accepts/Returns nothing.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      description: |-
+        Vista para obtener la información del usuario autenticado actual.
+
+        GET: Retorna los datos del usuario autenticado.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: |-
+        Registers a new user.
+
+        Accepts the following POST parameters: username, email, password1, password2.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWT'
+          description: ''
+  /api/auth/social/:
+    post:
+      operationId: auth_social_create
+      description: |-
+        Registers a new user.
+
+        Accepts the following POST parameters: username, email, password1, password2.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWT'
+          description: ''
+  /api/auth/social/resend-email/:
+    post:
+      operationId: auth_social_resend_email_create
+      description: |-
+        Resends another email to an unverified email.
+
+        Accepts the following POST parameter: email.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerificationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerificationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResendEmailVerificationRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/auth/social/verify-email/:
+    post:
+      operationId: auth_social_verify_email_create
+      description: |-
+        Verifies the email associated with the provided key.
+
+        Accepts the following POST parameter: key.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyEmailRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestAuthDetail'
+          description: ''
+  /api/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/cart/:
+    get:
+      operationId: cart_list
+      description: |-
+        ViewSet para el modelo Carrito.
+
+        Permite CRUD completo del carrito de compras.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - cart
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCarritoDetailList'
+          description: ''
+    post:
+      operationId: cart_create
+      description: |-
+        ViewSet para el modelo Carrito.
+
+        Permite CRUD completo del carrito de compras.
+      tags:
+      - cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarritoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CarritoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CarritoRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Carrito'
+          description: ''
+  /api/cart/{id}/:
+    get:
+      operationId: cart_retrieve
+      description: |-
+        ViewSet para el modelo Carrito.
+
+        Permite CRUD completo del carrito de compras.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Carrito.
+        required: true
+      tags:
+      - cart
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarritoDetail'
+          description: ''
+    put:
+      operationId: cart_update
+      description: |-
+        ViewSet para el modelo Carrito.
+
+        Permite CRUD completo del carrito de compras.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Carrito.
+        required: true
+      tags:
+      - cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarritoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CarritoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CarritoRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Carrito'
+          description: ''
+    patch:
+      operationId: cart_partial_update
+      description: |-
+        ViewSet para el modelo Carrito.
+
+        Permite CRUD completo del carrito de compras.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Carrito.
+        required: true
+      tags:
+      - cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCarritoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCarritoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCarritoRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Carrito'
+          description: ''
+    delete:
+      operationId: cart_destroy
+      description: |-
+        ViewSet para el modelo Carrito.
+
+        Permite CRUD completo del carrito de compras.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Carrito.
+        required: true
+      tags:
+      - cart
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/cart/agregar_juego/:
+    post:
+      operationId: cart_agregar_juego_create
+      description: Agrega un juego al carrito.
+      tags:
+      - cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarritoRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CarritoRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CarritoRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Carrito'
+          description: ''
+  /api/cart/mi_carrito/:
+    get:
+      operationId: cart_mi_carrito_retrieve
+      description: Retorna el carrito del usuario autenticado.
+      tags:
+      - cart
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarritoDetail'
+          description: ''
+  /api/cart/vaciar_carrito/:
+    delete:
+      operationId: cart_vaciar_carrito_destroy
+      description: Vacía el carrito del usuario.
+      tags:
+      - cart
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/:
+    get:
+      operationId: catalog_list
+      description: |-
+        Lista y crea proyectos del desarrollador.
+
+        GET: Lista todos los proyectos del usuario autenticado (solo desarrolladores).
+        POST: Crea un nuevo proyecto (solo desarrolladores).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectList'
+          description: ''
+    post:
+      operationId: catalog_create
+      description: |-
+        Lista y crea proyectos del desarrollador.
+
+        GET: Lista todos los proyectos del usuario autenticado (solo desarrolladores).
+        POST: Crea un nuevo proyecto (solo desarrolladores).
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+  /api/catalog/{id}/:
+    get:
+      operationId: catalog_retrieve
+      description: |-
+        Detalle, actualización y eliminación de un proyecto.
+
+        GET: Obtiene los detalles de un proyecto.
+        PUT/PATCH: Actualiza un proyecto.
+        DELETE: Elimina un proyecto.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    put:
+      operationId: catalog_update
+      description: |-
+        Detalle, actualización y eliminación de un proyecto.
+
+        GET: Obtiene los detalles de un proyecto.
+        PUT/PATCH: Actualiza un proyecto.
+        DELETE: Elimina un proyecto.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProjectRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    patch:
+      operationId: catalog_partial_update
+      description: |-
+        Detalle, actualización y eliminación de un proyecto.
+
+        GET: Obtiene los detalles de un proyecto.
+        PUT/PATCH: Actualiza un proyecto.
+        DELETE: Elimina un proyecto.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProjectRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+    delete:
+      operationId: catalog_destroy
+      description: |-
+        Detalle, actualización y eliminación de un proyecto.
+
+        GET: Obtiene los detalles de un proyecto.
+        PUT/PATCH: Actualiza un proyecto.
+        DELETE: Elimina un proyecto.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/favorites/:
+    get:
+      operationId: favorites_list
+      description: |-
+        Lista y agrega juegos a favoritos.
+
+        GET: Lista todos los juegos favoritos del usuario autenticado.
+        POST: Agrega un juego a favoritos.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - favorites
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFavoriteList'
+          description: ''
+    post:
+      operationId: favorites_create
+      description: |-
+        Lista y agrega juegos a favoritos.
+
+        GET: Lista todos los juegos favoritos del usuario autenticado.
+        POST: Agrega un juego a favoritos.
+      tags:
+      - favorites
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FavoriteRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FavoriteRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+          description: ''
+  /api/favorites/{id}/:
+    delete:
+      operationId: favorites_destroy
+      description: |-
+        Elimina un juego de favoritos.
+
+        DELETE: Elimina un favorito por su ID.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - favorites
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/games/games/:
+    get:
+      operationId: games_games_list
+      parameters:
+      - in: query
+        name: featured
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - in: query
+        name: plataformas
+        schema:
+          type: array
+          items:
+            type: integer
+        explode: true
+        style: form
+      - in: query
+        name: price
+        schema:
+          type: number
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      - in: query
+        name: tags
+        schema:
+          type: array
+          items:
+            type: integer
+        explode: true
+        style: form
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGameList'
+          description: ''
+    post:
+      operationId: games_games_create
+      tags:
+      - games
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GameRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GameRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+          description: ''
+  /api/games/games/{id}/:
+    get:
+      operationId: games_games_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Juego.
+        required: true
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+          description: ''
+    put:
+      operationId: games_games_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Juego.
+        required: true
+      tags:
+      - games
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GameRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GameRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GameRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+          description: ''
+    patch:
+      operationId: games_games_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Juego.
+        required: true
+      tags:
+      - games
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedGameRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedGameRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedGameRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+          description: ''
+    delete:
+      operationId: games_games_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Juego.
+        required: true
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/games/games/freegames/:
+    get:
+      operationId: games_games_freegames_retrieve
+      description: Retorna todos los juegos gratuitos (precio = 0)
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+          description: ''
+  /api/games/plataformas/:
+    get:
+      operationId: games_plataformas_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPlataformaList'
+          description: ''
+  /api/games/plataformas/{id}/:
+    get:
+      operationId: games_plataformas_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Plataforma.
+        required: true
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plataforma'
+          description: ''
+  /api/games/reviews/:
+    get:
+      operationId: games_reviews_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedReviewList'
+          description: ''
+    post:
+      operationId: games_reviews_create
+      tags:
+      - games
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+  /api/games/reviews/{id}/:
+    get:
+      operationId: games_reviews_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Reseña.
+        required: true
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    put:
+      operationId: games_reviews_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Reseña.
+        required: true
+      tags:
+      - games
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReviewRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    patch:
+      operationId: games_reviews_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Reseña.
+        required: true
+      tags:
+      - games
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReviewRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReviewRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReviewRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+          description: ''
+    delete:
+      operationId: games_reviews_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Reseña.
+        required: true
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/games/tags/:
+    get:
+      operationId: games_tags_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTagList'
+          description: ''
+  /api/games/tags/{id}/:
+    get:
+      operationId: games_tags_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Etiqueta.
+        required: true
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+  /api/library/:
+    get:
+      operationId: library_list
+      description: |-
+        Lista y agrega juegos a la biblioteca del usuario.
+
+        GET: Lista todos los juegos en la biblioteca del usuario autenticado.
+        POST: Agrega un juego a la biblioteca.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedLibraryItemList'
+          description: ''
+    post:
+      operationId: library_create
+      description: |-
+        Lista y agrega juegos a la biblioteca del usuario.
+
+        GET: Lista todos los juegos en la biblioteca del usuario autenticado.
+        POST: Agrega un juego a la biblioteca.
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LibraryItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LibraryItemRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryItem'
+          description: ''
+  /api/library/{id}/:
+    get:
+      operationId: library_retrieve
+      description: |-
+        Detalle, actualización y eliminación de un item de la biblioteca.
+
+        GET: Obtiene los detalles de un item de la biblioteca.
+        PATCH: Actualiza un item (horas jugadas, instalado, etc.).
+        DELETE: Elimina un juego de la biblioteca.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryItem'
+          description: ''
+    put:
+      operationId: library_update
+      description: |-
+        Detalle, actualización y eliminación de un item de la biblioteca.
+
+        GET: Obtiene los detalles de un item de la biblioteca.
+        PATCH: Actualiza un item (horas jugadas, instalado, etc.).
+        DELETE: Elimina un juego de la biblioteca.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LibraryItemUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LibraryItemUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LibraryItemUpdateRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryItemUpdate'
+          description: ''
+    patch:
+      operationId: library_partial_update
+      description: |-
+        Detalle, actualización y eliminación de un item de la biblioteca.
+
+        GET: Obtiene los detalles de un item de la biblioteca.
+        PATCH: Actualiza un item (horas jugadas, instalado, etc.).
+        DELETE: Elimina un juego de la biblioteca.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedLibraryItemUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedLibraryItemUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedLibraryItemUpdateRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryItemUpdate'
+          description: ''
+    delete:
+      operationId: library_destroy
+      description: |-
+        Detalle, actualización y eliminación de un item de la biblioteca.
+
+        GET: Obtiene los detalles de un item de la biblioteca.
+        PATCH: Actualiza un item (horas jugadas, instalado, etc.).
+        DELETE: Elimina un juego de la biblioteca.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/library/stats/:
+    get:
+      operationId: library_stats_retrieve
+      description: Retorna las estadísticas de la biblioteca del usuario.
+      tags:
+      - library
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/login/:
+    post:
+      operationId: login_create
+      description: |-
+        Check the credentials and return the REST Token
+        if the credentials are valid and authenticated.
+        Calls Django Auth login method to register User ID
+        in Django session framework
+
+        Accept the following POST parameters: username, password
+        Return the REST Framework Token Object's key.
+      tags:
+      - login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWT'
+          description: ''
+  /api/news/:
+    get:
+      operationId: news_list
+      description: |-
+        Lista todas las noticias.
+
+        GET: Retorna la lista de artículos con paginación.
+        Query params:
+            - featured: Filter by is_featured status (true/false)
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - news
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedArticleListList'
+          description: ''
+  /api/news/{id}/:
+    get:
+      operationId: news_retrieve
+      description: |-
+        Detalle de un artículo específico.
+
+        GET: Retorna la información completa de un artículo.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - news
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArticleDetail'
+          description: ''
+  /api/notifications/:
+    get:
+      operationId: notifications_list
+      description: |-
+        ViewSet para el modelo Notificacion.
+
+        Permite CRUD completo de notificaciones con filtros.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedNotificacionList'
+          description: ''
+    post:
+      operationId: notifications_create
+      description: |-
+        ViewSet para el modelo Notificacion.
+
+        Permite CRUD completo de notificaciones con filtros.
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+          description: ''
+  /api/notifications/{id}/:
+    get:
+      operationId: notifications_retrieve
+      description: |-
+        ViewSet para el modelo Notificacion.
+
+        Permite CRUD completo de notificaciones con filtros.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Notificación.
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+          description: ''
+    put:
+      operationId: notifications_update
+      description: |-
+        ViewSet para el modelo Notificacion.
+
+        Permite CRUD completo de notificaciones con filtros.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Notificación.
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+          description: ''
+    patch:
+      operationId: notifications_partial_update
+      description: |-
+        ViewSet para el modelo Notificacion.
+
+        Permite CRUD completo de notificaciones con filtros.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Notificación.
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificacionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificacionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedNotificacionRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+          description: ''
+    delete:
+      operationId: notifications_destroy
+      description: |-
+        ViewSet para el modelo Notificacion.
+
+        Permite CRUD completo de notificaciones con filtros.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Notificación.
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/notifications/{id}/marcar_como_leida/:
+    post:
+      operationId: notifications_marcar_como_leida_create
+      description: Marca una notificación como leída.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Notificación.
+        required: true
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+          description: ''
+  /api/notifications/eliminar_leidas/:
+    delete:
+      operationId: notifications_eliminar_leidas_destroy
+      description: Elimina todas las notificaciones leídas del usuario.
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/notifications/marcar_todas_leidas/:
+    post:
+      operationId: notifications_marcar_todas_leidas_create
+      description: Marca todas las notificaciones del usuario como leídas.
+      tags:
+      - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NotificacionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+          description: ''
+  /api/notifications/no_leidas/:
+    get:
+      operationId: notifications_no_leidas_retrieve
+      description: Retorna las notificaciones no leídas del usuario.
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+          description: ''
+  /api/purchases/:
+    get:
+      operationId: purchases_list
+      description: |-
+        ViewSet para el modelo Compra.
+
+        Permite CRUD completo de compras con filtros por usuario, juego y estado.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - purchases
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCompraList'
+          description: ''
+    post:
+      operationId: purchases_create
+      description: |-
+        ViewSet para el modelo Compra.
+
+        Permite CRUD completo de compras con filtros por usuario, juego y estado.
+      tags:
+      - purchases
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompraRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompraRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompraRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compra'
+          description: ''
+  /api/purchases/{id}/:
+    get:
+      operationId: purchases_retrieve
+      description: |-
+        ViewSet para el modelo Compra.
+
+        Permite CRUD completo de compras con filtros por usuario, juego y estado.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Compra.
+        required: true
+      tags:
+      - purchases
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompraDetail'
+          description: ''
+    put:
+      operationId: purchases_update
+      description: |-
+        ViewSet para el modelo Compra.
+
+        Permite CRUD completo de compras con filtros por usuario, juego y estado.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Compra.
+        required: true
+      tags:
+      - purchases
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompraRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompraRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompraRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compra'
+          description: ''
+    patch:
+      operationId: purchases_partial_update
+      description: |-
+        ViewSet para el modelo Compra.
+
+        Permite CRUD completo de compras con filtros por usuario, juego y estado.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Compra.
+        required: true
+      tags:
+      - purchases
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCompraRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCompraRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCompraRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compra'
+          description: ''
+    delete:
+      operationId: purchases_destroy
+      description: |-
+        ViewSet para el modelo Compra.
+
+        Permite CRUD completo de compras con filtros por usuario, juego y estado.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Compra.
+        required: true
+      tags:
+      - purchases
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/purchases/{id}/reembolsar/:
+    post:
+      operationId: purchases_reembolsar_create
+      description: Marca una compra como reembolsada.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Compra.
+        required: true
+      tags:
+      - purchases
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompraRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompraRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompraRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compra'
+          description: ''
+  /api/purchases/mis_compras/:
+    get:
+      operationId: purchases_mis_compras_retrieve
+      description: Retorna las compras del usuario autenticado.
+      tags:
+      - purchases
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compra'
+          description: ''
+  /api/register/:
+    post:
+      operationId: register_create
+      description: |-
+        Registers a new user.
+
+        Accepts the following POST parameters: username, email, password1, password2.
+      tags:
+      - register
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JWT'
+          description: ''
+  /api/reviews/me-gustas/:
+    get:
+      operationId: reviews_me_gustas_list
+      description: |-
+        ViewSet de solo lectura para MeGusta.
+
+        Permite consultar los me gustas pero no crear/editar directamente.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - reviews
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedMeGustaList'
+          description: ''
+  /api/reviews/me-gustas/{id}/:
+    get:
+      operationId: reviews_me_gustas_retrieve
+      description: |-
+        ViewSet de solo lectura para MeGusta.
+
+        Permite consultar los me gustas pero no crear/editar directamente.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Me gusta.
+        required: true
+      tags:
+      - reviews
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeGusta'
+          description: ''
+  /api/reviews/resenas/:
+    get:
+      operationId: reviews_resenas_list
+      description: |-
+        ViewSet para el modelo Resena.
+
+        Permite CRUD completo de reseñas con filtros por juego y usuario.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - reviews
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResenaList'
+          description: ''
+    post:
+      operationId: reviews_resenas_create
+      description: |-
+        ViewSet para el modelo Resena.
+
+        Permite CRUD completo de reseñas con filtros por juego y usuario.
+      tags:
+      - reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResenaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResenaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResenaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resena'
+          description: ''
+  /api/reviews/resenas/{id}/:
+    get:
+      operationId: reviews_resenas_retrieve
+      description: |-
+        ViewSet para el modelo Resena.
+
+        Permite CRUD completo de reseñas con filtros por juego y usuario.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Reseña.
+        required: true
+      tags:
+      - reviews
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResenaDetail'
+          description: ''
+    put:
+      operationId: reviews_resenas_update
+      description: |-
+        ViewSet para el modelo Resena.
+
+        Permite CRUD completo de reseñas con filtros por juego y usuario.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Reseña.
+        required: true
+      tags:
+      - reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResenaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResenaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResenaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resena'
+          description: ''
+    patch:
+      operationId: reviews_resenas_partial_update
+      description: |-
+        ViewSet para el modelo Resena.
+
+        Permite CRUD completo de reseñas con filtros por juego y usuario.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Reseña.
+        required: true
+      tags:
+      - reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedResenaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedResenaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedResenaRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resena'
+          description: ''
+    delete:
+      operationId: reviews_resenas_destroy
+      description: |-
+        ViewSet para el modelo Resena.
+
+        Permite CRUD completo de reseñas con filtros por juego y usuario.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Reseña.
+        required: true
+      tags:
+      - reviews
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reviews/resenas/{id}/dar_me_gusta/:
+    post:
+      operationId: reviews_resenas_dar_me_gusta_create
+      description: Da me gusta o no me gusta a una reseña.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Reseña.
+        required: true
+      tags:
+      - reviews
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResenaRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResenaRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResenaRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resena'
+          description: ''
+  /api/reviews/resenas/{id}/quitar_me_gusta/:
+    delete:
+      operationId: reviews_resenas_quitar_me_gusta_destroy
+      description: Quita el me gusta de una reseña.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Reseña.
+        required: true
+      tags:
+      - reviews
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/reviews/resenas/mis_resenas/:
+    get:
+      operationId: reviews_resenas_mis_resenas_retrieve
+      description: Retorna las reseñas del usuario autenticado.
+      tags:
+      - reviews
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resena'
+          description: ''
+  /api/social/follow/{user_id}/:
+    post:
+      operationId: social_follow_create
+      description: Crea una relación de seguimiento.
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - social
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/social/followers/:
+    get:
+      operationId: social_followers_list
+      description: |-
+        Lista los seguidores del usuario autenticado.
+
+        GET: Retorna la lista de usuarios que siguen al usuario autenticado.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - social
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFollowerList'
+          description: ''
+  /api/social/following/:
+    get:
+      operationId: social_following_list
+      description: |-
+        Lista los usuarios que sigue el usuario autenticado.
+
+        GET: Retorna la lista de usuarios a los que sigue el usuario autenticado.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - social
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedFollowingList'
+          description: ''
+  /api/social/unfollow/{user_id}/:
+    delete:
+      operationId: social_unfollow_destroy
+      description: Elimina una relación de seguimiento.
+      parameters:
+      - in: path
+        name: user_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - social
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/support/contact/:
+    get:
+      operationId: support_contact_retrieve
+      description: Retorna las opciones de contacto disponibles.
+      tags:
+      - support
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/support/faqs/:
+    get:
+      operationId: support_faqs_list
+      description: |-
+        Lista todas las FAQs activas.
+
+        GET: Retorna la lista de preguntas frecuentes.
+        Permite filtrar por categoría usando ?category=categoria
+      tags:
+      - support
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FAQ'
+          description: ''
+  /api/support/status/:
+    get:
+      operationId: support_status_retrieve
+      description: Retorna el estado del sistema de soporte.
+      tags:
+      - support
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/support/tickets/:
+    post:
+      operationId: support_tickets_create
+      description: |-
+        Crea un nuevo ticket de soporte.
+
+        POST: Crea un ticket de soporte para el usuario autenticado.
+      tags:
+      - support
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupportTicketRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SupportTicketRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SupportTicketRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportTicket'
+          description: ''
+  /api/support/tickets/my/:
+    get:
+      operationId: support_tickets_my_list
+      description: |-
+        Lista los tickets de soporte del usuario autenticado.
+
+        GET: Retorna la lista de tickets del usuario.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - support
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupportTicketList'
+          description: ''
+  /api/users/{id}/:
+    get:
+      operationId: users_retrieve
+      description: |-
+        Vista para obtener el perfil público de un usuario.
+
+        GET: Retorna información pública de un usuario específico.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/users/me/:
+    get:
+      operationId: users_me_retrieve
+      description: |-
+        Vista para obtener y actualizar el perfil del usuario autenticado.
+
+        GET: Obtiene los datos del usuario y su perfil.
+        PUT/PATCH: Actualiza los datos permitidos del usuario y perfil.
+      tags:
+      - users
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: users_me_update
+      description: |-
+        Vista para obtener y actualizar el perfil del usuario autenticado.
+
+        GET: Obtiene los datos del usuario y su perfil.
+        PUT/PATCH: Actualiza los datos permitidos del usuario y perfil.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUpdate'
+          description: ''
+    patch:
+      operationId: users_me_partial_update
+      description: |-
+        Vista para obtener y actualizar el perfil del usuario autenticado.
+
+        GET: Obtiene los datos del usuario y su perfil.
+        PUT/PATCH: Actualiza los datos permitidos del usuario y perfil.
+      tags:
+      - users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserUpdateRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUpdate'
+          description: ''
+  /api/wishlist/:
+    get:
+      operationId: wishlist_list
+      description: |-
+        ViewSet para el modelo ListaDeseos.
+
+        Permite CRUD completo de la lista de deseos con filtros.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      tags:
+      - wishlist
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedListaDeseosDetailList'
+          description: ''
+    post:
+      operationId: wishlist_create
+      description: |-
+        ViewSet para el modelo ListaDeseos.
+
+        Permite CRUD completo de la lista de deseos con filtros.
+      tags:
+      - wishlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListaDeseosRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ListaDeseosRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ListaDeseosRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaDeseos'
+          description: ''
+  /api/wishlist/{id}/:
+    get:
+      operationId: wishlist_retrieve
+      description: |-
+        ViewSet para el modelo ListaDeseos.
+
+        Permite CRUD completo de la lista de deseos con filtros.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Lista de deseos.
+        required: true
+      tags:
+      - wishlist
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaDeseosDetail'
+          description: ''
+    put:
+      operationId: wishlist_update
+      description: |-
+        ViewSet para el modelo ListaDeseos.
+
+        Permite CRUD completo de la lista de deseos con filtros.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Lista de deseos.
+        required: true
+      tags:
+      - wishlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListaDeseosRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ListaDeseosRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ListaDeseosRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaDeseos'
+          description: ''
+    patch:
+      operationId: wishlist_partial_update
+      description: |-
+        ViewSet para el modelo ListaDeseos.
+
+        Permite CRUD completo de la lista de deseos con filtros.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Lista de deseos.
+        required: true
+      tags:
+      - wishlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedListaDeseosRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedListaDeseosRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedListaDeseosRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaDeseos'
+          description: ''
+    delete:
+      operationId: wishlist_destroy
+      description: |-
+        ViewSet para el modelo ListaDeseos.
+
+        Permite CRUD completo de la lista de deseos con filtros.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: Un valor de entero único que identifique este Lista de deseos.
+        required: true
+      tags:
+      - wishlist
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/wishlist/agregar_juego/:
+    post:
+      operationId: wishlist_agregar_juego_create
+      description: Agrega un juego a la lista de deseos.
+      tags:
+      - wishlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListaDeseosRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ListaDeseosRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ListaDeseosRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaDeseos'
+          description: ''
+  /api/wishlist/mi_lista/:
+    get:
+      operationId: wishlist_mi_lista_retrieve
+      description: Retorna la lista de deseos del usuario autenticado.
+      tags:
+      - wishlist
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaDeseosDetail'
+          description: ''
+components:
+  schemas:
+    ArticleDetail:
+      type: object
+      description: Serializador para el detalle de un artículo.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          title: Título
+          maxLength: 200
+        description:
+          type: string
+          title: Descripción corta
+          maxLength: 500
+        image:
+          type: string
+          format: uri
+          nullable: true
+          title: Imagen
+        content:
+          type: string
+          title: Contenido
+        author_id:
+          type: integer
+          readOnly: true
+        author:
+          type: string
+          readOnly: true
+        published_date:
+          type: string
+          format: date-time
+          readOnly: true
+        is_featured:
+          type: boolean
+          title: Destacado
+        category:
+          type: string
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Última actualización
+      required:
+      - author
+      - author_id
+      - category
+      - content
+      - description
+      - id
+      - published_date
+      - title
+      - updated_at
+    ArticleList:
+      type: object
+      description: Serializador para listar artículos (información resumida).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          title: Título
+          maxLength: 200
+        description:
+          type: string
+          title: Descripción corta
+          maxLength: 500
+        image:
+          type: string
+          format: uri
+          nullable: true
+          title: Imagen
+        author:
+          type: string
+          readOnly: true
+        published_date:
+          type: string
+          format: date-time
+          readOnly: true
+        is_featured:
+          type: boolean
+          title: Destacado
+        category:
+          type: string
+          readOnly: true
+      required:
+      - author
+      - category
+      - description
+      - id
+      - published_date
+      - title
+    Carrito:
+      type: object
+      description: Serializador básico para el modelo Carrito.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+        fecha_agregado:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de agregado
+      required:
+      - fecha_agregado
+      - id
+      - id_juego
+      - id_usuario
+    CarritoDetail:
+      type: object
+      description: Serializador detallado para Carrito con información del juego.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+        juego:
+          allOf:
+          - $ref: '#/components/schemas/GameList'
+          readOnly: true
+        fecha_agregado:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de agregado
+      required:
+      - fecha_agregado
+      - id
+      - id_juego
+      - id_usuario
+      - juego
+    CarritoRequest:
+      type: object
+      description: Serializador básico para el modelo Carrito.
+      properties:
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+      required:
+      - id_juego
+      - id_usuario
+    CategoryEnum:
+      enum:
+      - general
+      - cuenta
+      - pagos
+      - juegos
+      - tecnico
+      - desarrolladores
+      type: string
+      description: |-
+        * `general` - General
+        * `cuenta` - Cuenta
+        * `pagos` - Pagos
+        * `juegos` - Juegos
+        * `tecnico` - Soporte técnico
+        * `desarrolladores` - Desarrolladores
+    Compra:
+      type: object
+      description: Serializador básico para el modelo Compra.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+        fecha_compra:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de compra
+        precio_pagado:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        metodo_pago:
+          allOf:
+          - $ref: '#/components/schemas/MetodoPagoEnum'
+          title: Método de pago
+        estado:
+          $ref: '#/components/schemas/EstadoEnum'
+        codigo_transaccion:
+          type: string
+          title: Código de transacción
+          maxLength: 100
+      required:
+      - codigo_transaccion
+      - fecha_compra
+      - id
+      - id_juego
+      - id_usuario
+      - metodo_pago
+      - precio_pagado
+    CompraDetail:
+      type: object
+      description: Serializador detallado para Compra con información anidada.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        id_usuario:
+          type: integer
+          title: Usuario
+        usuario:
+          type: string
+          readOnly: true
+        id_juego:
+          type: integer
+          title: Juego
+        juego:
+          allOf:
+          - $ref: '#/components/schemas/GameList'
+          readOnly: true
+        fecha_compra:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de compra
+        precio_pagado:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        metodo_pago:
+          allOf:
+          - $ref: '#/components/schemas/MetodoPagoEnum'
+          title: Método de pago
+        estado:
+          $ref: '#/components/schemas/EstadoEnum'
+        codigo_transaccion:
+          type: string
+          title: Código de transacción
+          maxLength: 100
+      required:
+      - codigo_transaccion
+      - fecha_compra
+      - id
+      - id_juego
+      - id_usuario
+      - juego
+      - metodo_pago
+      - precio_pagado
+      - usuario
+    CompraRequest:
+      type: object
+      description: Serializador básico para el modelo Compra.
+      properties:
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+        precio_pagado:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        metodo_pago:
+          allOf:
+          - $ref: '#/components/schemas/MetodoPagoEnum'
+          title: Método de pago
+        estado:
+          $ref: '#/components/schemas/EstadoEnum'
+        codigo_transaccion:
+          type: string
+          minLength: 1
+          title: Código de transacción
+          maxLength: 100
+      required:
+      - codigo_transaccion
+      - id_juego
+      - id_usuario
+      - metodo_pago
+      - precio_pagado
+    EstadoEnum:
+      enum:
+      - completada
+      - pendiente
+      - cancelada
+      - reembolsada
+      type: string
+      description: |-
+        * `completada` - Completada
+        * `pendiente` - Pendiente
+        * `cancelada` - Cancelada
+        * `reembolsada` - Reembolsada
+    FAQ:
+      type: object
+      description: Serializador para el modelo FAQ.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        question:
+          type: string
+          title: Pregunta
+          maxLength: 300
+        answer:
+          type: string
+          title: Respuesta
+        category:
+          allOf:
+          - $ref: '#/components/schemas/CategoryEnum'
+          title: Categoría
+        category_display:
+          type: string
+          readOnly: true
+      required:
+      - answer
+      - category_display
+      - id
+      - question
+    Favorite:
+      type: object
+      description: Serializador para el modelo Favorite.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        game:
+          allOf:
+          - $ref: '#/components/schemas/Game'
+          readOnly: true
+        added_date:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de agregado
+      required:
+      - added_date
+      - game
+      - id
+    FavoriteRequest:
+      type: object
+      description: Serializador para el modelo Favorite.
+      properties:
+        game_id:
+          type: integer
+          writeOnly: true
+      required:
+      - game_id
+    Follower:
+      type: object
+      description: Serializador para listar seguidores.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/UserMinimal'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de seguimiento
+      required:
+      - created_at
+      - id
+      - user
+    Following:
+      type: object
+      description: Serializador para listar a quién sigue el usuario.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/UserMinimal'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de seguimiento
+      required:
+      - created_at
+      - id
+      - user
+    Game:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        image:
+          type: string
+          format: uri
+          nullable: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        discount:
+          type: integer
+          maximum: 100
+          minimum: 0
+        final_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+        download_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          title: Número de descargas
+        release_date:
+          type: string
+          format: date
+        developer_name:
+          type: string
+          readOnly: true
+        idiomas_disponibles: {}
+        editor:
+          type: string
+          maxLength: 150
+        tamano_descarga_mb:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+          readOnly: true
+        plataformas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plataforma'
+          readOnly: true
+        featured:
+          type: boolean
+        reviews:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - description
+      - developer_name
+      - final_price
+      - id
+      - plataformas
+      - release_date
+      - reviews
+      - slug
+      - tags
+      - title
+      - updated_at
+    GameList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+        slug:
+          type: string
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        final_price:
+          type: string
+          readOnly: true
+        rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+        image:
+          type: string
+          format: uri
+          nullable: true
+      required:
+      - final_price
+      - id
+      - slug
+      - title
+    GameRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+          minLength: 1
+        image:
+          type: string
+          format: binary
+          nullable: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        discount:
+          type: integer
+          maximum: 100
+          minimum: 0
+        rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+        download_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          title: Número de descargas
+        release_date:
+          type: string
+          format: date
+        idiomas_disponibles: {}
+        editor:
+          type: string
+          maxLength: 150
+        tamano_descarga_mb:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        featured:
+          type: boolean
+      required:
+      - description
+      - release_date
+      - slug
+      - title
+    JWT:
+      type: object
+      description: Serializer for JWT authentication.
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+      - access
+      - refresh
+      - user
+    LibraryItem:
+      type: object
+      description: Serializador para el modelo LibraryItem.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        game:
+          allOf:
+          - $ref: '#/components/schemas/Game'
+          readOnly: true
+        hours_played:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,1})?$
+          title: Horas jugadas
+        last_played:
+          type: string
+          format: date-time
+          nullable: true
+          title: Última vez jugado
+        installed:
+          type: boolean
+          title: Instalado
+        added_date:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de adquisición
+      required:
+      - added_date
+      - game
+      - id
+    LibraryItemRequest:
+      type: object
+      description: Serializador para el modelo LibraryItem.
+      properties:
+        game_id:
+          type: integer
+          writeOnly: true
+        hours_played:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,1})?$
+          title: Horas jugadas
+        last_played:
+          type: string
+          format: date-time
+          nullable: true
+          title: Última vez jugado
+        installed:
+          type: boolean
+          title: Instalado
+      required:
+      - game_id
+    LibraryItemUpdate:
+      type: object
+      description: Serializador para actualizar un LibraryItem.
+      properties:
+        hours_played:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,1})?$
+          title: Horas jugadas
+        last_played:
+          type: string
+          format: date-time
+          nullable: true
+          title: Última vez jugado
+        installed:
+          type: boolean
+          title: Instalado
+    LibraryItemUpdateRequest:
+      type: object
+      description: Serializador para actualizar un LibraryItem.
+      properties:
+        hours_played:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,1})?$
+          title: Horas jugadas
+        last_played:
+          type: string
+          format: date-time
+          nullable: true
+          title: Última vez jugado
+        installed:
+          type: boolean
+          title: Instalado
+    ListaDeseos:
+      type: object
+      description: Serializador básico para el modelo ListaDeseos.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+        fecha_agregado:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de agregado
+      required:
+      - fecha_agregado
+      - id
+      - id_juego
+      - id_usuario
+    ListaDeseosDetail:
+      type: object
+      description: Serializador detallado para ListaDeseos con información del juego.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+        juego:
+          allOf:
+          - $ref: '#/components/schemas/GameList'
+          readOnly: true
+        fecha_agregado:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de agregado
+      required:
+      - fecha_agregado
+      - id
+      - id_juego
+      - id_usuario
+      - juego
+    ListaDeseosRequest:
+      type: object
+      description: Serializador básico para el modelo ListaDeseos.
+      properties:
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+      required:
+      - id_juego
+      - id_usuario
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 1
+      required:
+      - password
+    MeGusta:
+      type: object
+      description: Serializador para el modelo MeGusta.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_resena:
+          type: integer
+          title: Reseña
+        fecha_me_gusta:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de me gusta
+        tipo:
+          $ref: '#/components/schemas/MeGustaTipoEnum'
+      required:
+      - fecha_me_gusta
+      - id
+      - id_resena
+      - id_usuario
+    MeGustaTipoEnum:
+      enum:
+      - positivo
+      - negativo
+      type: string
+      description: |-
+        * `positivo` - Positivo
+        * `negativo` - Negativo
+    MetodoPagoEnum:
+      enum:
+      - tarjeta
+      - paypal
+      - transferencia
+      - otro
+      type: string
+      description: |-
+        * `tarjeta` - Tarjeta
+        * `paypal` - PayPal
+        * `transferencia` - Transferencia
+        * `otro` - Otro
+    Notificacion:
+      type: object
+      description: Serializador para el modelo Notificacion.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        id_usuario:
+          type: integer
+          title: Usuario
+        tipo:
+          $ref: '#/components/schemas/NotificacionTipoEnum'
+        titulo:
+          type: string
+          title: Título
+          maxLength: 200
+        mensaje:
+          type: string
+        fecha_creacion:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de creación
+        leida:
+          type: boolean
+          title: Leída
+        url_referencia:
+          type: string
+          title: URL de referencia
+          maxLength: 255
+      required:
+      - fecha_creacion
+      - id
+      - id_usuario
+      - tipo
+      - titulo
+    NotificacionRequest:
+      type: object
+      description: Serializador para el modelo Notificacion.
+      properties:
+        id_usuario:
+          type: integer
+          title: Usuario
+        tipo:
+          $ref: '#/components/schemas/NotificacionTipoEnum'
+        titulo:
+          type: string
+          minLength: 1
+          title: Título
+          maxLength: 200
+        mensaje:
+          type: string
+        leida:
+          type: boolean
+          title: Leída
+        url_referencia:
+          type: string
+          title: URL de referencia
+          maxLength: 255
+      required:
+      - id_usuario
+      - tipo
+      - titulo
+    NotificacionTipoEnum:
+      enum:
+      - compra
+      - oferta
+      - seguidor
+      - resena
+      - sistema
+      - ayuda
+      type: string
+      description: |-
+        * `compra` - Compra
+        * `oferta` - Oferta
+        * `seguidor` - Seguidor
+        * `resena` - Reseña
+        * `sistema` - Sistema
+        * `ayuda` - Ayuda
+    PaginatedArticleListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ArticleList'
+    PaginatedCarritoDetailList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CarritoDetail'
+    PaginatedCompraList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Compra'
+    PaginatedFavoriteList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Favorite'
+    PaginatedFollowerList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Follower'
+    PaginatedFollowingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Following'
+    PaginatedGameList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Game'
+    PaginatedLibraryItemList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/LibraryItem'
+    PaginatedListaDeseosDetailList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListaDeseosDetail'
+    PaginatedMeGustaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/MeGusta'
+    PaginatedNotificacionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notificacion'
+    PaginatedPlataformaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plataforma'
+    PaginatedProjectList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+    PaginatedResenaList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Resena'
+    PaginatedReviewList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+    PaginatedSupportTicketList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportTicket'
+    PaginatedTagList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+    PatchedCarritoRequest:
+      type: object
+      description: Serializador básico para el modelo Carrito.
+      properties:
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+    PatchedCompraRequest:
+      type: object
+      description: Serializador básico para el modelo Compra.
+      properties:
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+        precio_pagado:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        metodo_pago:
+          allOf:
+          - $ref: '#/components/schemas/MetodoPagoEnum'
+          title: Método de pago
+        estado:
+          $ref: '#/components/schemas/EstadoEnum'
+        codigo_transaccion:
+          type: string
+          minLength: 1
+          title: Código de transacción
+          maxLength: 100
+    PatchedGameRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+          minLength: 1
+        image:
+          type: string
+          format: binary
+          nullable: true
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        discount:
+          type: integer
+          maximum: 100
+          minimum: 0
+        rating:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,2}(?:\.\d{0,1})?$
+        download_count:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          title: Número de descargas
+        release_date:
+          type: string
+          format: date
+        idiomas_disponibles: {}
+        editor:
+          type: string
+          maxLength: 150
+        tamano_descarga_mb:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        featured:
+          type: boolean
+    PatchedLibraryItemUpdateRequest:
+      type: object
+      description: Serializador para actualizar un LibraryItem.
+      properties:
+        hours_played:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,7}(?:\.\d{0,1})?$
+          title: Horas jugadas
+        last_played:
+          type: string
+          format: date-time
+          nullable: true
+          title: Última vez jugado
+        installed:
+          type: boolean
+          title: Instalado
+    PatchedListaDeseosRequest:
+      type: object
+      description: Serializador básico para el modelo ListaDeseos.
+      properties:
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+    PatchedNotificacionRequest:
+      type: object
+      description: Serializador para el modelo Notificacion.
+      properties:
+        id_usuario:
+          type: integer
+          title: Usuario
+        tipo:
+          $ref: '#/components/schemas/NotificacionTipoEnum'
+        titulo:
+          type: string
+          minLength: 1
+          title: Título
+          maxLength: 200
+        mensaje:
+          type: string
+        leida:
+          type: boolean
+          title: Leída
+        url_referencia:
+          type: string
+          title: URL de referencia
+          maxLength: 255
+    PatchedProjectRequest:
+      type: object
+      description: Serializador para el modelo Project.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          title: Título
+          maxLength: 200
+        description:
+          type: string
+          title: Descripción
+        image:
+          type: string
+          format: binary
+          nullable: true
+          title: Imagen
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ProjectStatusEnum'
+          title: Estado
+        progress:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          title: Progreso (%)
+    PatchedResenaRequest:
+      type: object
+      description: Serializador básico para el modelo Resena.
+      properties:
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+        calificacion:
+          type: integer
+          maximum: 10
+          minimum: 1
+          title: Calificación
+        titulo:
+          type: string
+          title: Título
+          maxLength: 200
+        comentario:
+          type: string
+        recomendado:
+          type: boolean
+          nullable: true
+    PatchedReviewRequest:
+      type: object
+      properties:
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+    PatchedUserUpdateRequest:
+      type: object
+      description: |-
+        Serializador para actualizar los datos del usuario
+        y su perfil asociado.
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 150
+        last_name:
+          type: string
+          minLength: 1
+          title: Apellidos
+          maxLength: 150
+        avatar:
+          type: string
+          format: binary
+          nullable: true
+        profile:
+          $ref: '#/components/schemas/ProfileRequest'
+    Plataforma:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        nombre:
+          type: string
+          maxLength: 100
+        icono:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - nombre
+    PlataformaRequest:
+      type: object
+      properties:
+        nombre:
+          type: string
+          minLength: 1
+          maxLength: 100
+        icono:
+          type: string
+          maxLength: 255
+      required:
+      - nombre
+    Profile:
+      type: object
+      description: Serializador para el modelo Profile.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        rol:
+          $ref: '#/components/schemas/RolEnum'
+        descripcion:
+          type: string
+          title: Descripción
+        verificado:
+          type: boolean
+          readOnly: true
+      required:
+      - id
+      - verificado
+    ProfileRequest:
+      type: object
+      description: Serializador para el modelo Profile.
+      properties:
+        rol:
+          $ref: '#/components/schemas/RolEnum'
+        descripcion:
+          type: string
+          title: Descripción
+    Project:
+      type: object
+      description: Serializador para el modelo Project.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          title: Título
+          maxLength: 200
+        description:
+          type: string
+          title: Descripción
+        image:
+          type: string
+          format: uri
+          nullable: true
+          title: Imagen
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ProjectStatusEnum'
+          title: Estado
+        status_display:
+          type: string
+          readOnly: true
+        progress:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          title: Progreso (%)
+        last_updated:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Última actualización
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de creación
+        user_username:
+          type: string
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - last_updated
+      - status_display
+      - title
+      - user_username
+    ProjectRequest:
+      type: object
+      description: Serializador para el modelo Project.
+      properties:
+        title:
+          type: string
+          minLength: 1
+          title: Título
+          maxLength: 200
+        description:
+          type: string
+          title: Descripción
+        image:
+          type: string
+          format: binary
+          nullable: true
+          title: Imagen
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ProjectStatusEnum'
+          title: Estado
+        progress:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          title: Progreso (%)
+      required:
+      - title
+    ProjectStatusEnum:
+      enum:
+      - borrador
+      - en_desarrollo
+      - en_revision
+      - publicado
+      type: string
+      description: |-
+        * `borrador` - Borrador
+        * `en_desarrollo` - En desarrollo
+        * `en_revision` - En revisión
+        * `publicado` - Publicado
+    RegisterRequest:
+      type: object
+      description: |-
+        Serializador personalizado para el registro de usuarios.
+
+        - Login basado únicamente en username
+        - Password simple desde frontend
+        - Creación automática de perfil
+      properties:
+        username:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password1:
+          type: string
+          writeOnly: true
+          minLength: 1
+        password2:
+          type: string
+          writeOnly: true
+          minLength: 1
+        first_name:
+          type: string
+        last_name:
+          type: string
+        name:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - password
+      - password1
+      - password2
+      - username
+    Resena:
+      type: object
+      description: Serializador básico para el modelo Resena.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        id_usuario:
+          type: integer
+          title: Usuario
+        username:
+          type: string
+          readOnly: true
+        id_juego:
+          type: integer
+          title: Juego
+        calificacion:
+          type: integer
+          maximum: 10
+          minimum: 1
+          title: Calificación
+        titulo:
+          type: string
+          title: Título
+          maxLength: 200
+        comentario:
+          type: string
+        fecha_publicacion:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de publicación
+        recomendado:
+          type: boolean
+          nullable: true
+        total_me_gustas:
+          type: string
+          readOnly: true
+      required:
+      - calificacion
+      - fecha_publicacion
+      - id
+      - id_juego
+      - id_usuario
+      - total_me_gustas
+      - username
+    ResenaDetail:
+      type: object
+      description: Serializador detallado para Resena con información del juego.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        id_usuario:
+          type: integer
+          title: Usuario
+        username:
+          type: string
+          readOnly: true
+        id_juego:
+          type: integer
+          title: Juego
+        juego:
+          allOf:
+          - $ref: '#/components/schemas/GameList'
+          readOnly: true
+        calificacion:
+          type: integer
+          maximum: 10
+          minimum: 1
+          title: Calificación
+        titulo:
+          type: string
+          title: Título
+          maxLength: 200
+        comentario:
+          type: string
+        fecha_publicacion:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de publicación
+        recomendado:
+          type: boolean
+          nullable: true
+        total_me_gustas:
+          type: string
+          readOnly: true
+        me_gustas_positivos:
+          type: string
+          readOnly: true
+        me_gustas_negativos:
+          type: string
+          readOnly: true
+      required:
+      - calificacion
+      - fecha_publicacion
+      - id
+      - id_juego
+      - id_usuario
+      - juego
+      - me_gustas_negativos
+      - me_gustas_positivos
+      - total_me_gustas
+      - username
+    ResenaRequest:
+      type: object
+      description: Serializador básico para el modelo Resena.
+      properties:
+        id_usuario:
+          type: integer
+          title: Usuario
+        id_juego:
+          type: integer
+          title: Juego
+        calificacion:
+          type: integer
+          maximum: 10
+          minimum: 1
+          title: Calificación
+        titulo:
+          type: string
+          title: Título
+          maxLength: 200
+        comentario:
+          type: string
+        recomendado:
+          type: boolean
+          nullable: true
+      required:
+      - calificacion
+      - id_juego
+      - id_usuario
+    ResendEmailVerificationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+    RestAuthDetail:
+      type: object
+      properties:
+        detail:
+          type: string
+          readOnly: true
+      required:
+      - detail
+    Review:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: string
+          readOnly: true
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - rating
+      - user
+    ReviewRequest:
+      type: object
+      properties:
+        rating:
+          type: integer
+          maximum: 5
+          minimum: 1
+        comment:
+          type: string
+      required:
+      - rating
+    RolEnum:
+      enum:
+      - BASICO
+      - DEV
+      type: string
+      description: |-
+        * `BASICO` - Usuario básico
+        * `DEV` - Desarrollador
+    SupportTicket:
+      type: object
+      description: Serializador para el modelo SupportTicket.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        subject:
+          type: string
+          title: Asunto
+          maxLength: 200
+        message:
+          type: string
+          title: Mensaje
+        status:
+          allOf:
+          - $ref: '#/components/schemas/SupportTicketStatusEnum'
+          readOnly: true
+          title: Estado
+        status_display:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de creación
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Última actualización
+      required:
+      - created_at
+      - id
+      - message
+      - status
+      - status_display
+      - subject
+      - updated_at
+    SupportTicketRequest:
+      type: object
+      description: Serializador para el modelo SupportTicket.
+      properties:
+        subject:
+          type: string
+          minLength: 1
+          title: Asunto
+          maxLength: 200
+        message:
+          type: string
+          minLength: 1
+          title: Mensaje
+      required:
+      - message
+      - subject
+    SupportTicketStatusEnum:
+      enum:
+      - abierto
+      - en_proceso
+      - resuelto
+      - cerrado
+      type: string
+      description: |-
+        * `abierto` - Abierto
+        * `en_proceso` - En proceso
+        * `resuelto` - Resuelto
+        * `cerrado` - Cerrado
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        slug:
+          type: string
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+        games_count:
+          type: string
+          readOnly: true
+      required:
+      - games_count
+      - id
+      - name
+      - slug
+    TagRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 50
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 50
+          pattern: ^[-a-zA-Z0-9_]+$
+      required:
+      - name
+      - slug
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    User:
+      type: object
+      description: Serializador para el modelo User (lectura).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: Nombre de usuario
+          description: 'Requerido. 150 carácteres como máximo. Únicamente letras,
+            dígitos y @/./+/-/_ '
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Correo electrónico
+          maxLength: 254
+        first_name:
+          type: string
+          title: Nombre
+          maxLength: 150
+        last_name:
+          type: string
+          title: Apellidos
+          maxLength: 150
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de alta
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/Profile'
+          readOnly: true
+      required:
+      - date_joined
+      - email
+      - first_name
+      - id
+      - last_name
+      - profile
+      - username
+    UserMinimal:
+      type: object
+      description: Serializador mínimo para usuarios (para listas de seguidores).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: Nombre de usuario
+          description: 'Requerido. 150 carácteres como máximo. Únicamente letras,
+            dígitos y @/./+/-/_ '
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        first_name:
+          type: string
+          title: Nombre
+          maxLength: 150
+        last_name:
+          type: string
+          title: Apellidos
+          maxLength: 150
+      required:
+      - first_name
+      - id
+      - last_name
+      - username
+    UserUpdate:
+      type: object
+      description: |-
+        Serializador para actualizar los datos del usuario
+        y su perfil asociado.
+      properties:
+        first_name:
+          type: string
+          title: Nombre
+          maxLength: 150
+        last_name:
+          type: string
+          title: Apellidos
+          maxLength: 150
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        profile:
+          $ref: '#/components/schemas/Profile'
+      required:
+      - first_name
+      - last_name
+    UserUpdateRequest:
+      type: object
+      description: |-
+        Serializador para actualizar los datos del usuario
+        y su perfil asociado.
+      properties:
+        first_name:
+          type: string
+          minLength: 1
+          title: Nombre
+          maxLength: 150
+        last_name:
+          type: string
+          minLength: 1
+          title: Apellidos
+          maxLength: 150
+        avatar:
+          type: string
+          format: binary
+          nullable: true
+        profile:
+          $ref: '#/components/schemas/ProfileRequest'
+      required:
+      - first_name
+      - last_name
+    VerifyEmailRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - key
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

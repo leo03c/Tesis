@@ -135,14 +135,17 @@ async function request<T>(
     }
 
     if (!response.ok) {
-      console.error('[API] Error response:', {
-        status: response.status,
-        statusText: response.statusText,
-        url,
-        data,
-        hasAuthHeader: !!headers['Authorization']
-      });
-      
+      // ⛔ 401 y 403 NO son errores de consola (son estados esperados)
+      if (response.status !== 401 && response.status !== 403) {
+        console.error('[API] Error response:', {
+          status: response.status,
+          statusText: response.statusText,
+          url,
+          data,
+          hasAuthHeader: !!headers['Authorization']
+        });
+      }
+
       throw new APIError(
         `HTTP error! status: ${response.status}`,
         response.status,

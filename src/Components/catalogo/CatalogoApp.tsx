@@ -1,40 +1,49 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { getProjects } from "@/services/catalogService";
-import type { Project } from "@/services/catalogService";
+import { getProjects, Project } from "@/services/catalogService";
 import Loading from "@/Components/loading/Loading";
 import { useUser } from "@/contexts/UserContext";
+import ModalCrearProyecto from "./ModalCrearProyecto";
 
-const pic4 = "/pic4.jpg";
+const filters = ["todos", "publicado", "en desarrollo", "en revisión", "borrador"];
+const placeholderImage = "/pic4.jpg";
 
-const CatalogoApp = () => {
-  const [filter, setFilter] = useState("todos");
+// Map de filtros con los valores exactos del backend
+const filterMap: Record<string, string | null> = {
+  todos: null,
+  publicado: "publicado",
+  "en desarrollo": "en_desarrollo",
+  "en revisión": "en_revision",
+  borrador: "borrador",
+};
+
+const CatalogoApp: React.FC = () => {
+  const { user } = useUser();
   const [miCatalogo, setMiCatalogo] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { user } = useUser();
+  const [isForbidden, setIsForbidden] = useState(false);
+  const [filter, setFilter] = useState("todos");
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
-      // Solo cargar si hay usuario autenticado
       if (!user) {
         setLoading(false);
-        setError("Debes iniciar sesión para ver tus proyectos");
         return;
       }
 
       try {
         setLoading(true);
-        setError(null);
         const response = await getProjects();
         setMiCatalogo(response.results || []);
       } catch (err: any) {
-        console.error('Error fetching projects:', err);
-        const errorMessage = err?.message || err?.detail || 'No se pudieron cargar los proyectos';
-        setError(errorMessage);
-        setMiCatalogo([]);
+        if (err?.status === 403) {
+          setIsForbidden(true); // usuario sin permisos
+        } else {
+          console.warn("Error cargando catálogo:", err);
+        }
       } finally {
         setLoading(false);
       }
@@ -43,37 +52,44 @@ const CatalogoApp = () => {
     fetchProjects();
   }, [user]);
 
-  const statusTranslation: Record<Project['status'], string> = {
-    'published': 'Publicado',
-    'in_development': 'En desarrollo',
-    'in_review': 'En revisión',
-    'draft': 'Borrador'
-  };
+  if (isForbidden) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        <div className="text-center max-w-md bg-deep p-8 rounded-2xl">
+          <h2 className="text-2xl font-bold mb-3">Acceso restringido</h2>
+          <p className="text-texInactivo">
+            Solo los usuarios con rol{" "}
+            <span className="text-primary font-semibold">DESARROLLADOR</span>{" "}
+            pueden acceder al catálogo.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  const getStatusColor = (status: Project['status']) => {
+  if (loading) {
+    return <Loading message="Cargando catálogo..." />;
+  }
+
+  const getStatusColor = (status: Project["status"]) => {
     switch (status) {
-      case "published":
+      case "publicado":
         return "bg-green-600";
-      case "in_development":
+      case "en_desarrollo":
         return "bg-blue-600";
-      case "in_review":
+      case "en_revision":
         return "bg-yellow-600";
-      case "draft":
-        return "bg-gray-600";
+      case "borrador":
       default:
         return "bg-gray-600";
     }
   };
 
-  const filteredProjects = miCatalogo.filter((proyecto) => {
-    if (filter === "todos") return true;
-    const statusMap: Record<string, Project['status']> = {
-      "publicado": "published",
-      "en desarrollo": "in_development",
-      "en revisión": "in_review",
-      "borrador": "draft"
-    };
-    return proyecto.status === statusMap[filter];
+  // Filtrar según el filtro seleccionado
+  const filteredProjects = miCatalogo.filter((p) => {
+    const statusFiltro = filterMap[filter];
+    if (!statusFiltro) return true; // "todos"
+    return p.status === statusFiltro;
   });
 
   return (
@@ -84,14 +100,17 @@ const CatalogoApp = () => {
           <h1 className="text-3xl font-bold mb-2">Mi Catálogo</h1>
           <p className="text-texInactivo">Gestiona tus juegos y proyectos</p>
         </div>
-        <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition">
+        <button
+          className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition"
+          onClick={() => setShowModal(true)}
+        >
           + Nuevo Proyecto
         </button>
       </div>
 
       {/* Filters */}
       <div className="mb-6 flex flex-wrap gap-3">
-        {["todos", "publicado", "en desarrollo", "en revisión", "borrador"].map((f) => (
+        {filters.map((f) => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -108,87 +127,111 @@ const CatalogoApp = () => {
 
       {/* Projects Grid */}
       <div className="rounded-3xl bg-deep py-10 px-6">
-        {loading ? (
-          <Loading message="Cargando proyectos..." />
-        ) : error ? (
-          <div className='text-center py-8'>
-            <div className="bg-red-500/10 border border-red-500 text-red-500 px-6 py-4 rounded-lg inline-block">
-              <p className="font-semibold mb-1">Error al cargar proyectos</p>
-              <p className="text-sm">{error}</p>
-            </div>
-          </div>
-        ) : filteredProjects.length === 0 ? (
-          <div className='text-center py-8'>
-            <p className='text-texInactivo mb-4'>
-              {filter === "todos" 
-                ? 'No tienes proyectos en tu catálogo' 
-                : `No tienes proyectos con el estado "${filter}"`
-              }
+        {filteredProjects.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-texInactivo mb-4">
+              {filter === "todos"
+                ? "No tienes proyectos en tu catálogo"
+                : `No hay proyectos con estado "${filter}"`}
             </p>
-            <button className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition">
+            <button
+              className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-subprimary transition"
+              onClick={() => setShowModal(true)}
+            >
               + Crear tu primer proyecto
             </button>
           </div>
         ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.map((proyecto) => (
-            <div key={proyecto.id} className="bg-subdeep rounded-2xl overflow-hidden hover:transform hover:scale-105 transition-transform">
-              {/* Image */}
-              <div className="w-full aspect-video relative">
-                <Image
-                  src={proyecto.image || pic4}
-                  alt={proyecto.title}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover"
-                />
-                <div className={`absolute top-3 right-3 ${getStatusColor(proyecto.status)} px-3 py-1 rounded-lg text-xs font-semibold`}>
-                  {statusTranslation[proyecto.status]}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((proyecto) => (
+              <div
+                key={proyecto.id}
+                className="bg-subdeep rounded-2xl overflow-hidden hover:transform hover:scale-105 transition-transform"
+              >
+                {/* Image */}
+                <div className="w-full aspect-video relative">
+                  <Image
+                    src={proyecto.image || placeholderImage}
+                    alt={proyecto.title}
+                    fill
+                    className="object-cover"
+                  />
+                  <div
+                    className={`absolute top-3 right-3 px-3 py-1 rounded-lg text-xs font-semibold ${getStatusColor(
+                      proyecto.status
+                    )}`}
+                  >
+                    {proyecto.status_display || proyecto.status}
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="p-5">
+                  <h3 className="text-lg font-semibold mb-3">
+                    {proyecto.title}
+                  </h3>
+
+                  {/* Progress */}
+                  <div className="mb-3">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-texInactivo">Progreso</span>
+                      <span className="text-primary font-medium">
+                        {proyecto.progress}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-dark rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all"
+                        style={{ width: `${proyecto.progress}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-texInactivo text-sm">
+                      {proyecto.last_updated
+                        ? new Date(proyecto.last_updated).toLocaleDateString(
+                            "es-ES"
+                          )
+                        : "Sin fecha"}
+                    </span>
+                    <button className="text-primary hover:text-subprimary text-sm font-medium">
+                      Editar →
+                    </button>
+                  </div>
                 </div>
               </div>
+            ))}
 
-              {/* Content */}
-              <div className="p-5">
-                <h3 className="text-lg font-semibold mb-3">{proyecto.title}</h3>
-                
-                {/* Progress bar */}
-                <div className="mb-3">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="text-texInactivo">Progreso</span>
-                    <span className="text-primary font-medium">{proyecto.progress}%</span>
-                  </div>
-                  <div className="w-full bg-dark rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full transition-all"
-                      style={{ width: `${proyecto.progress}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-texInactivo text-sm">
-                    {proyecto.last_updated ? new Date(proyecto.last_updated).toLocaleDateString('es-ES') : 'Sin fecha'}
+            {/* Add New Project Card */}
+            <div
+              className="bg-subdeep rounded-2xl border-2 border-dashed border-categorico hover:border-primary flex items-center justify-center min-h-[280px] cursor-pointer transition group"
+              onClick={() => setShowModal(true)}
+            >
+              <div className="text-center">
+                <div className="w-16 h-16 bg-categorico group-hover:bg-primary rounded-full flex items-center justify-center mx-auto mb-4 transition">
+                  <span className="text-3xl" aria-hidden="true">
+                    +
                   </span>
-                  <button className="text-primary hover:text-subprimary text-sm font-medium">
-                    Editar →
-                  </button>
                 </div>
+                <p className="text-texInactivo group-hover:text-white transition">
+                  Crear nuevo proyecto
+                </p>
               </div>
-            </div>
-          ))}
-
-          {/* Add new project card */}
-          <div className="bg-subdeep rounded-2xl border-2 border-dashed border-categorico hover:border-primary flex items-center justify-center min-h-[280px] cursor-pointer transition group">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-categorico group-hover:bg-primary rounded-full flex items-center justify-center mx-auto mb-4 transition">
-                <span className="text-3xl">+</span>
-              </div>
-              <p className="text-texInactivo group-hover:text-white transition">Crear nuevo proyecto</p>
             </div>
           </div>
-        </div>
         )}
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <ModalCrearProyecto
+          onClose={() => setShowModal(false)}
+          onCreated={(newProject) =>
+            setMiCatalogo((prev) => [newProject, ...prev])
+          }
+        />
+      )}
     </div>
   );
 };
