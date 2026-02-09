@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from "next/image";
 import Link from "next/link";
+import { FaStar } from 'react-icons/fa'; // Importa los iconos de estrellas
 import { getFeaturedGames, getGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
 import { APIError } from "@/services/api";
@@ -88,6 +89,10 @@ const Carrusel = () => {
     );
   }
 
+  // Calcular el rating una vez para reutilizarlo
+  const rating = parseFloat(featuredGame.rating as any) || 0;
+  const filledStars = Math.floor(rating);
+
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 w-full">
       {/* Tarjeta principal */}
@@ -122,8 +127,8 @@ const Carrusel = () => {
             <Image 
               src={isFavorite(featuredGame.id) ? '/icons/coraR.svg' : '/icons/coraB.svg'} 
               alt="Favorito" 
-              width={24} 
-              height={24} 
+              width={56} 
+              height={56} 
             />
           </button>
         </div>
@@ -149,20 +154,35 @@ const Carrusel = () => {
             <p className="text-white text-sm lg:text-base line-clamp-4">
               {featuredGame.description || 'Detalles de funcionalidad del videojuego...'}
             </p>
+            
+            {/* Fragmento corregido con react-icons */}
             <div className="flex items-center gap-2">
-              {Array(5).fill(0).map((_, i) => (
-                <Image 
-                  key={i} 
-                  width={20} 
-                  height={20} 
-                  src={'/icons/star 5.svg'} 
-                  alt="star" 
-                />
-              ))}
-              <span className="font-bold text-white">
-                {featuredGame.rating || '5.0'}
+              {/* Mostrar estrellas llenas según el rating */}
+              {Array.from({ length: 5 }).map((_, i) => {
+                if (i < filledStars) {
+                  // Estrella llena
+                  return (
+                    <FaStar 
+                      key={i} 
+                      className="text-yellow-500 text-lg lg:text-xl" 
+                    />
+                  );
+                } else {
+                  // Estrella vacía
+                  return (
+                    <FaStar 
+                      key={i} 
+                      className="text-gray-400 text-lg lg:text-xl" 
+                    />
+                  );
+                }
+              })}
+              
+              <span className="font-bold text-white ml-2">
+                {rating.toFixed(1)}
               </span>
             </div>
+            
             <div className="flex gap-3 items-baseline">
               <span className="text-xl lg:text-2xl font-bold text-white">
                 {parseFloat(featuredGame.price) === 0 

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { FaStar } from 'react-icons/fa'; // Importa los iconos de estrellas
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { getFreeGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
@@ -13,7 +14,6 @@ const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
 const coraB = "/icons/coraB.svg";
 const coraR = "/icons/coraR.svg";
-const star = "/icons/star 5.svg";
 const pic4 = "/pic4.jpg";
 
 const JuegosGratis = () => {
@@ -26,10 +26,14 @@ const JuegosGratis = () => {
   const [apiUrl, setApiUrl] = useState<string | null>(null);
   const [direction, setDirection] = useState(0);
 
-  // Helper para formatear rating
-  const formatRating = (rating: string | number | undefined): string => {
-    const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
-    return (numRating || 0).toFixed(1);
+  // Helper para formatear rating y calcular estrellas
+  const getRatingInfo = (rating: string | number | undefined) => {
+    const numRating = typeof rating === 'string' ? parseFloat(rating) : (rating || 0);
+    const ratingValue = typeof numRating === 'number' ? numRating : 0;
+    const filledStars = Math.floor(ratingValue);
+    const formattedRating = ratingValue.toFixed(1);
+    
+    return { ratingValue, filledStars, formattedRating };
   };
 
   useEffect(() => {
@@ -127,10 +131,18 @@ const JuegosGratis = () => {
             <a href="#" className="text-primary text-xl hover:underline">
               Ver todos
             </a>
-            <button onClick={prevPage} disabled={currentPage === 0}>
+            <button 
+              onClick={prevPage} 
+              disabled={currentPage === 0}
+              className={`p-2 rounded-full ${currentPage === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`}
+            >
               <Image src={izq} alt="izquierda" width={44} height={44} />
             </button>
-            <button onClick={nextPage} disabled={currentPage >= totalPages - 1}>
+            <button 
+              onClick={nextPage} 
+              disabled={currentPage >= totalPages - 1}
+              className={`p-2 rounded-full ${currentPage >= totalPages - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`}
+            >
               <Image src={der} alt="derecha" width={44} height={44} />
             </button>
           </div>
@@ -144,76 +156,89 @@ const JuegosGratis = () => {
               direction === 1 ? "slide-from-right" : direction === -1 ? "slide-from-left" : ""
             } grid grid-cols-1 sm:grid-cols-3 gap-6`}
           >
-            {visibleGames.map((juego) => (
-              <Link key={juego.id} href={`/juego/${juego.slug}`}>
-                <div className="bg-deep rounded-xl overflow-hidden md:shadow-md relative cursor-pointer hover:scale-105 transition-transform">
-                  {/* Imagen */}
-                  <div className="w-full aspect-[4/3] relative">
-                    <Image
-                      src={juego.image || pic4}
-                      alt={juego.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
-                      className="object-cover rounded-t-xl"
-                    />
-                    <button 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        toggleFavorite(juego.id);
-                      }}
-                      className="absolute top-2 right-2 transition-transform hover:scale-110 z-10"
-                    >
-                      <Image 
-                        src={isFavorite(juego.id) ? coraR : coraB} 
-                        alt="heart" 
-                        width={56} 
-                        height={56} 
+            {visibleGames.map((juego) => {
+              const { filledStars, formattedRating } = getRatingInfo(juego.rating);
+              
+              return (
+                <Link key={juego.id} href={`/juego/${juego.slug}`}>
+                  <div className="bg-deep rounded-xl overflow-hidden md:shadow-md relative cursor-pointer hover:scale-105 transition-transform duration-300">
+                    {/* Imagen */}
+                    <div className="w-full aspect-[4/3] relative">
+                      <Image
+                        src={juego.image || pic4}
+                        alt={juego.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 33vw"
+                        className="object-cover rounded-t-xl"
                       />
-                    </button>
-                  </div>
-
-                  {/* Contenido */}
-                  <div className="p-4 pb-6">
-                    <div className="flex gap-2 mb-2 flex-wrap">
-                      {(juego.tags || []).slice(0, 3).map((tag) => (
-                        <span
-                          key={tag.id}
-                          className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
-                        >
-                          {tag.name}
-                        </span>
-                      ))}
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleFavorite(juego.id);
+                        }}
+                        className="absolute top-2 right-2 transition-transform hover:scale-110 z-10"
+                      >
+                        <Image 
+                          src={isFavorite(juego.id) ? coraR : coraB} 
+                          alt="heart" 
+                          width={56} 
+                          height={56} 
+                        />
+                      </button>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-base font-semibold">{juego.title}</h3>
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, k) => (
-                          <Image
-                            key={k}
-                            src={star}
-                            alt="estrella"
-                            width={14}
-                            height={14}
-                          />
+
+                    {/* Contenido */}
+                    <div className="p-4 pb-6">
+                      <div className="flex gap-2 mb-2 flex-wrap">
+                        {(juego.tags || []).slice(0, 3).map((tag) => (
+                          <span
+                            key={tag.id}
+                            className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
+                          >
+                            {tag.name}
+                          </span>
                         ))}
-                        <span className="text-xs font-medium ml-1">
-                          {formatRating(juego.rating)}
-                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-base font-semibold">{juego.title}</h3>
+                        <div className="flex items-center gap-1">
+                          {/* Estrellas con react-icons */}
+                          {Array.from({ length: 5 }).map((_, index) => (
+                            <div key={index} className="flex items-center">
+                              {index < filledStars ? (
+                                <FaStar className="text-yellow-500 text-sm" />
+                              ) : (
+                                <FaStar className="text-gray-400 text-sm" />
+                              )}
+                            </div>
+                          ))}
+                          <span className="text-xs font-medium ml-1">
+                            {formattedRating}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </div>
 
         {/* Botones móviles */}
         <div className="flex justify-end gap-2 mt-6 sm:hidden">
-          <button onClick={prevPage} disabled={currentPage === 0}>
+          <button 
+            onClick={prevPage} 
+            disabled={currentPage === 0}
+            className={`p-2 rounded-full ${currentPage === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`}
+          >
             <Image src={izq} alt="izquierda" width={44} height={44} />
           </button>
-          <button onClick={nextPage} disabled={currentPage >= totalPages - 1}>
+          <button 
+            onClick={nextPage} 
+            disabled={currentPage >= totalPages - 1}
+            className={`p-2 rounded-full ${currentPage >= totalPages - 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'}`}
+          >
             <Image src={der} alt="derecha" width={44} height={44} />
           </button>
         </div>
