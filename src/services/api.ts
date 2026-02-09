@@ -11,7 +11,10 @@ const PUBLIC_ENDPOINTS = [
   '/games/games',
   '/games/tags',
   '/news',
+  '/auth/token/refresh',
 ];
+
+let cachedAccessToken: string | null = null;
 
 function isPublicEndpoint(endpoint: string): boolean {
   const cleanEndpoint = endpoint.split('?')[0].replace(/\/$/, '');
@@ -50,7 +53,8 @@ interface RequestOptions {
 
 async function request<T>(
   endpoint: string,
-  options: RequestOptions = {}
+  options: RequestOptions = {},
+  canRetry = true
 ): Promise<T> {
   const { method = 'GET', body, params } = options;
 
@@ -75,13 +79,14 @@ async function request<T>(
   // 🔐 Autenticación SOLO si el endpoint no es público
   if (!isPublicEndpoint(endpoint)) {
     const session = await getSession();
+    const accessToken = cachedAccessToken || session?.accessToken;
 
     // ⛔ NO hay sesión → NO hacer request
-    if (!session?.accessToken) {
+    if (!accessToken) {
       throw new APIError('Not authenticated', 401, null, endpoint);
     }
 
-    headers.Authorization = `Bearer ${session.accessToken}`;
+    headers.Authorization = `Bearer ${accessToken}`;
   }
 
   const controller = new AbortController();
@@ -97,6 +102,39 @@ async function request<T>(
   if (body) {
     config.body = JSON.stringify(body);
   }
+
+  const tryRefreshToken = async () => {
+    const session = await getSession();
+    const refreshToken = (session as any)?.refreshToken as string | undefined;
+    if (!refreshToken) {
+      return null;
+    }
+
+    try {
+      const refreshResponse = await fetch(
+        ensureTrailingSlash(`${API_BASE_URL}/auth/token/refresh`),
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh: refreshToken }),
+        }
+      );
+
+      if (!refreshResponse.ok) {
+        return null;
+      }
+
+      const refreshData = await refreshResponse.json();
+      if (refreshData?.access) {
+        cachedAccessToken = refreshData.access;
+        return cachedAccessToken;
+      }
+    } catch {
+      return null;
+    }
+
+    return null;
+  };
 
   try {
     const response = await fetch(url, config);
@@ -115,6 +153,14 @@ async function request<T>(
 
     // 🔒 401 = estado normal (sesión expirada / backend reiniciado)
     if (response.status === 401) {
+      if (!isPublicEndpoint(endpoint) && canRetry) {
+        const newAccessToken = await tryRefreshToken();
+        if (newAccessToken) {
+          return request<T>(endpoint, options, false);
+        }
+        cachedAccessToken = null;
+      }
+
       throw new APIError('Unauthorized', 401, data, url);
     }
 

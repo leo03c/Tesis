@@ -14,6 +14,8 @@ const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
 const star = "/icons/star 5.svg";
 const pic4 = "/pic4.jpg";
+const coraB = "/icons/coraB.svg";
+const coraR = "/icons/coraR.svg";
 
 const FavoritosApp = () => {
   const { data: session, status } = useSession();
@@ -222,16 +224,20 @@ const FavoritosApp = () => {
                             sizes="(max-width: 640px) 100vw, 33vw"
                             className="object-cover rounded-t-xl"
                           />
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.preventDefault();
                               toggleFavorite(juego.id);
                             }}
-                            className="absolute top-2 right-2 bg-red-500 p-2 rounded-full opacity-0 group-hover:opacity-100 transition z-10"
+                            type="button"
+                            className="absolute right-3 top-3 z-10"
                           >
-                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                            </svg>
+                            <Image
+                              src={isFavorite(juego.id) ? coraR : coraB}
+                              alt="heart"
+                              width={56}
+                              height={56}
+                            />
                           </button>
                         </div>
 
