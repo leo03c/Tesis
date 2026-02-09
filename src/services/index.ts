@@ -44,3 +44,7 @@ export { default as libraryService } from './libraryService';
 // Favorites services
 export * from './favoritesService';
 export { default as favoritesService } from './favoritesService';
+
+// Cart services
+export * from './cartService';
+export { default as cartService } from './cartService';

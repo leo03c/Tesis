@@ -167,13 +167,13 @@ const Navbar = () => {
                     <div className="flex items-center gap-6">
                         <div className='flex gap-4'>
                             {/* carrito */}
-                            <button className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+                            <Link href="/mi-carrito" className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
                                 <Image width={15} height={15} alt='bag' src={'/bag.svg'} />
-                            </button>
+                            </Link>
                             {/* lista de deseos */}
-                            <button className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+                            <Link href="/me-gustan" className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
                                 <Image width={15} height={15} alt='translate' src={'/translate.svg'} />
-                            </button>
+                            </Link>
                         </div>
 
                         {/* CONTROLES DE SESIÓN */}
