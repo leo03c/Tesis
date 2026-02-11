@@ -44,29 +44,12 @@ const ModalCrearProyecto: React.FC<ModalCrearProyectoProps> = ({
     setError(null);
 
     try {
-      // Si la API soporta solo JSON, no se puede enviar archivo directamente.
-      // Para subir imagen necesitarás FormData en tu backend.
-      let imageUrl: string | undefined = undefined;
-
-      if (image) {
-        const formData = new FormData();
-        formData.append("file", image);
-
-        // Aquí debes llamar a tu endpoint de subida de imagen
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await res.json();
-        imageUrl = data.url;
-      }
-
       const payload = {
         title,
         description,
         status,
         progress,
-        image: imageUrl,
+        image: image || null,
       };
 
       const newProject = await createProject(payload);

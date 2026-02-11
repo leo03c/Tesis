@@ -10,13 +10,13 @@ import ModalCrearProyecto from "./ModalCrearProyecto";
 const filters = ["todos", "publicado", "en desarrollo", "en revisión", "borrador"];
 const placeholderImage = "/pic4.jpg";
 
-// Map de filtros con los valores exactos del backend (en inglés)
+// Map de filtros con los valores exactos del backend
 const filterMap: Record<string, Project["status"] | null> = {
   todos: null,
-  publicado: "published",
-  "en desarrollo": "in_development",
-  "en revisión": "in_review",
-  borrador: "draft",
+  publicado: "publicado",
+  "en desarrollo": "en_desarrollo",
+  "en revisión": "en_revision",
+  borrador: "borrador",
 };
 
 const CatalogoApp: React.FC = () => {
@@ -114,13 +114,13 @@ const CatalogoApp: React.FC = () => {
 
   const getStatusColor = (status: Project["status"]) => {
     switch (status) {
-      case "published":
+      case "publicado":
         return "bg-green-600";
-      case "in_development":
+      case "en_desarrollo":
         return "bg-blue-600";
-      case "in_review":
+      case "en_revision":
         return "bg-yellow-600";
-      case "draft":
+      case "borrador":
       default:
         return "bg-gray-600";
     }
@@ -129,13 +129,13 @@ const CatalogoApp: React.FC = () => {
   // Mostrar texto amigable para el estado
   const getStatusDisplay = (status: Project["status"]) => {
     switch (status) {
-      case "published":
+      case "publicado":
         return "Publicado";
-      case "in_development":
+      case "en_desarrollo":
         return "En desarrollo";
-      case "in_review":
+      case "en_revision":
         return "En revisión";
-      case "draft":
+      case "borrador":
       default:
         return "Borrador";
     }

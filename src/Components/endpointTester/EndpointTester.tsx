@@ -118,7 +118,7 @@ const endpoints: Endpoint[] = [
     sampleBody: {
       title: "New Project",
       description: "Project description",
-      status: "draft",
+      status: "borrador",
     },
   },
   // Favorites endpoints

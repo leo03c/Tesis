@@ -11,7 +11,7 @@ export interface Project {
   title: string;
   description?: string;
   image?: string;
-  status: 'draft' | 'in_development' | 'in_review' | 'published';
+  status: 'borrador' | 'en_desarrollo' | 'en_revision' | 'publicado';
   status_display?: string;
   progress: number;
   last_updated?: string;
@@ -28,16 +28,32 @@ export interface ProjectsResponse {
 export interface CreateProjectData {
   title: string;
   description?: string;
-  image?: string;
+  image?: File | string | null;
+  status?: Project['status'];
+  progress?: number;
 }
 
 export interface UpdateProjectData {
   title?: string;
   description?: string;
-  image?: string;
+  image?: File | string | null;
   status?: Project['status'];
   progress?: number;
 }
+
+const toCatalogPayload = (data: CreateProjectData | UpdateProjectData | Partial<UpdateProjectData>) => {
+  if (data.image instanceof File) {
+    const formData = new FormData();
+    if (data.title) formData.append('title', data.title);
+    if (data.description) formData.append('description', data.description);
+    if (data.status) formData.append('status', data.status);
+    if (typeof data.progress === 'number') formData.append('progress', String(data.progress));
+    formData.append('image', data.image);
+    return formData;
+  }
+
+  return data;
+};
 
 /**
  * Get all projects in the developer's catalog
@@ -58,21 +74,21 @@ export const getProject = (id: number) =>
  * Backend endpoint: /api/catalog/
  */
 export const createProject = (data: CreateProjectData) => 
-  api.post<Project>('/catalog', data);
+  api.post<Project>('/catalog', toCatalogPayload(data));
 
 /**
  * Update an existing project
  * Backend endpoint: /api/catalog/{id}/
  */
 export const updateProject = (id: number, data: UpdateProjectData) => 
-  api.put<Project>(`/catalog/${id}`, data);
+  api.put<Project>(`/catalog/${id}`, toCatalogPayload(data));
 
 /**
  * Partial update of a project
  * Backend endpoint: /api/catalog/{id}/
  */
 export const patchProject = (id: number, data: Partial<UpdateProjectData>) => 
-  api.patch<Project>(`/catalog/${id}`, data);
+  api.patch<Project>(`/catalog/${id}`, toCatalogPayload(data));
 
 /**
  * Delete a project

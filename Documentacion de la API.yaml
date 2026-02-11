@@ -4,6 +4,21 @@ info:
   version: 1.0.0
   description: API Backend para la plataforma de distribución de videojuegos CosmoX
 paths:
+  /api/auth/google-auth/:
+    post:
+      operationId: auth_google_auth_create
+      description: |-
+        Endpoint para registrar/loguear usuarios de Google.
+        Si el usuario ya existe, retorna 200 OK y los datos del usuario.
+        Si no existe, lo crea y retorna 201 Created.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/auth/login/:
     post:
       operationId: auth_login_create
@@ -241,7 +256,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -298,7 +313,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Carrito.
+        description: A unique integer value identifying this Carrito.
         required: true
       tags:
       - cart
@@ -323,7 +338,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Carrito.
+        description: A unique integer value identifying this Carrito.
         required: true
       tags:
       - cart
@@ -360,7 +375,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Carrito.
+        description: A unique integer value identifying this Carrito.
         required: true
       tags:
       - cart
@@ -396,7 +411,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Carrito.
+        description: A unique integer value identifying this Carrito.
         required: true
       tags:
       - cart
@@ -474,7 +489,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -656,7 +671,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -734,13 +749,13 @@ paths:
       - name: ordering
         required: false
         in: query
-        description: Qué campo usar para ordenar los resultados.
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       - in: query
@@ -758,7 +773,7 @@ paths:
       - name: search
         required: false
         in: query
-        description: Un término de búsqueda.
+        description: A search term.
         schema:
           type: string
       - in: query
@@ -807,15 +822,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Game'
           description: ''
-  /api/games/games/{id}/:
+  /api/games/games/{slug}/:
     get:
       operationId: games_games_retrieve
       parameters:
       - in: path
-        name: id
+        name: slug
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este Juego.
+          type: string
         required: true
       tags:
       - games
@@ -833,10 +847,9 @@ paths:
       operationId: games_games_update
       parameters:
       - in: path
-        name: id
+        name: slug
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este Juego.
+          type: string
         required: true
       tags:
       - games
@@ -866,10 +879,9 @@ paths:
       operationId: games_games_partial_update
       parameters:
       - in: path
-        name: id
+        name: slug
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este Juego.
+          type: string
         required: true
       tags:
       - games
@@ -898,10 +910,9 @@ paths:
       operationId: games_games_destroy
       parameters:
       - in: path
-        name: id
+        name: slug
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este Juego.
+          type: string
         required: true
       tags:
       - games
@@ -911,6 +922,74 @@ paths:
       responses:
         '204':
           description: No response body
+  /api/games/games/best_offers/:
+    get:
+      operationId: games_games_best_offers_retrieve
+      description: Retorna juegos con mejor oferta (mayor descuento)
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+          description: ''
+  /api/games/games/freegames/:
+    get:
+      operationId: games_games_freegames_retrieve
+      description: Retorna todos los juegos gratuitos (precio = 0)
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+          description: ''
+  /api/games/games/most_downloaded/:
+    get:
+      operationId: games_games_most_downloaded_retrieve
+      description: Retorna juegos con mas descargas
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+          description: ''
+  /api/games/games/top_rated/:
+    get:
+      operationId: games_games_top_rated_retrieve
+      description: Retorna juegos con mejores clasificaciones
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+          description: ''
   /api/games/plataformas/:
     get:
       operationId: games_plataformas_list
@@ -918,7 +997,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -926,6 +1005,7 @@ paths:
       security:
       - jwtAuth: []
       - cookieAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -941,13 +1021,14 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Plataforma.
+        description: A unique integer value identifying this Plataforma.
         required: true
       tags:
       - games
       security:
       - jwtAuth: []
       - cookieAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -962,7 +1043,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -1012,7 +1093,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Reseña.
+        description: A unique integer value identifying this Reseña.
         required: true
       tags:
       - games
@@ -1034,7 +1115,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Reseña.
+        description: A unique integer value identifying this Reseña.
         required: true
       tags:
       - games
@@ -1067,7 +1148,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Reseña.
+        description: A unique integer value identifying this Reseña.
         required: true
       tags:
       - games
@@ -1099,7 +1180,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Reseña.
+        description: A unique integer value identifying this Reseña.
         required: true
       tags:
       - games
@@ -1116,7 +1197,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -1124,6 +1205,7 @@ paths:
       security:
       - jwtAuth: []
       - cookieAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -1131,21 +1213,44 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedTagList'
           description: ''
-  /api/games/tags/{id}/:
+  /api/games/tags/{slug}/:
     get:
       operationId: games_tags_retrieve
       parameters:
       - in: path
-        name: id
+        name: slug
         schema:
-          type: integer
-        description: Un valor de entero único que identifique este Etiqueta.
+          type: string
         required: true
       tags:
       - games
       security:
       - jwtAuth: []
       - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+          description: ''
+  /api/games/tags/{slug}/games/:
+    get:
+      operationId: games_tags_games_retrieve
+      description: Retorna todos los juegos que tienen esta etiqueta
+      parameters:
+      - in: path
+        name: slug
+        schema:
+          type: string
+        required: true
+      tags:
+      - games
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - {}
       responses:
         '200':
           content:
@@ -1165,7 +1270,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -1395,7 +1500,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -1448,13 +1553,13 @@ paths:
       - name: ordering
         required: false
         in: query
-        description: Qué campo usar para ordenar los resultados.
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -1511,7 +1616,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Notificación.
+        description: A unique integer value identifying this Notificación.
         required: true
       tags:
       - notifications
@@ -1536,7 +1641,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Notificación.
+        description: A unique integer value identifying this Notificación.
         required: true
       tags:
       - notifications
@@ -1573,7 +1678,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Notificación.
+        description: A unique integer value identifying this Notificación.
         required: true
       tags:
       - notifications
@@ -1609,7 +1714,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Notificación.
+        description: A unique integer value identifying this Notificación.
         required: true
       tags:
       - notifications
@@ -1628,7 +1733,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Notificación.
+        description: A unique integer value identifying this Notificación.
         required: true
       tags:
       - notifications
@@ -1721,13 +1826,13 @@ paths:
       - name: ordering
         required: false
         in: query
-        description: Qué campo usar para ordenar los resultados.
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -1784,7 +1889,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Compra.
+        description: A unique integer value identifying this Compra.
         required: true
       tags:
       - purchases
@@ -1809,7 +1914,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Compra.
+        description: A unique integer value identifying this Compra.
         required: true
       tags:
       - purchases
@@ -1846,7 +1951,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Compra.
+        description: A unique integer value identifying this Compra.
         required: true
       tags:
       - purchases
@@ -1882,7 +1987,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Compra.
+        description: A unique integer value identifying this Compra.
         required: true
       tags:
       - purchases
@@ -1901,7 +2006,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Compra.
+        description: A unique integer value identifying this Compra.
         required: true
       tags:
       - purchases
@@ -1986,7 +2091,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -2014,7 +2119,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Me gusta.
+        description: A unique integer value identifying this Me gusta.
         required: true
       tags:
       - reviews
@@ -2040,13 +2145,13 @@ paths:
       - name: ordering
         required: false
         in: query
-        description: Qué campo usar para ordenar los resultados.
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -2104,7 +2209,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Reseña.
+        description: A unique integer value identifying this Reseña.
         required: true
       tags:
       - reviews
@@ -2130,7 +2235,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Reseña.
+        description: A unique integer value identifying this Reseña.
         required: true
       tags:
       - reviews
@@ -2167,7 +2272,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Reseña.
+        description: A unique integer value identifying this Reseña.
         required: true
       tags:
       - reviews
@@ -2203,7 +2308,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Reseña.
+        description: A unique integer value identifying this Reseña.
         required: true
       tags:
       - reviews
@@ -2222,7 +2327,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Reseña.
+        description: A unique integer value identifying this Reseña.
         required: true
       tags:
       - reviews
@@ -2257,7 +2362,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Reseña.
+        description: A unique integer value identifying this Reseña.
         required: true
       tags:
       - reviews
@@ -2313,7 +2418,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -2339,7 +2444,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -2354,6 +2459,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedFollowingList'
           description: ''
+  /api/social/suggestions/:
+    get:
+      operationId: social_suggestions_retrieve
+      description: Lista sugerencias de usuarios a seguir.
+      tags:
+      - social
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      responses:
+        '200':
+          description: No response body
   /api/social/unfollow/{user_id}/:
     delete:
       operationId: social_unfollow_destroy
@@ -2463,7 +2580,7 @@ paths:
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -2596,13 +2713,13 @@ paths:
       - name: ordering
         required: false
         in: query
-        description: Qué campo usar para ordenar los resultados.
+        description: Which field to use when ordering the results.
         schema:
           type: string
       - name: page
         required: false
         in: query
-        description: Un número de página dentro del conjunto de resultados paginado.
+        description: A page number within the paginated result set.
         schema:
           type: integer
       tags:
@@ -2659,7 +2776,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Lista de deseos.
+        description: A unique integer value identifying this Lista de deseos.
         required: true
       tags:
       - wishlist
@@ -2684,7 +2801,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Lista de deseos.
+        description: A unique integer value identifying this Lista de deseos.
         required: true
       tags:
       - wishlist
@@ -2721,7 +2838,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Lista de deseos.
+        description: A unique integer value identifying this Lista de deseos.
         required: true
       tags:
       - wishlist
@@ -2757,7 +2874,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: Un valor de entero único que identifique este Lista de deseos.
+        description: A unique integer value identifying this Lista de deseos.
         required: true
       tags:
       - wishlist
@@ -4774,7 +4891,11 @@ components:
           type: string
           maxLength: 50
           pattern: ^[-a-zA-Z0-9_]+$
+        games_count:
+          type: string
+          readOnly: true
       required:
+      - games_count
       - id
       - name
       - slug
