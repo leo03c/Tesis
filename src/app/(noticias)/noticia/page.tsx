@@ -55,7 +55,6 @@ function NoticiaContent() {
   }, [articleId]);
 
   const banner = article?.image || fallbackImages[0];
-  const banner2 = fallbackImages[1];
   const title = article?.title || "Noticia";
   const description = article?.description || "";
   const content = article?.content || "";
@@ -112,10 +111,6 @@ function NoticiaContent() {
             </p>
           </div>
         )}
-
-        <div className="relative w-full h-96 md:h-[150px] overflow-hidden">
-          <Image src={banner2} alt="Imagen secundaria" fill className="object-cover block" />
-        </div>
       </section>
     </>
   );
