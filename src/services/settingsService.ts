@@ -42,11 +42,7 @@ export const updateAvatar = (file: File) => {
   const formData = new FormData();
   formData.append('avatar', file);
 
-  return api.patch<UserSettings>('/users/me/', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
-  });
+  return api.patch<UserSettings>('/users/me/', formData);
 };
 
 /**

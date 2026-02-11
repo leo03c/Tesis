@@ -3,13 +3,23 @@
  * Backend base: /api/cart/
  */
 import api, { APIError } from './api';
-import type { Game } from './gamesService';
+
+export interface CartGame {
+  id: number;
+  title: string;
+  slug: string;
+  price: string;
+  final_price: string;
+  rating: string;
+  image: string;
+}
 
 export interface CartItem {
   id: number;
-  game: Game;
-  added_date: string;
-  price_at_time: string;
+  id_usuario: number;
+  id_juego: number;
+  juego: CartGame;
+  fecha_agregado: string;
 }
 
 export interface CartResponse {
@@ -22,7 +32,6 @@ export interface CartResponse {
 /**
  * Get user's cart items
  * Requires authentication
- * ⚠️ 401 se maneja como estado normal
  */
 export const getCart = async (
   params?: Record<string, string | number | boolean>
@@ -31,13 +40,7 @@ export const getCart = async (
     return await api.get<CartResponse>('/cart/', params);
   } catch (error) {
     if (error instanceof APIError && error.status === 401) {
-      // Usuario no logueado / sesión expirada
-      return {
-        count: 0,
-        next: null,
-        previous: null,
-        results: [],
-      };
+      return { count: 0, next: null, previous: null, results: [] };
     }
     throw error;
   }
@@ -47,9 +50,9 @@ export const getCart = async (
  * Add a game to cart
  * Requires authentication
  */
-export const addToCart = async (gameId: number) => {
+export const addToCart = async (gameId: number, userId: number): Promise<CartItem> => {
   try {
-    return await api.post<CartItem>('/cart/', { game_id: gameId });
+    return await api.post<CartItem>('/cart/', { id_juego: gameId, id_usuario: userId });
   } catch (error) {
     if (error instanceof APIError && error.status === 401) {
       throw new Error('Debes iniciar sesión para añadir al carrito');
@@ -62,7 +65,7 @@ export const addToCart = async (gameId: number) => {
  * Remove a game from cart
  * Requires authentication
  */
-export const removeFromCart = async (id: number) => {
+export const removeFromCart = async (id: number): Promise<void> => {
   try {
     return await api.delete<void>(`/cart/${id}/`);
   } catch (error) {

@@ -15,9 +15,9 @@ const ArticulosDestacados = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [isMobile, setIsMobile] = useState(false);
-  const [articles, setArticles] = useState([]);
+  const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const [direction, setDirection] = useState(0);
 

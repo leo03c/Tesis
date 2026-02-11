@@ -38,9 +38,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const gameIds = new Set<number>();
       const idMap = new Map<number, number>();
       
-      response.results.forEach(item => {
-        gameIds.add(item.game.id);
-        idMap.set(item.game.id, item.id);
+      response.results.forEach((item) => {
+        const gameId = item?.juego?.id;
+        if (!gameId) {
+          return;
+        }
+        gameIds.add(gameId);
+        idMap.set(gameId, item.id);
       });
       
       setCartItems(gameIds);

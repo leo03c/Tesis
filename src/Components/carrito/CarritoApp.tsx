@@ -1,87 +1,49 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from 'next-auth/react';
-import { useCart } from "@/contexts/CartContext";
-import { getCart } from "@/services/cartService";
-import type { Game } from "@/services/gamesService";
-import { APIError } from "@/services/api";
+import { getCart, removeFromCart } from "@/services/cartService";
+import type { CartItem } from "@/services/cartService";
 import Loading from "@/Components/loading/Loading";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
-const star = "/icons/star 5.svg";
+import StarRating from "@/Components/StarRating";
 const pic4 = "/pic4.jpg";
 
 const CarritoApp = () => {
-  const { data: session, status } = useSession();
-  const { toggleCart, isInCart, cartItems } = useCart();
+  const { status } = useSession();
   const [currentPage, setCurrentPage] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(3);
   const [direction, setDirection] = useState(0);
-  const [allGames, setAllGames] = useState<Game[]>([]);
-  const [allPrices, setAllPrices] = useState<Map<number, string>>(new Map());
+  const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [apiUrl, setApiUrl] = useState<string | null>(null);
-
-  // Debug logs
-  useEffect(() => {
-    console.log('=== DEBUG CARRITO ===');
-    console.log('Session status:', status);
-    console.log('Session data:', session);
-    console.log('Cart items from context:', cartItems);
-  }, [status, session, cartItems]);
+  const [checkoutStatus, setCheckoutStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [cardName, setCardName] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExp, setCardExp] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     const fetchCart = async () => {
-      console.log('fetchCart called, status:', status);
-      
-      // Solo cargar si está autenticado
       if (status !== 'authenticated') {
-        console.log('Not authenticated, skipping fetch');
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        console.log('Fetching cart...');
         const response = await getCart();
-        console.log('Cart response:', response);
-
-        if (!response || !Array.isArray(response.results)) {
-          console.error('La respuesta de la API de carrito no tiene el formato esperado:', response);
-          setAllGames([]);
-          setAllPrices(new Map());
-          setApiUrl(null);
-          return;
-        }
-
-        const games = response.results.map(item => item.game);
-        const prices = new Map<number, string>();
-        response.results.forEach(item => {
-          prices.set(item.game.id, item.price_at_time);
-        });
-        console.log('Games extracted:', games);
-        console.log('Prices extracted:', prices);
-
-        setAllGames(games);
-        setAllPrices(prices);
-        setApiUrl(null);
+        const safeItems = (response.results || []).filter((item) => item?.juego);
+        setItems(safeItems);
       } catch (err) {
         console.error('Error fetching cart:', err);
-        if (err instanceof APIError) {
-          console.error('API Error details:', {
-            status: err.status,
-            url: err.url,
-            data: err.data
-          });
-          setApiUrl(err.url);
-        }
-        setAllGames([]);
-        setAllPrices(new Map());
+        setItems([]);
       } finally {
         setLoading(false);
       }
@@ -90,18 +52,42 @@ const CarritoApp = () => {
     fetchCart();
   }, [status]);
 
-  const carritoItems = useMemo(() => {
-    const filtered = allGames.filter(game => isInCart(game.id));
-    console.log('Carrito filtrados:', filtered.length, 'de', allGames.length);
-    return filtered;
-  }, [allGames, cartItems]);
+  const handleRemove = async (item: CartItem) => {
+    try {
+      await removeFromCart(item.id);
+      setItems(prev => prev.filter(i => i.id !== item.id));
+    } catch (err) {
+      console.error('Error removing from cart:', err);
+    }
+  };
 
-  const totalPrice = useMemo(() => {
-    return carritoItems.reduce((sum, game) => {
-      const price = allPrices.get(game.id) || game.final_price;
-      return sum + parseFloat(price || '0');
-    }, 0);
-  }, [carritoItems, allPrices]);
+  const totalPrice = items.reduce((sum, item) => {
+    return sum + parseFloat(item?.juego?.final_price || '0');
+  }, 0);
+
+  useEffect(() => {
+    if (checkoutStatus !== 'success') {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setCheckoutStatus('idle');
+    }, 3000);
+
+    return () => window.clearTimeout(timer);
+  }, [checkoutStatus]);
+
+  useEffect(() => {
+    if (!toast) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setToast(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -113,7 +99,7 @@ const CarritoApp = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const totalPages = Math.ceil(carritoItems.length / itemsPerPage);
+  const totalPages = Math.ceil(items.length / itemsPerPage);
 
   const nextPage = () => {
     if (currentPage < totalPages - 1) {
@@ -131,13 +117,80 @@ const CarritoApp = () => {
     }
   };
 
-  const startIndex = currentPage * itemsPerPage;
-  const visibleGames = carritoItems.slice(startIndex, startIndex + itemsPerPage);
+  const handleCheckout = () => {
+    if (items.length === 0 || checkoutStatus === 'processing') {
+      return;
+    }
 
-  const formatRating = (rating: string | number | undefined): string => {
-    const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
-    return (numRating || 0).toFixed(1);
+    setCheckoutError(null);
+    setShowCheckout(true);
   };
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+  };
+
+  const validateCard = () => {
+    const normalizedNumber = cardNumber.replace(/\s+/g, '');
+    if (cardName.trim().length < 3) {
+      return 'Ingresa el nombre del titular.';
+    }
+    if (!/^\d{13,19}$/.test(normalizedNumber)) {
+      return 'El numero de tarjeta debe tener entre 13 y 19 digitos.';
+    }
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExp.trim())) {
+      return 'La fecha debe tener formato MM/AA.';
+    }
+    const [mm, yy] = cardExp.split('/').map(Number);
+    const expDate = new Date(2000 + yy, mm, 0);
+    const now = new Date();
+    if (expDate < new Date(now.getFullYear(), now.getMonth(), 1)) {
+      return 'La tarjeta esta vencida.';
+    }
+    if (!/^\d{3,4}$/.test(cardCvc.trim())) {
+      return 'El CVC debe tener 3 o 4 digitos.';
+    }
+    return null;
+  };
+
+  const handleConfirmPayment = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (checkoutStatus === 'processing') {
+      return;
+    }
+
+    const validationError = validateCard();
+    if (validationError) {
+      setCheckoutError(validationError);
+      return;
+    }
+
+    setCheckoutError(null);
+    setCheckoutStatus('processing');
+
+    window.setTimeout(async () => {
+      try {
+        await Promise.all(items.map(item => removeFromCart(item.id)));
+        setItems([]);
+        setShowCheckout(false);
+        setCheckoutStatus('success');
+        setCardName('');
+        setCardNumber('');
+        setCardExp('');
+        setCardCvc('');
+        showToast('Pago simulado exitoso. Gracias por tu compra.', 'success');
+      } catch (err) {
+        console.error('Error clearing cart after checkout:', err);
+        setCheckoutStatus('error');
+        setCheckoutError('No se pudo completar el pago. Intenta de nuevo.');
+        showToast('No se pudo completar el pago. Intenta de nuevo.', 'error');
+      }
+    }, 1500);
+  };
+
+  const startIndex = currentPage * itemsPerPage;
+  const visibleItems = items.slice(startIndex, startIndex + itemsPerPage);
 
   // Mostrar loading mientras se verifica la sesión
   if (status === 'loading') {
@@ -197,9 +250,8 @@ const CarritoApp = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">Mi Carrito</h1>
         <p className="text-texInactivo">
-          Juegos en tu carrito ({carritoItems.length})
-          {carritoItems.length > 0 && ` - Total: $${totalPrice.toFixed(2)}`}
-          {apiUrl && <span className="text-xs ml-2">| API: {apiUrl}</span>}
+          Juegos en tu carrito ({items.length})
+          {items.length > 0 && ` - Total: $${totalPrice.toFixed(2)}`}
         </p>
       </div>
 
@@ -207,7 +259,7 @@ const CarritoApp = () => {
         <div className="max-w-7xl mx-auto relative">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl font-primary">Tu Carrito</h2>
-            {carritoItems.length > itemsPerPage && (
+            {items.length > itemsPerPage && (
               <div className="hidden sm:flex items-center gap-2">
                 <button onClick={prevPage} disabled={currentPage === 0}>
                   <Image src={izq} alt="izquierda" width={44} height={44} />
@@ -219,7 +271,7 @@ const CarritoApp = () => {
             )}
           </div>
 
-          {carritoItems.length > 0 ? (
+          {items.length > 0 ? (
             <>
               <div className="overflow-hidden">
                 <div
@@ -228,10 +280,13 @@ const CarritoApp = () => {
                     direction === 1 ? "slide-from-right" : direction === -1 ? "slide-from-left" : ""
                   } grid grid-cols-1 sm:grid-cols-3 gap-6`}
                 >
-                  {visibleGames.map((juego) => {
-                    const priceAtTime = allPrices.get(juego.id);
+                  {visibleItems.map((item) => {
+                    const juego = item.juego;
+                    if (!juego) {
+                      return null;
+                    }
                     return (
-                      <Link key={juego.id} href={`/juego/${juego.slug}`}>
+                      <Link key={item.id} href={`/juego/${juego.slug}`}>
                         <div className="bg-subdeep rounded-xl overflow-hidden md:shadow-md relative group cursor-pointer hover:scale-105 transition-transform">
                           <div className="w-full aspect-[4/3] relative">
                             <Image
@@ -244,7 +299,7 @@ const CarritoApp = () => {
                             <button 
                               onClick={(e) => {
                                 e.preventDefault();
-                                toggleCart(juego.id);
+                                handleRemove(item);
                               }}
                               className="absolute top-2 right-2 bg-red-500 p-2 rounded-full opacity-0 group-hover:opacity-100 transition z-10"
                             >
@@ -255,37 +310,12 @@ const CarritoApp = () => {
                           </div>
 
                           <div className="p-4 pb-6">
-                            <div className="flex gap-2 mb-2 flex-wrap">
-                              {(juego.tags || []).slice(0, 3).map((tag) => (
-                                <span
-                                  key={tag.id}
-                                  className="bg-categorico text-xs px-2 py-1 rounded-md text-white"
-                                >
-                                  {tag.name}
-                                </span>
-                              ))}
-                            </div>
                             <div className="flex justify-between items-center mb-2">
                               <h3 className="text-base font-semibold">{juego.title}</h3>
-                              <div className="flex items-center gap-1">
-                                {[...Array(5)].map((_, k) => (
-                                  <Image
-                                    key={k}
-                                    src={star}
-                                    alt="estrella"
-                                    width={14}
-                                    height={14}
-                                  />
-                                ))}
-                                <span className="text-xs font-medium ml-1">
-                                  {formatRating(juego.rating)}
-                                </span>
-                              </div>
+                              <StarRating rating={juego.rating} />
                             </div>
                             <p className="text-texInactivo text-xs">
-                              {priceAtTime && parseFloat(priceAtTime) === 0 
-                                ? 'GRATIS' 
-                                : `$${priceAtTime || juego.final_price}`}
+                              {parseFloat(juego.final_price) === 0 ? 'GRATIS' : `$${juego.final_price}`}
                             </p>
                           </div>
                         </div>
@@ -295,7 +325,7 @@ const CarritoApp = () => {
                 </div>
               </div>
 
-              {carritoItems.length > itemsPerPage && (
+              {items.length > itemsPerPage && (
                 <div className="flex justify-end gap-2 mt-6 sm:hidden">
                   <button onClick={prevPage} disabled={currentPage === 0}>
                     <Image src={izq} alt="izquierda" width={44} height={44} />
@@ -310,15 +340,19 @@ const CarritoApp = () => {
               <div className="mt-8 p-6 bg-subdeep rounded-xl">
                 <h3 className="text-lg font-semibold mb-4">Resumen de Compra</h3>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-texInactivo">Subtotal ({carritoItems.length} items)</span>
+                  <span className="text-texInactivo">Subtotal ({items.length} items)</span>
                   <span className="font-semibold">${totalPrice.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center text-xl font-bold mt-4 pt-4 border-t border-gray-700">
                   <span>Total</span>
                   <span>${totalPrice.toFixed(2)}</span>
                 </div>
-                <button className="w-full mt-6 bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-semibold transition">
-                  Proceder al Pago
+                <button
+                  className="w-full mt-6 bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-semibold transition disabled:opacity-60"
+                  onClick={handleCheckout}
+                  disabled={items.length === 0 || checkoutStatus === 'processing'}
+                >
+                  {checkoutStatus === 'processing' ? 'Procesando pago...' : 'Proceder al Pago'}
                 </button>
               </div>
             </>
@@ -337,12 +371,95 @@ const CarritoApp = () => {
               >
                 Ir a la Tienda
               </Link>
-              <p className="text-xs text-texInactivo mt-4">
-                Debug: allGames={allGames.length}, cartItems={cartItems.size}
-              </p>
             </div>
           )}
         </div>
+
+        {showCheckout && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+            <div className="bg-deep text-white w-full max-w-md rounded-2xl p-6 relative">
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="absolute right-4 top-4 text-texInactivo hover:text-white"
+                aria-label="Cerrar"
+              >
+                ✕
+              </button>
+              <h3 className="text-xl font-semibold mb-4">Pago simulado</h3>
+              <p className="text-sm text-texInactivo mb-4">
+                Ingresa una tarjeta de prueba para completar la compra.
+              </p>
+              {toast && (
+                <div
+                  className={`mb-3 rounded-lg px-3 py-2 text-xs border ${
+                    toast.type === 'success'
+                      ? 'bg-emerald-500/15 text-emerald-200 border-emerald-500/40'
+                      : 'bg-red-500/15 text-red-200 border-red-500/40'
+                  }`}
+                >
+                  {toast.message}
+                </div>
+              )}
+              <form onSubmit={handleConfirmPayment} className="space-y-3">
+                <div>
+                  <label className="text-xs text-texInactivo">Nombre del titular</label>
+                  <input
+                    type="text"
+                    value={cardName}
+                    onChange={(e) => setCardName(e.target.value)}
+                    className="w-full mt-1 bg-subdeep border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                    placeholder="Nombre y apellido"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-texInactivo">Numero de tarjeta</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    className="w-full mt-1 bg-subdeep border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                    placeholder="4242 4242 4242 4242"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-texInactivo">Vencimiento</label>
+                    <input
+                      type="text"
+                      value={cardExp}
+                      onChange={(e) => setCardExp(e.target.value)}
+                      className="w-full mt-1 bg-subdeep border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                      placeholder="MM/AA"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-texInactivo">CVC</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={cardCvc}
+                      onChange={(e) => setCardCvc(e.target.value)}
+                      className="w-full mt-1 bg-subdeep border border-gray-700 rounded-lg px-3 py-2 text-sm"
+                      placeholder="123"
+                    />
+                  </div>
+                </div>
+                {checkoutError && (
+                  <p className="text-xs text-red-400">{checkoutError}</p>
+                )}
+                <button
+                  type="submit"
+                  className="w-full bg-primary hover:bg-primary/90 text-white py-3 rounded-lg font-semibold transition disabled:opacity-60"
+                  disabled={checkoutStatus === 'processing'}
+                >
+                  {checkoutStatus === 'processing' ? 'Procesando...' : `Pagar $${totalPrice.toFixed(2)}`}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+
 
         <style jsx>{`
           .slide-from-right {

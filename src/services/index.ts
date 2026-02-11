@@ -48,3 +48,7 @@ export { default as favoritesService } from './favoritesService';
 // Cart services
 export * from './cartService';
 export { default as cartService } from './cartService';
+
+// Wishlist services
+export * from './wishlistService';
+export { default as wishlistService } from './wishlistService';

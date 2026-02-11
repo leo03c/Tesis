@@ -13,7 +13,7 @@ interface UserContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   provider?: string;
-  refreshSession: () => Promise<void>;
+  refreshSession: (data?: { image?: string }) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -27,10 +27,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
     console.log('UserProvider - Status:', status);
   }, [session, status]);
 
-  const refreshSession = useCallback(async () => {
+  const refreshSession = useCallback(async (data?: { image?: string }) => {
     try {
-      console.log('Refreshing session...');
-      const updated = await update();
+      console.log('Refreshing session...', data);
+      const updated = await update(data);
       console.log('Session refreshed:', updated);
     } catch (error) {
       console.error('Error refreshing session:', error);

@@ -12,7 +12,7 @@ import Loading from "@/Components/loading/Loading";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
-const star = "/icons/star 5.svg";
+import StarRating from "@/Components/StarRating";
 const pic4 = "/pic4.jpg";
 const coraB = "/icons/coraB.svg";
 const coraR = "/icons/coraR.svg";
@@ -119,11 +119,6 @@ const FavoritosApp = () => {
 
   const startIndex = currentPage * itemsPerPage;
   const visibleGames = favoritos.slice(startIndex, startIndex + itemsPerPage);
-
-  const formatRating = (rating: string | number | undefined): string => {
-    const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
-    return (numRating || 0).toFixed(1);
-  };
 
   // Mostrar loading mientras se verifica la sesión
   if (status === 'loading') {
@@ -254,20 +249,7 @@ const FavoritosApp = () => {
                           </div>
                           <div className="flex justify-between items-center mb-2">
                             <h3 className="text-base font-semibold">{juego.title}</h3>
-                            <div className="flex items-center gap-1">
-                              {[...Array(5)].map((_, k) => (
-                                <Image
-                                  key={k}
-                                  src={star}
-                                  alt="estrella"
-                                  width={14}
-                                  height={14}
-                                />
-                              ))}
-                              <span className="text-xs font-medium ml-1">
-                                {formatRating(juego.rating)}
-                              </span>
-                            </div>
+                            <StarRating rating={juego.rating} />
                           </div>
                           <p className="text-texInactivo text-xs">
                             {parseFloat(juego.price) === 0 ? 'GRATIS' : `$${juego.final_price}`}

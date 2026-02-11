@@ -25,6 +25,12 @@ export interface Review {
   created_at: string;
 }
 
+export interface CreateReviewInput {
+  game: number;
+  rating: number;
+  comment: string;
+}
+
 export interface Game {
   id: number;
   title: string;
@@ -61,6 +67,13 @@ export interface TagsResponse {
   next: string | null;
   previous: string | null;
   results: Tag[];
+}
+
+export interface PlatformsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Platform[];
 }
 
 /**
@@ -100,11 +113,42 @@ export const getFeaturedGames = () =>
   api.get<GamesResponse>('/games/games/', { featured: true });
 
 /**
+ * Get most downloaded games
+ * Backend endpoint: /api/games/games/most_downloaded/
+ * Returns array directly, not paginated
+ */
+export const getMostDownloaded = () =>
+  api.get<Game[]>('/games/games/most_downloaded/');
+
+/**
+ * Get best offers (highest discount)
+ * Backend endpoint: /api/games/games/best_offers/
+ * Returns array directly, not paginated
+ */
+export const getBestOffers = () =>
+  api.get<Game[]>('/games/games/best_offers/');
+
+/**
+ * Get top rated games
+ * Backend endpoint: /api/games/games/top_rated/
+ * Returns array directly, not paginated
+ */
+export const getTopRated = () =>
+  api.get<Game[]>('/games/games/top_rated/');
+
+/**
  * Get all tags/categories
  * Backend endpoint: /api/games/tags/
  */
 export const getTags = () => 
   api.get<TagsResponse>('/games/tags/');
+
+/**
+ * Get platforms
+ * Backend endpoint: /api/games/plataformas/
+ */
+export const getPlatforms = () =>
+  api.get<PlatformsResponse>('/games/plataformas/');
 
 /**
  * Get games by tag
@@ -115,10 +159,24 @@ export const getGamesByTag = (tagId: number) =>
 
 /**
  * Get games by tag slug
- * Backend endpoint: /api/games/games/?tags={tagSlug}
+ * Backend endpoint: /api/games/tags/{slug}/games/
  */
 export const getGamesByTagSlug = (tagSlug: string) => 
-  api.get<GamesResponse>('/games/games/', { tags: tagSlug });
+  api.get<Game[]>(`/games/tags/${tagSlug}/games/`);
+
+/**
+ * Get tag by slug
+ * Backend endpoint: /api/games/tags/{slug}/
+ */
+export const getTagBySlug = (tagSlug: string) =>
+  api.get<Tag>(`/games/tags/${tagSlug}/`);
+
+/**
+ * Create a review
+ * Backend endpoint: /api/games/reviews/
+ */
+export const createReview = (payload: CreateReviewInput) =>
+  api.post<Review>("/games/reviews/", payload);
 
 const gamesService = {
   getGames,
@@ -126,9 +184,15 @@ const gamesService = {
   getGame,
   getGameBySlug,
   getFeaturedGames,
+  getMostDownloaded,
+  getBestOffers,
+  getTopRated,
   getTags,
+  getPlatforms,
   getGamesByTag,
   getGamesByTagSlug,
+  getTagBySlug,
+  createReview,
 };
 
 export default gamesService;
