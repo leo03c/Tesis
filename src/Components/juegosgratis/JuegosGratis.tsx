@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { FaStar } from 'react-icons/fa'; // Importa los iconos de estrellas
+import StarRating from "@/Components/StarRating";
 import { useFavorites } from "@/contexts/FavoritesContext";
 import { getFreeGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
@@ -25,16 +25,6 @@ const JuegosGratis = () => {
   const [error, setError] = useState<string | null>(null);
   const [apiUrl, setApiUrl] = useState<string | null>(null);
   const [direction, setDirection] = useState(0);
-
-  // Helper para formatear rating y calcular estrellas
-  const getRatingInfo = (rating: string | number | undefined) => {
-    const numRating = typeof rating === 'string' ? parseFloat(rating) : (rating || 0);
-    const ratingValue = typeof numRating === 'number' ? numRating : 0;
-    const filledStars = Math.floor(ratingValue);
-    const formattedRating = ratingValue.toFixed(1);
-    
-    return { ratingValue, filledStars, formattedRating };
-  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -157,8 +147,6 @@ const JuegosGratis = () => {
             } grid grid-cols-1 sm:grid-cols-3 gap-6`}
           >
             {visibleGames.map((juego) => {
-              const { filledStars, formattedRating } = getRatingInfo(juego.rating);
-              
               return (
                 <Link key={juego.id} href={`/juego/${juego.slug}`}>
                   <div className="bg-deep rounded-xl overflow-hidden md:shadow-md relative cursor-pointer hover:scale-105 transition-transform duration-300">
@@ -201,21 +189,7 @@ const JuegosGratis = () => {
                       </div>
                       <div className="flex justify-between items-center">
                         <h3 className="text-base font-semibold">{juego.title}</h3>
-                        <div className="flex items-center gap-1">
-                          {/* Estrellas con react-icons */}
-                          {Array.from({ length: 5 }).map((_, index) => (
-                            <div key={index} className="flex items-center">
-                              {index < filledStars ? (
-                                <FaStar className="text-yellow-500 text-sm" />
-                              ) : (
-                                <FaStar className="text-gray-400 text-sm" />
-                              )}
-                            </div>
-                          ))}
-                          <span className="text-xs font-medium ml-1">
-                            {formattedRating}
-                          </span>
-                        </div>
+                        <StarRating rating={juego.rating} />
                       </div>
                     </div>
                   </div>

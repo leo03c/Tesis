@@ -48,6 +48,7 @@ export const authOptions: NextAuthOptions = {
             id: data.user.id.toString(),
             email: data.user.email,
             name: data.user.username,
+            avatar: data.user.avatar,
             accessToken: data.access,
             refreshToken: data.refresh,
           };
@@ -95,7 +96,16 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session: updateData }) {
+      // Handle session update (e.g., avatar change)
+      if (trigger === 'update' && updateData) {
+        console.log('🔄 JWT update trigger:', updateData);
+        if (updateData.image) {
+          token.avatar = updateData.image;
+        }
+        return token;
+      }
+
       if (user) {
         console.log('🔑 JWT callback - user login:', { provider: account?.provider, email: user.email });
 
@@ -105,6 +115,9 @@ export const authOptions: NextAuthOptions = {
           token.accessToken = (user as any).accessToken;
           token.refreshToken = (user as any).refreshToken;
           token.id = user.id;
+          if ((user as any).avatar) {
+            token.avatar = (user as any).avatar;
+          }
         }
         // Si es login por Google
         else if (account?.provider === 'google' && user.email) {
@@ -151,6 +164,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
+      const apiBase = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/api\/?$/, '');
       console.log('📋 Session callback:', { 
         hasToken: !!token,
         hasUser: !!session.user,
@@ -162,11 +176,20 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id as string;
         (session as any).accessToken = token.accessToken as string;
         (session as any).refreshToken = token.refreshToken as string;
+        // Preserve image from token (Google) or from backend avatar
+        if (token.picture) {
+          session.user.image = token.picture as string;
+        }
+        if (token.avatar) {
+          const avatar = token.avatar as string;
+          session.user.image = avatar.startsWith('http') ? avatar : `${apiBase}${avatar}`;
+        }
       }
       
       console.log('✅ Session created:', {
         userId: (session.user as any)?.id,
-        hasAccessToken: !!(session as any).accessToken
+        hasAccessToken: !!(session as any).accessToken,
+        hasImage: !!session.user?.image
       });
       
       return session;

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from "next/image";
 import Link from "next/link";
-import { FaStar } from 'react-icons/fa'; // Importa los iconos de estrellas
+import StarRating from "@/Components/StarRating";
 import { getFeaturedGames, getGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
 import { APIError } from "@/services/api";
@@ -91,7 +91,6 @@ const Carrusel = () => {
 
   // Calcular el rating una vez para reutilizarlo
   const rating = parseFloat(featuredGame.rating as any) || 0;
-  const filledStars = Math.floor(rating);
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 w-full">
@@ -157,30 +156,7 @@ const Carrusel = () => {
             
             {/* Fragmento corregido con react-icons */}
             <div className="flex items-center gap-2">
-              {/* Mostrar estrellas llenas según el rating */}
-              {Array.from({ length: 5 }).map((_, i) => {
-                if (i < filledStars) {
-                  // Estrella llena
-                  return (
-                    <FaStar 
-                      key={i} 
-                      className="text-yellow-500 text-lg lg:text-xl" 
-                    />
-                  );
-                } else {
-                  // Estrella vacía
-                  return (
-                    <FaStar 
-                      key={i} 
-                      className="text-gray-400 text-lg lg:text-xl" 
-                    />
-                  );
-                }
-              })}
-              
-              <span className="font-bold text-white ml-2">
-                {rating.toFixed(1)}
-              </span>
+              <StarRating rating={rating} size="text-lg lg:text-xl" valueClass="font-bold text-white ml-2" />
             </div>
             
             <div className="flex gap-3 items-baseline">

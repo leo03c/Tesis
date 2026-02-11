@@ -27,6 +27,34 @@ const CatalogoApp: React.FC = () => {
   const [filter, setFilter] = useState("todos");
   const [showModal, setShowModal] = useState(false);
 
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (!isAuthenticated || !user) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await getProjects();
+        setMiCatalogo(response.results || []);
+      } catch (err: unknown) {
+        if (typeof err === 'object' && err !== null && 'status' in err) {
+          const status = (err as { status?: number }).status;
+          if (status === 403) {
+            setIsForbidden(true);
+            return;
+          }
+        }
+        console.warn("Error cargando catálogo:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, [isAuthenticated, user]);
+
   // Mostrar loading mientras se verifica la sesión
   if (isLoading) {
     return (
@@ -64,31 +92,6 @@ const CatalogoApp: React.FC = () => {
       </div>
     );
   }
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        const response = await getProjects();
-        setMiCatalogo(response.results || []);
-      } catch (err: any) {
-        if (err?.status === 403) {
-          setIsForbidden(true); // usuario sin permisos
-        } else {
-          console.warn("Error cargando catálogo:", err);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProjects();
-  }, [user]);
 
   if (isForbidden) {
     return (

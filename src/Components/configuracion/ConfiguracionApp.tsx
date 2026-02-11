@@ -73,13 +73,17 @@ const ConfiguracionApp = () => {
 
     try {
       const data = await settingsService.updateAvatar(file);
+      const avatarUrl = data.avatar?.startsWith('http')
+        ? data.avatar
+        : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}${data.avatar}`;
       setProfileData((prev) => ({ ...prev, avatar: data.avatar }));
       setSuccess("Foto actualizada correctamente");
-      await refreshSession();
+      await refreshSession({ image: avatarUrl });
       setTimeout(() => setSuccess(null), 3000);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error uploading avatar:", err);
-      setError(err.message || "Error al cambiar la foto");
+      const message = err instanceof Error ? err.message : "Error al cambiar la foto";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -134,30 +138,6 @@ const ConfiguracionApp = () => {
 
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Sidebar */}
-        <div className="w-full lg:w-64 bg-deep rounded-2xl p-4">
-          <nav className="space-y-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition ${
-                  activeTab === tab.id
-                    ? "bg-primary text-white"
-                    : "text-texInactivo hover:bg-subdeep hover:text-white"
-                }`}
-              >
-                <Image
-                  src={tab.icon}
-                  alt={tab.label}
-                  width={20}
-                  height={20}
-                  className="opacity-70"
-                />
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
 
         {/* Content */}
         <div className="flex-1 bg-deep rounded-2xl p-6">

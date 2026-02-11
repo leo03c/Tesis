@@ -8,8 +8,12 @@ const API_BASE_URL =
  */
 const PUBLIC_ENDPOINTS = [
   '/games/games/freegames',
+  '/games/games/most_downloaded',
+  '/games/games/best_offers',
+  '/games/games/top_rated',
   '/games/games',
   '/games/tags',
+  '/games/plataformas',
   '/news',
   '/auth/token/refresh',
 ];
@@ -72,9 +76,13 @@ async function request<T>(
 
   url = ensureTrailingSlash(url);
 
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
+  const headers: HeadersInit = {};
+  const isFormData = body instanceof FormData;
+
+  // Solo establecer Content-Type si no es FormData
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   // 🔐 Autenticación SOLO si el endpoint no es público
   if (!isPublicEndpoint(endpoint)) {
@@ -100,7 +108,7 @@ async function request<T>(
   };
 
   if (body) {
-    config.body = JSON.stringify(body);
+    config.body = isFormData ? body : JSON.stringify(body);
   }
 
   const tryRefreshToken = async () => {

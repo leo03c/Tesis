@@ -5,12 +5,15 @@ import { useParams } from "next/navigation";
 import { getGameBySlug, getGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
 import { APIError } from "@/services/api";
+import { addToWishlist, getWishlist, removeFromWishlist } from "@/services/wishlistService";
+import { addToCart, getCart, removeFromCart } from "@/services/cartService";
+import { useSession } from 'next-auth/react';
 import Loading from "@/Components/loading/Loading";
 
 const der = "/icons/derecha.svg";
 const izq = "/icons/izquierda.svg";
 const win = "/windows.svg";
-const star = "/icons/Star 5.svg";
+import StarRating from "@/Components/StarRating";
 const yt = "/yt.svg";
 const pic4 = "/pic4.jpg";
 
@@ -18,10 +21,17 @@ const Juego = () => {
   const params = useParams();
   const slug = params.slug as string;
 
+  const { data: session, status } = useSession();
   const [game, setGame] = useState<Game | null>(null);
   const [gamesList, setGamesList] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [inWishlist, setInWishlist] = useState(false);
+  const [wishlistItemId, setWishlistItemId] = useState<number | null>(null);
+  const [inCart, setInCart] = useState(false);
+  const [cartItemId, setCartItemId] = useState<number | null>(null);
+  const [actionLoading, setActionLoading] = useState<'wishlist' | 'cart' | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,6 +62,91 @@ const Juego = () => {
     if (slug) fetchGame();
   }, [slug]);
 
+  // Verificar si el juego ya está en wishlist/cart
+  useEffect(() => {
+    const checkUserLists = async () => {
+      if (status !== 'authenticated' || !game) return;
+      try {
+        const [wishlistRes, cartRes] = await Promise.all([
+          getWishlist(),
+          getCart(),
+        ]);
+        const wishlistMatch = wishlistRes.results.find(item => item.id_juego === game.id);
+        if (wishlistMatch) {
+          setInWishlist(true);
+          setWishlistItemId(wishlistMatch.id);
+        }
+        const cartMatch = cartRes.results.find(item => item.id_juego === game.id);
+        if (cartMatch) {
+          setInCart(true);
+          setCartItemId(cartMatch.id);
+        }
+      } catch (err) {
+        console.error('Error checking user lists:', err);
+      }
+    };
+    checkUserLists();
+  }, [status, game]);
+
+  const showMessage = (text: string, type: 'success' | 'error') => {
+    setActionMessage({ text, type });
+    setTimeout(() => setActionMessage(null), 3000);
+  };
+
+  const handleToggleWishlist = async () => {
+    if (status !== 'authenticated') {
+      window.location.href = '/login';
+      return;
+    }
+    if (!game || actionLoading) return;
+    setActionLoading('wishlist');
+    try {
+      if (inWishlist && wishlistItemId) {
+        await removeFromWishlist(wishlistItemId);
+        setInWishlist(false);
+        setWishlistItemId(null);
+        showMessage('Eliminado de la lista de deseos', 'success');
+      } else {
+        const userId = Number((session?.user as any)?.id);
+        const res = await addToWishlist(game.id, userId);
+        setInWishlist(true);
+        setWishlistItemId(res.id);
+        showMessage('Añadido a la lista de deseos', 'success');
+      }
+    } catch (err: any) {
+      showMessage(err.message || 'Error al actualizar lista de deseos', 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleToggleCart = async () => {
+    if (status !== 'authenticated') {
+      window.location.href = '/login';
+      return;
+    }
+    if (!game || actionLoading) return;
+    setActionLoading('cart');
+    try {
+      if (inCart && cartItemId) {
+        await removeFromCart(cartItemId);
+        setInCart(false);
+        setCartItemId(null);
+        showMessage('Eliminado del carrito', 'success');
+      } else {
+        const userId = Number((session?.user as any)?.id);
+        const res = await addToCart(game.id, userId);
+        setInCart(true);
+        setCartItemId(res.id);
+        showMessage('Añadido al carrito', 'success');
+      }
+    } catch (err: any) {
+      showMessage(err.message || 'Error al actualizar carrito', 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const scroll = (dir: "left" | "right") => {
     if (scrollRef.current) {
       const scrollAmount = 140;
@@ -80,11 +175,6 @@ const Juego = () => {
     );
   }
 
-  const formatRating = (rating: string | number | undefined) => {
-    const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
-    return (numRating || 0).toFixed(1);
-  };
-
   return (
     <div className="bg-dark text-white mb-4 rounded-3xl max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
       
@@ -93,11 +183,8 @@ const Juego = () => {
         {/* Encabezado */}
         <div className="mb-4">
           <h1 className="text-2xl font-bold">{game.title.toUpperCase()}</h1>
-          <div className="flex items-center gap-1 mt-2">
-            {[...Array(5)].map((_, i) => (
-              <Image key={i} src={star} alt={`Estrella ${i + 1}`} width={16} height={16} />
-            ))}
-            <span className="text-sm font-medium ml-1">{formatRating(game.rating)}</span>
+          <div className="mt-2">
+            <StarRating rating={game.rating} size="text-base" valueClass="text-sm font-medium ml-1" />
           </div>
         </div>
 
@@ -176,12 +263,43 @@ const Juego = () => {
             <button className="w-full bg-primary text-white py-3 rounded-lg font-bold text-sm shadow-md">
               DESCARGAR
             </button>
-            <button className="w-full bg-deep text-white py-3 rounded-lg font-semibold text-sm">
-              AÑADIR AL CARRO
+            <button
+              onClick={handleToggleCart}
+              disabled={actionLoading === 'cart'}
+              className={`w-full py-3 rounded-lg font-semibold text-sm transition-colors ${
+                inCart
+                  ? 'bg-primary/20 text-primary border border-primary'
+                  : 'bg-deep text-white hover:bg-deep/80'
+              } disabled:opacity-50`}
+            >
+              {actionLoading === 'cart'
+                ? 'PROCESANDO...'
+                : inCart
+                  ? '✓ EN EL CARRITO'
+                  : 'AÑADIR AL CARRO'}
             </button>
-            <button className="w-full bg-deep text-white py-3 rounded-lg font-semibold text-sm">
-              AÑADIR A LA LISTA DE DESEOS
+            <button
+              onClick={handleToggleWishlist}
+              disabled={actionLoading === 'wishlist'}
+              className={`w-full py-3 rounded-lg font-semibold text-sm transition-colors ${
+                inWishlist
+                  ? 'bg-primary/20 text-primary border border-primary'
+                  : 'bg-deep text-white hover:bg-deep/80'
+              } disabled:opacity-50`}
+            >
+              {actionLoading === 'wishlist'
+                ? 'PROCESANDO...'
+                : inWishlist
+                  ? '✓ EN LA LISTA DE DESEOS'
+                  : 'AÑADIR A LA LISTA DE DESEOS'}
             </button>
+            {actionMessage && (
+              <p className={`text-xs text-center mt-1 ${
+                actionMessage.type === 'success' ? 'text-green-400' : 'text-red-400'
+              }`}>
+                {actionMessage.text}
+              </p>
+            )}
           </div>
         </div>
 

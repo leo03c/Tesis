@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { getGames, getTags } from '@/services/gamesService';
+import type { Game, Tag } from '@/services/gamesService';
 import Link from 'next/link';
 import { FiSearch, FiUser } from 'react-icons/fi';
 import Image from 'next/image';
@@ -22,9 +23,9 @@ const Navbar = () => {
     const [search, setSearch] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [loadingResults, setLoadingResults] = useState(false);
-    const [gameResults, setGameResults] = useState([]);
-    const [tagResults, setTagResults] = useState([]);
-    const inputRef = useRef(null);
+    const [gameResults, setGameResults] = useState<Game[]>([]);
+    const [tagResults, setTagResults] = useState<Tag[]>([]);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     // Búsqueda asíncrona debounced
     useEffect(() => {
@@ -44,7 +45,7 @@ const Navbar = () => {
                 setGameResults(gamesRes?.results || []);
                 setTagResults((tagsRes?.results || []).filter(tag => tag.name.toLowerCase().includes(search.toLowerCase())).slice(0, 5));
                 setShowModal(true);
-            } catch (e) {
+            } catch {
                 setGameResults([]);
                 setTagResults([]);
                 setShowModal(false);
@@ -167,18 +168,29 @@ const Navbar = () => {
                     <div className="flex items-center gap-6">
                         <div className='flex gap-4'>
                             {/* carrito */}
-                            <button className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+                            <Link href="/mi-carrito" className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
                                 <Image width={15} height={15} alt='bag' src={'/bag.svg'} />
-                            </button>
+                            </Link>
                             {/* lista de deseos */}
-                            <button className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
+                            <Link href="/lista-de-deseos" className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
                                 <Image width={15} height={15} alt='translate' src={'/translate.svg'} />
-                            </button>
+                            </Link>
                         </div>
 
                         {/* CONTROLES DE SESIÓN */}
                         <div className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-3xl shadow-sm text-white bg-gray-800 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
-                            <FiUser className="mr-2" />
+                            {session?.user?.image ? (
+                                <div className="w-8 h-8 rounded-full overflow-hidden mr-2 relative">
+                                    <Image
+                                        src={session.user.image}
+                                        alt="Avatar"
+                                        fill
+                                        className="object-cover"
+                                    />
+                                </div>
+                            ) : (
+                                <FiUser className="mr-2" />
+                            )}
                             <div className="flex flex-col items-start">
                                 <span className="text-xs text-gray-400">
                                     {getDisplayName()}

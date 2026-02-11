@@ -1,19 +1,8 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "@/Components/navBar/Navbar";
 import Sidebar from "@/Components/sideBar/Sidebar";
 import "@/app/globals.css";
 import Footer from "@/Components/footer/Footer";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: 'COSMOX - Tienda de Juegos',

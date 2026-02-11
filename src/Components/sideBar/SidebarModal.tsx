@@ -26,6 +26,7 @@ const SidebarModal = ({ onClose }: { onClose: () => void }) => {
                 <SidebarItem title="CATEGORÍAS" icon='/category.svg' />
                 <SidebarItem title="MI CATALOGO" icon='/code-circle.svg' />
                 <SidebarItem title="ME GUSTAN" icon='/heart.svg' />
+                <SidebarItem title="LISTA DE DESEOS" icon='/heart.svg' />
                 <SidebarItem title="MI LIBRERIA" icon='/gameboy.svg' />
                 <SidebarItem title="SIGUIENDO" icon='/user-octagon.svg' />
             </nav>

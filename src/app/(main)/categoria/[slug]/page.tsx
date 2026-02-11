@@ -5,14 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useFavorites } from "@/contexts/FavoritesContext";
-import { getGamesByTagSlug } from "@/services/gamesService";
+import { getGamesByTagSlug, getTagBySlug } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
 import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
 const coraB = "/icons/coraB.svg";
 const coraR = "/icons/coraR.svg";
-const star = "/icons/star 5.svg";
+import StarRating from "@/Components/StarRating";
 const pic4 = "/pic4.jpg";
 
 const CategoriaDetalle = () => {
@@ -28,15 +28,12 @@ const CategoriaDetalle = () => {
     const fetchGames = async () => {
       try {
         setLoading(true);
-        const response = await getGamesByTagSlug(slug);
-        setGames(response.results);
-        // Get category name from first game's tags
-        if (response.results.length > 0) {
-          const category = response.results[0].tags.find(tag => tag.slug === slug);
-          setCategoryName(category?.name || slug);
-        } else {
-          setCategoryName(slug);
-        }
+        const [gamesResponse, tagResponse] = await Promise.all([
+          getGamesByTagSlug(slug),
+          getTagBySlug(slug),
+        ]);
+        setGames(gamesResponse);
+        setCategoryName(tagResponse?.name || slug);
         setError(null);
       } catch (err) {
         console.error('Error fetching games:', err);
@@ -54,11 +51,6 @@ const CategoriaDetalle = () => {
       fetchGames();
     }
   }, [slug]);
-
-  const formatRating = (rating: string | number | undefined): string => {
-    const numRating = typeof rating === 'string' ? parseFloat(rating) : rating;
-    return (numRating || 0).toFixed(1);
-  };
 
   if (loading) {
     return (
@@ -148,20 +140,7 @@ const CategoriaDetalle = () => {
                     </div>
                     <div className="flex justify-between items-center mb-2">
                       <h3 className="text-base font-semibold truncate">{juego.title}</h3>
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, k) => (
-                          <Image
-                            key={k}
-                            src={star}
-                            alt="estrella"
-                            width={14}
-                            height={14}
-                          />
-                        ))}
-                        <span className="text-xs font-medium ml-1">
-                          {formatRating(juego.rating)}
-                        </span>
-                      </div>
+                      <StarRating rating={juego.rating} />
                     </div>
                     <p className="text-primary font-semibold">
                       {juego.final_price === "0.00" ? "GRATIS" : `$${juego.final_price}`}
