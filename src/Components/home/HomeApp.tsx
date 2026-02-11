@@ -82,6 +82,7 @@ const HomeApp = () => {
           loading={sectionsLoading}
           error={sectionErrors.topRated}
           apiUrl={sectionApiUrls.topRated}
+          viewAllHref="/tienda-de-juegos"
           showFavorite
           isFavorite={isFavorite}
           onToggleFavorite={toggleFavorite}
@@ -92,6 +93,7 @@ const HomeApp = () => {
           loading={sectionsLoading}
           error={sectionErrors.mostDownloaded}
           apiUrl={sectionApiUrls.mostDownloaded}
+          viewAllHref="/tienda-de-juegos"
           showFavorite
           isFavorite={isFavorite}
           onToggleFavorite={toggleFavorite}
@@ -102,6 +104,7 @@ const HomeApp = () => {
           loading={sectionsLoading}
           error={sectionErrors.bestOffers}
           apiUrl={sectionApiUrls.bestOffers}
+          viewAllHref="/tienda-de-juegos"
           showFavorite
           isFavorite={isFavorite}
           onToggleFavorite={toggleFavorite}
@@ -112,6 +115,7 @@ const HomeApp = () => {
           loading={sectionsLoading}
           error={sectionErrors.freeGames}
           apiUrl={sectionApiUrls.freeGames}
+          viewAllHref="/tienda-de-juegos?price=0"
           showFavorite
           isFavorite={isFavorite}
           onToggleFavorite={toggleFavorite}

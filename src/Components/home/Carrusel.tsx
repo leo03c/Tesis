@@ -1,9 +1,9 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from "next/image";
 import Link from "next/link";
 import StarRating from "@/Components/StarRating";
-import { getFeaturedGames, getGames } from "@/services/gamesService";
+import { getFeaturedGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
 import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
@@ -36,8 +36,9 @@ const Card = ({ game }: ICardProps) => {
 
 const Carrusel = () => {
   const { isFavorite, toggleFavorite } = useFavorites();
-  const [featuredGame, setFeaturedGame] = useState<Game | null>(null);
-  const [otherGames, setOtherGames] = useState<Game[]>([]);
+  const [featuredGames, setFeaturedGames] = useState<Game[]>([]);
+  const [featuredIndex, setFeaturedIndex] = useState(0);
+  const [isFading, setIsFading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,18 +46,10 @@ const Carrusel = () => {
     const fetchGames = async () => {
       try {
         setLoading(true);
-        const [featuredResponse, gamesResponse] = await Promise.all([
-          getFeaturedGames(),
-          getGames()
-        ]);
-        
-        // Primer juego destacado para la tarjeta principal
-        if (featuredResponse.results.length > 0) {
-          setFeaturedGame(featuredResponse.results[0]);
-        }
-        
-        // Otros 5 juegos para las tarjetas laterales
-        setOtherGames(gamesResponse.results.slice(0, 5));
+        const featuredResponse = await getFeaturedGames();
+
+        setFeaturedGames(featuredResponse.results || []);
+        setFeaturedIndex(0);
         setError(null);
       } catch (err) {
         console.error('Error fetching games:', err);
@@ -72,6 +65,38 @@ const Carrusel = () => {
 
     fetchGames();
   }, []);
+
+  useEffect(() => {
+    if (featuredGames.length <= 1) return;
+
+    let timeoutId: NodeJS.Timeout | null = null;
+    const intervalId = setInterval(() => {
+      setIsFading(true);
+      timeoutId = setTimeout(() => {
+        setFeaturedIndex((prev) => (prev + 1) % featuredGames.length);
+        setIsFading(false);
+      }, 350);
+    }, 10000);
+
+    return () => {
+      clearInterval(intervalId);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [featuredGames.length]);
+
+  const featuredGame = featuredGames[featuredIndex] || null;
+  const queueGames = useMemo(() => {
+    if (featuredGames.length <= 1 || !featuredGame) {
+      return [];
+    }
+
+    const ordered = [...featuredGames];
+    const start = (featuredIndex + 1) % ordered.length;
+    const rotated = ordered.slice(start).concat(ordered.slice(0, start));
+    return rotated.filter((game) => game.id !== featuredGame.id).slice(0, 5);
+  }, [featuredGames, featuredGame, featuredIndex]);
 
   if (loading) {
     return (
@@ -95,7 +120,12 @@ const Carrusel = () => {
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 w-full">
       {/* Tarjeta principal */}
-      <Link href={`/juego/${featuredGame.slug}`} className="relative w-full lg:w-[50%] aspect-[1.65] rounded-2xl overflow-hidden cursor-pointer group">
+      <Link
+        href={`/juego/${featuredGame.slug}`}
+        className={`relative w-full lg:w-[50%] aspect-[1.65] rounded-2xl overflow-hidden cursor-pointer group transition-opacity duration-500 ${
+          isFading ? "opacity-0" : "opacity-100"
+        }`}
+      >
         <Image 
           src={featuredGame.image || pic4} 
           alt={featuredGame.title}
@@ -196,7 +226,7 @@ const Carrusel = () => {
         {/* Tarjetas laterales con otros juegos */}
         <div className="w-full lg:w-[15%]">
           <div className="flex flex-col gap-3 w-full">
-            {otherGames.map((game) => (
+            {queueGames.map((game) => (
               <Card key={game.id} game={game} />
             ))}
           </div>

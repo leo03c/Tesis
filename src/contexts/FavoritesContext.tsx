@@ -90,7 +90,11 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
           });
         }
       } else {
-        const response = await favoritesService.addFavorite(gameId);
+        const userId = Number(session?.user?.id);
+        if (!userId) {
+          throw new Error('No se pudo identificar el usuario');
+        }
+        const response = await favoritesService.addFavorite(gameId, userId);
         setFavoriteIds(prev => new Map(prev).set(gameId, response.id));
       }
     } catch (error) {

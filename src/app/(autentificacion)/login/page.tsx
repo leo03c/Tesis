@@ -130,7 +130,9 @@ export default function LoginPage() {
               {error && <div className="text-sm text-red-500">{error}</div>}
 
               <div className="text-left text-sm">
-                <a href="#" className="text-primary hover:underline">¿Olvidó su usuario o su contraseña?</a>
+                <Link href="/ayuda" className="text-primary hover:underline">
+                  ¿Olvidó su usuario o su contraseña?
+                </Link>
               </div>
 
               <button

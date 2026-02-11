@@ -94,7 +94,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
           });
         }
       } else {
-        const response = await cartService.addToCart(gameId);
+        const userId = Number(session?.user?.id);
+        if (!userId) {
+          throw new Error('No se pudo identificar el usuario');
+        }
+        const response = await cartService.addToCart(gameId, userId);
         setCartIds(prev => new Map(prev).set(gameId, response.id));
       }
     } catch (error) {

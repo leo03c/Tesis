@@ -118,9 +118,9 @@ const JuegosGratis = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-primary">Juegos gratis</h2>
           <div className="hidden sm:flex items-center gap-2">
-            <a href="#" className="text-primary text-xl hover:underline">
+            <Link href="/tienda-de-juegos?price=0" className="text-primary text-xl hover:underline">
               Ver todos
-            </a>
+            </Link>
             <button 
               onClick={prevPage} 
               disabled={currentPage === 0}

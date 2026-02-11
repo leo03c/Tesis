@@ -1,6 +1,7 @@
 'use client';
 import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { getGameBySlug, getGames } from "@/services/gamesService";
 import type { Game } from "@/services/gamesService";
@@ -21,7 +22,16 @@ const Juego = () => {
   const params = useParams();
   const slug = params.slug as string;
 
-  const { status } = useSession();
+  const apiBase = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/api\/?$/, "");
+  const normalizeImageSrc = (src?: string | null, fallback = pic4) => {
+    if (!src) return fallback;
+    if (src.startsWith("http")) return src;
+    if (src.startsWith("/")) return src;
+    if (!apiBase) return `/${src.replace(/^\/+/, "")}`;
+    return `${apiBase}/${src.replace(/^\/+/, "")}`;
+  };
+
+  const { data: session, status } = useSession();
   const [game, setGame] = useState<Game | null>(null);
   const [gamesList, setGamesList] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,7 +117,11 @@ const Juego = () => {
         setWishlistItemId(null);
         showMessage('Eliminado de la lista de deseos', 'success');
       } else {
-        const res = await addToWishlist(game.id);
+        const userId = Number(session?.user?.id);
+        if (!userId) {
+          throw new Error('No se pudo identificar el usuario');
+        }
+        const res = await addToWishlist(game.id, userId);
         setInWishlist(true);
         setWishlistItemId(res.id);
         showMessage('Añadido a la lista de deseos', 'success');
@@ -134,7 +148,11 @@ const Juego = () => {
         setCartItemId(null);
         showMessage('Eliminado del carrito', 'success');
       } else {
-        const res = await addToCart(game.id);
+        const userId = Number(session?.user?.id);
+        if (!userId) {
+          throw new Error('No se pudo identificar el usuario');
+        }
+        const res = await addToCart(game.id, userId);
         setInCart(true);
         setCartItemId(res.id);
         showMessage('Añadido al carrito', 'success');
@@ -191,7 +209,7 @@ const Juego = () => {
         {/* Imagen principal con botón */}
         <div className="relative w-full h-64 sm:h-96 rounded-2xl overflow-hidden mb-4">
           <Image
-            src={game.image || pic4}
+            src={normalizeImageSrc(game.image)}
             alt={game.title}
             fill
             className="object-cover"
@@ -215,18 +233,19 @@ const Juego = () => {
             className="flex gap-2 overflow-x-auto scroll-smooth no-scrollbar"
           >
             {gamesList.map((g) => (
-              <div
+              <Link
                 key={g.id}
+                href={`/juego/${g.slug}`}
                 className="relative w-28 h-20 rounded-xl overflow-hidden border border-deep flex-shrink-0"
               >
                 <Image
-                  src={g.image || pic4}
+                  src={normalizeImageSrc(g.image)}
                   alt={g.title}
                   fill
                   sizes="112px"
                   className="object-cover"
                 />
-              </div>
+              </Link>
             ))}
           </div>
           <button onClick={() => scroll("right")}>
@@ -317,7 +336,13 @@ const Juego = () => {
           <p className="flex items-center gap-2 border-b border-deep py-1">
             <span className="text-white">PLATAFORMA:</span>
             {game.plataformas.map((plat) => (
-              <Image key={plat.id} src={plat.icono || win} alt={plat.nombre} width={14} height={14} />
+              <Image
+                key={plat.id}
+                src={normalizeImageSrc(plat.icono, win)}
+                alt={plat.nombre}
+                width={14}
+                height={14}
+              />
             ))}
           </p>
           {game.tags && game.tags.length > 0 && (

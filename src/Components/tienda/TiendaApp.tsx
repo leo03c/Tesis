@@ -195,10 +195,10 @@ const TiendaApp = () => {
       <div className="relative rounded-3xl bg-gradient-to-br from-deep via-subdeep to-deep overflow-hidden mb-8">
         <div className="absolute inset-0 bg-[url('/images/pattern.png')] opacity-5"></div>
         <div className="relative py-12 px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-white to-primary bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-white to-primary bg-clip-text text-transparent z-10 pb-2">
             Tienda de Juegos
           </h1>
-          <p className="text-texInactivo text-lg max-w-2xl mx-auto">
+          <p className="text-texInactivo text-lg max-w-2xl mx-auto z-0">
             Descubre los mejores juegos, ofertas exclusivas y novedades
           </p>
         </div>
@@ -339,16 +339,16 @@ const TiendaApp = () => {
                       <button 
                         onClick={prevPage} 
                         disabled={currentPage === 0}
-                        className={`p-2 rounded-lg border border-gray-700/50 transition-all ${currentPage === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:border-primary hover:text-primary'}`}
+                        className={`p-2 rounded-lg transition-all ${currentPage === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:border-primary hover:text-primary'}`}
                       >
-                        <Image src={izq} alt="anterior" width={24} height={24} />
+                        <Image src={izq} alt="anterior" width={44} height={44} />
                       </button>
                       <button 
                         onClick={nextPage} 
                         disabled={currentPage >= totalPages - 1}
-                        className={`p-2 rounded-lg border border-gray-700/50 transition-all ${currentPage >= totalPages - 1 ? 'opacity-40 cursor-not-allowed' : 'hover:border-primary hover:text-primary'}`}
+                        className={`p-2 rounded-lg  transition-all ${currentPage >= totalPages - 1 ? 'opacity-40 cursor-not-allowed' : 'hover:border-primary hover:text-primary'}`}
                       >
-                        <Image src={der} alt="siguiente" width={24} height={24} />
+                        <Image src={der} alt="siguiente" width={44} height={44} />
                       </button>
                     </div>
                   </div>
@@ -383,9 +383,9 @@ const TiendaApp = () => {
                   <button 
                     onClick={prevPage} 
                     disabled={currentPage === 0}
-                    className={`p-2 rounded-lg border border-gray-700/50 ${currentPage === 0 ? 'opacity-40' : ''}`}
+                    className={`p-2 rounded-lg  ${currentPage === 0 ? 'opacity-40' : ''}`}
                   >
-                    <Image src={izq} alt="anterior" width={32} height={32} />
+                    <Image src={izq} alt="anterior" width={44} height={44} />
                   </button>
                   <span className="text-texInactivo text-sm">
                     {currentPage + 1} / {totalPages}
@@ -393,9 +393,9 @@ const TiendaApp = () => {
                   <button 
                     onClick={nextPage} 
                     disabled={currentPage >= totalPages - 1}
-                    className={`p-2 rounded-lg border border-gray-700/50 ${currentPage >= totalPages - 1 ? 'opacity-40' : ''}`}
+                    className={`p-2 rounded-lg   ${currentPage >= totalPages - 1 ? 'opacity-40' : ''}`}
                   >
-                    <Image src={der} alt="siguiente" width={32} height={32} />
+                    <Image src={der} alt="siguiente" width={44} height={44} />
                   </button>
                 </div>
               </div>
@@ -411,6 +411,7 @@ const TiendaApp = () => {
             loading={sectionsLoading}
             error={sectionErrors.topRated}
             apiUrl={sectionApiUrls.topRated}
+            viewAllHref="/tienda-de-juegos"
             showFavorite
             isFavorite={isFavorite}
             onToggleFavorite={toggleFavorite}
@@ -421,6 +422,7 @@ const TiendaApp = () => {
             loading={sectionsLoading}
             error={sectionErrors.mostDownloaded}
             apiUrl={sectionApiUrls.mostDownloaded}
+            viewAllHref="/tienda-de-juegos"
             showFavorite
             isFavorite={isFavorite}
             onToggleFavorite={toggleFavorite}
@@ -431,6 +433,7 @@ const TiendaApp = () => {
             loading={sectionsLoading}
             error={sectionErrors.bestOffers}
             apiUrl={sectionApiUrls.bestOffers}
+            viewAllHref="/tienda-de-juegos"
             showFavorite
             isFavorite={isFavorite}
             onToggleFavorite={toggleFavorite}
@@ -441,6 +444,7 @@ const TiendaApp = () => {
             loading={sectionsLoading}
             error={sectionErrors.freeGames}
             apiUrl={sectionApiUrls.freeGames}
+            viewAllHref="/tienda-de-juegos?price=0"
             showFavorite
             isFavorite={isFavorite}
             onToggleFavorite={toggleFavorite}

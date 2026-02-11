@@ -50,9 +50,9 @@ export const getCart = async (
  * Add a game to cart
  * Requires authentication
  */
-export const addToCart = async (gameId: number): Promise<CartItem> => {
+export const addToCart = async (gameId: number, userId: number): Promise<CartItem> => {
   try {
-    return await api.post<CartItem>('/cart/', { id_juego: gameId });
+    return await api.post<CartItem>('/cart/', { id_juego: gameId, id_usuario: userId });
   } catch (error) {
     if (error instanceof APIError && error.status === 401) {
       throw new Error('Debes iniciar sesión para añadir al carrito');

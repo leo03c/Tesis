@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import React, { useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getNewsById, getNews } from "@/services/newsService";
@@ -90,6 +91,15 @@ function NoticiaContent() {
 
   return (
     <>
+      <div className="mb-6">
+        <Link
+          href="/noticias"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-subdeep text-white rounded-md text-sm hover:bg-deep font-primary"
+        >
+          Volver a noticias
+        </Link>
+      </div>
+
       {/* HERO - Banner principal */}
       <div className="relative w-full h-96 md:h-[550px] rounded-2xl overflow-hidden">
         <Image src={banner} alt={title} fill className="object-cover block" />

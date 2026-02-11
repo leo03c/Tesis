@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { getGames, getTags } from '@/services/gamesService';
 import type { Game, Tag } from '@/services/gamesService';
 import Link from 'next/link';
-import { FiSearch, FiUser } from 'react-icons/fi';
+import { FiBookmark, FiSearch, FiShoppingCart, FiUser } from 'react-icons/fi';
 import Image from 'next/image';
 import { signIn, signOut, useSession } from 'next-auth/react';
 
@@ -168,12 +168,20 @@ const Navbar = () => {
                     <div className="flex items-center gap-6">
                         <div className='flex gap-4'>
                             {/* carrito */}
-                            <Link href="/mi-carrito" className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
-                                <Image width={15} height={15} alt='bag' src={'/bag.svg'} />
+                            <Link
+                                href="/mi-carrito"
+                                className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+                                aria-label="Carrito"
+                            >
+                                <FiShoppingCart className="text-gray-200" size={18} />
                             </Link>
                             {/* lista de deseos */}
-                            <Link href="/lista-de-deseos" className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors">
-                                <Image width={15} height={15} alt='translate' src={'/translate.svg'} />
+                            <Link
+                                href="/lista-de-deseos"
+                                className="w-10 h-10 flex items-center justify-center border border-gray-400 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors"
+                                aria-label="Lista de deseos"
+                            >
+                                <FiBookmark className="text-gray-200" size={18} />
                             </Link>
                         </div>
 
@@ -219,12 +227,12 @@ const Navbar = () => {
                             placeholder="  Buscar..."
                             className="block w-full pl-10 pr-14 py-2 border border-gray-300 rounded-md leading-5 bg-deep placeholder-gray-500 focus:outline-none  sm:text-sm border-none"
                         />
-                        <button
-                            onClick={() => console.log('Abrir configuración')}
+                        <Link
+                            href="/configuracion"
                             className="absolute inset-y-0 right-0 flex items-center"
                         >
                             <Image width={80} height={70} alt="setting" src="/setting-2.svg" />
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>

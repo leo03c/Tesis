@@ -46,9 +46,13 @@ export const getFavorites = async (
  * Add a game to favorites
  * Requires authentication
  */
-export const addFavorite = async (gameId: number) => {
+export const addFavorite = async (gameId: number, userId?: number) => {
   try {
-    return await api.post<FavoriteGame>('/favorites/', { game_id: gameId });
+    const payload: { game_id: number; id_usuario?: number } = { game_id: gameId };
+    if (userId) {
+      payload.id_usuario = userId;
+    }
+    return await api.post<FavoriteGame>('/favorites/', payload);
   } catch (error) {
     if (error instanceof APIError && error.status === 401) {
       throw new Error('Debes iniciar sesión para añadir a favoritos');

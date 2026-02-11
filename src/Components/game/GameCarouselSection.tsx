@@ -19,6 +19,7 @@ interface GameCarouselSectionProps {
   loading?: boolean;
   error?: string | null;
   apiUrl?: string | null;
+  viewAllHref?: string;
   showFavorite?: boolean;
   isFavorite?: (id: number) => boolean;
   onToggleFavorite?: (id: number) => void;
@@ -30,6 +31,7 @@ const GameCarouselSection: React.FC<GameCarouselSectionProps> = ({
   loading = false,
   error = null,
   apiUrl = null,
+  viewAllHref,
   showFavorite = false,
   isFavorite,
   onToggleFavorite,
@@ -106,9 +108,11 @@ const GameCarouselSection: React.FC<GameCarouselSectionProps> = ({
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-primary">{title}</h2>
           <div className="hidden sm:flex items-center gap-2">
-            <a href="#" className="text-primary text-xl hover:underline">
-              Ver todos
-            </a>
+            {viewAllHref ? (
+              <Link href={viewAllHref} className="text-primary text-xl hover:underline">
+                Ver todos
+              </Link>
+            ) : null}
             <button
               onClick={prevPage}
               disabled={currentPage === 0}

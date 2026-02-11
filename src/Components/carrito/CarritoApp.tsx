@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from 'next-auth/react';
 import { getCart, removeFromCart } from "@/services/cartService";
+import { addToLibrary, getLibrary } from "@/services/libraryService";
+import { APIError } from "@/services/api";
 import type { CartItem } from "@/services/cartService";
 import Loading from "@/Components/loading/Loading";
 
@@ -130,6 +132,16 @@ const CarritoApp = () => {
     setToast({ message, type });
   };
 
+  const getCartGameId = (item: CartItem) => {
+    if (typeof item.id_juego === 'number') {
+      return item.id_juego;
+    }
+    if (typeof item?.juego?.id === 'number') {
+      return item.juego.id;
+    }
+    return null;
+  };
+
   const validateCard = () => {
     const normalizedNumber = cardNumber.replace(/\s+/g, '');
     if (cardName.trim().length < 3) {
@@ -171,6 +183,56 @@ const CarritoApp = () => {
 
     window.setTimeout(async () => {
       try {
+        const existingLibraryIds = new Set<number>();
+        try {
+          const library = await getLibrary();
+          library.results.forEach((item) => {
+            if (typeof item.game === 'number') {
+              existingLibraryIds.add(item.game);
+              return;
+            }
+            const gameId = (item as { game?: { id?: number } }).game?.id;
+            if (gameId) {
+              existingLibraryIds.add(gameId);
+            }
+          });
+        } catch (err) {
+          console.warn('No se pudo cargar la libreria antes del pago:', err);
+        }
+
+        const addResults = await Promise.allSettled(
+          items.map((item) => {
+            const gameId = getCartGameId(item);
+            if (!gameId) {
+              return Promise.reject(new Error('No se pudo identificar el juego'));
+            }
+            if (existingLibraryIds.has(gameId)) {
+              return Promise.resolve(null);
+            }
+            return addToLibrary(gameId);
+          })
+        );
+
+        const failedAdds = addResults.filter(
+          (result) => result.status === 'rejected'
+        );
+
+        if (failedAdds.length > 0) {
+          const firstError = failedAdds[0];
+          if (firstError.status === 'rejected') {
+            const reason = firstError.reason as unknown;
+            if (reason instanceof APIError) {
+              console.error('Error adding to library:', reason.status, reason.data, reason.url);
+            } else {
+              console.error('Error adding to library:', reason);
+            }
+          }
+          setCheckoutStatus('error');
+          setCheckoutError('No se pudo agregar uno o mas juegos a tu libreria.');
+          showToast('No se pudo completar el pago. Intenta de nuevo.', 'error');
+          return;
+        }
+
         await Promise.all(items.map(item => removeFromCart(item.id)));
         setItems([]);
         setShowCheckout(false);

@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from "next/link";
 import Image from "next/image";
+import { getFeaturedNews, getNews } from "@/services/newsService";
 import type { NewsArticle } from "@/services/newsService";
 
 const der = "/icons/derecha.svg";
@@ -34,21 +36,25 @@ const ArticulosDestacados = () => {
     const fetchArticles = async () => {
       try {
         setLoading(true);
-        
-        // Endpoint correcto sin parámetro featured (que no existe en la API)
-        const response = await fetch('http://localhost:8000/api/news/');
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        // La API devuelve estructura paginada: { count, next, previous, results }
-        // Tomar solo los primeros 3-5 artículos como "destacados"
-        const featuredArticles = (data.results || []).slice(0, 3);
-        
+
+        const [featuredResponse, newsResponse] = await Promise.all([
+          getFeaturedNews(),
+          getNews(),
+        ]);
+
+        const featuredSorted = [...(featuredResponse.results || [])].sort((a, b) => {
+          const aDate = a.published_date ? Date.parse(a.published_date) : 0;
+          const bDate = b.published_date ? Date.parse(b.published_date) : 0;
+          return bDate - aDate;
+        });
+
+        const fallback = (newsResponse.results || []).filter(
+          (article) => !featuredSorted.some((f) => f.id === article.id)
+        );
+
+        const featuredArticles = [...featuredSorted, ...fallback].slice(0, 3);
         setArticles(featuredArticles);
+        setError(null);
       } catch (err: unknown) {
         console.error('Error fetching articles:', err);
         const message = err instanceof Error ? err.message : 'Error desconocido';
@@ -114,9 +120,9 @@ const ArticulosDestacados = () => {
         <div className='flex justify-between items-center mb-6'>
           <h2 className='text-xl font-primary'>Artículos destacados</h2>
           <div className='flex items-center gap-4'>
-            <a href='#' className='text-primary font-primary text-xl hover:underline'>
+            <Link href="/noticias" className='text-primary font-primary text-xl hover:underline'>
               Ver todos
-            </a>
+            </Link>
             {!isMobile && (
               <div className='flex gap-2'>
                 <button onClick={prevPage} disabled={currentPage === 0} aria-label="Anterior">
@@ -155,11 +161,12 @@ const ArticulosDestacados = () => {
                     </p>
                   </div>
                   <div className='mt-6'>
-                    <button
-                      className={`bg-azulsub text-text text-sm font-primary rounded-2xl hover:bg-gray-200 transition
+                    <Link
+                      href={`/noticia?id=${article.id}`}
+                      className={`inline-flex items-center justify-center bg-azulsub text-text text-sm font-primary rounded-2xl hover:bg-gray-200 transition
                       ${isMobile ? 'w-full py-4 px-6' : 'w-auto py-3 px-6'}`}>
                       LEER MÁS
-                    </button>
+                    </Link>
                     {isMobile && (
                       <div className='flex justify-end gap-2 mt-4'>
                         <button onClick={prevPage} disabled={currentPage === 0} aria-label="Anterior">

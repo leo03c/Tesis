@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getNews } from "@/services/newsService";
+import { getFeaturedNews, getNews } from "@/services/newsService";
 import type { NewsArticle } from "@/services/newsService";
 import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
@@ -19,12 +19,18 @@ const NoticiasPage: React.FC = () => {
     []
   );
 
+  const [featuredArticles, setFeaturedArticles] = useState<NewsArticle[]>([]);
+
   useEffect(() => {
     const fetchNews = async () => {
       try {
         setLoading(true);
-        const response = await getNews();
-        setArticles(response.results || []);
+        const [featuredResponse, newsResponse] = await Promise.all([
+          getFeaturedNews(),
+          getNews(),
+        ]);
+        setFeaturedArticles(featuredResponse.results || []);
+        setArticles(newsResponse.results || []);
         setError(null);
         setApiUrl(null);
       } catch (err) {
@@ -52,8 +58,18 @@ const NoticiasPage: React.FC = () => {
     });
   }, [articles]);
 
-  const heroArticles = sortedArticles.slice(0, 2);
-  const gridArticles = sortedArticles.slice(2);
+  const featuredSorted = useMemo(() => {
+    return [...featuredArticles].sort((a, b) => {
+      const aDate = a.published_date ? Date.parse(a.published_date) : 0;
+      const bDate = b.published_date ? Date.parse(b.published_date) : 0;
+      return bDate - aDate;
+    });
+  }, [featuredArticles]);
+
+  const fallbackHero = sortedArticles.filter((article) => !featuredSorted.some((f) => f.id === article.id));
+  const heroArticles = [...featuredSorted, ...fallbackHero].slice(0, 2);
+  const heroIds = new Set(heroArticles.map((article) => article.id));
+  const gridArticles = sortedArticles.filter((article) => !heroIds.has(article.id));
 
   return (
     <main className="flex-1 p-6 overflow-y-auto">
@@ -89,6 +105,11 @@ const NoticiasPage: React.FC = () => {
                   key={article?.id ?? `hero-${index}`}
                   className="relative w-full h-60 md:h-72 rounded-xl overflow-hidden"
                 >
+                  {article?.id ? (
+                    <Link href={`/noticia?id=${article.id}`} className="absolute inset-0">
+                      <span className="sr-only">{title}</span>
+                    </Link>
+                  ) : null}
                   <Image
                     src={image}
                     alt={title}
@@ -96,7 +117,16 @@ const NoticiasPage: React.FC = () => {
                     className="object-cover opacity-30"
                   />
                   <div className="absolute bottom-0 left-0 w-full p-4">
-                    <h2 className="text-lg font-bold text-text">{title}</h2>
+                    {article?.id ? (
+                      <Link
+                        href={`/noticia?id=${article.id}`}
+                        className="text-lg font-bold text-text inline-block"
+                      >
+                        {title}
+                      </Link>
+                    ) : (
+                      <h2 className="text-lg font-bold text-text">{title}</h2>
+                    )}
                     {excerpt && (
                       <p className="text-sm text-gray-300 mt-2 line-clamp-2">
                         {excerpt}
@@ -109,11 +139,7 @@ const NoticiasPage: React.FC = () => {
                       >
                         Leer mas
                       </Link>
-                    ) : (
-                      <span className="mt-3 inline-block px-4 py-2 bg-subdeep text-white rounded-md text-sm opacity-70">
-                        Leer mas
-                      </span>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               );
@@ -128,6 +154,9 @@ const NoticiasPage: React.FC = () => {
                 className="bg-transparent rounded-xl overflow-hidden flex flex-col"
               >
                 <div className="relative w-full h-40">
+                  <Link href={`/noticia?id=${article.id}`} className="absolute inset-0">
+                    <span className="sr-only">{article.title}</span>
+                  </Link>
                   <Image
                     src={article.image || "/pic1.jpg"}
                     alt={article.title}
@@ -136,9 +165,12 @@ const NoticiasPage: React.FC = () => {
                   />
                 </div>
                 <div className="p-4 flex flex-col flex-grow">
-                  <h3 className="text-lg font-semibold font-primary text-text mb-2">
+                  <Link
+                    href={`/noticia?id=${article.id}`}
+                    className="text-lg font-semibold font-primary text-text mb-2"
+                  >
                     {article.title}
-                  </h3>
+                  </Link>
                   <p className="text-sm text-gray-300 flex-grow font-primary">
                     {article.description || article.content || ""}
                   </p>
