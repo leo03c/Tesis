@@ -90,7 +90,7 @@ const Carrusel = () => {
   }
 
   // Calcular el rating una vez para reutilizarlo
-  const rating = parseFloat(featuredGame.rating as any) || 0;
+  const rating = parseFloat(String(featuredGame.rating)) || 0;
 
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 w-full">

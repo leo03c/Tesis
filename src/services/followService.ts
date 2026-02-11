@@ -4,19 +4,28 @@
  */
 import api from './api';
 
-export interface UserProfile {
+export interface SocialUserProfile {
   id: number;
   name: string;
   username?: string;
+  first_name?: string;
+  last_name?: string;
   avatar?: string;
   followers: string | number;
+  followers_count?: number;
   games?: number;
+  games_count?: number;
   is_following: boolean;
   type: 'Desarrollador' | 'Usuario';
 }
 
+// El API puede devolver el usuario directamente o envuelto en un objeto
+export interface FollowItem extends SocialUserProfile {
+  user?: SocialUserProfile;
+}
+
 export interface FollowingResponse {
-  results: UserProfile[];
+  results: FollowItem[];
   count: number;
   next?: string;
   previous?: string;

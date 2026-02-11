@@ -26,7 +26,7 @@ const CategoriasApp = () => {
         console.error('Error fetching tags:', err);
         if (err instanceof APIError) {
           setError(err.message);
-          setApiUrl(err.url);
+          setApiUrl(err.url ?? null);
         } else {
           setError('No se pudieron cargar las categorías');
           setApiUrl(null);

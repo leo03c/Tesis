@@ -106,6 +106,16 @@ const HomeApp = () => {
           isFavorite={isFavorite}
           onToggleFavorite={toggleFavorite}
         />
+        <GameCarouselSection
+          title="Juegos gratis"
+          games={freeGames}
+          loading={sectionsLoading}
+          error={sectionErrors.freeGames}
+          apiUrl={sectionApiUrls.freeGames}
+          showFavorite
+          isFavorite={isFavorite}
+          onToggleFavorite={toggleFavorite}
+        />
       </div>
        <div>
         <Listado />

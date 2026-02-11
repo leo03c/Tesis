@@ -72,7 +72,7 @@ const FavoritosApp = () => {
             url: err.url,
             data: err.data
           });
-          setApiUrl(err.url);
+          setApiUrl(err.url ?? null);
         }
         setAllGames([]);
       } finally {
@@ -87,7 +87,7 @@ const FavoritosApp = () => {
     const filtered = allGames.filter(game => isFavorite(game.id));
     console.log('Favoritos filtrados:', filtered.length, 'de', allGames.length);
     return filtered;
-  }, [allGames, favorites]);
+  }, [allGames, isFavorite]);
 
   useEffect(() => {
     const handleResize = () => {

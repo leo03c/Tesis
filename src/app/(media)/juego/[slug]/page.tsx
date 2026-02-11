@@ -21,7 +21,7 @@ const Juego = () => {
   const params = useParams();
   const slug = params.slug as string;
 
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const [game, setGame] = useState<Game | null>(null);
   const [gamesList, setGamesList] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
@@ -107,14 +107,14 @@ const Juego = () => {
         setWishlistItemId(null);
         showMessage('Eliminado de la lista de deseos', 'success');
       } else {
-        const userId = Number((session?.user as any)?.id);
-        const res = await addToWishlist(game.id, userId);
+        const res = await addToWishlist(game.id);
         setInWishlist(true);
         setWishlistItemId(res.id);
         showMessage('Añadido a la lista de deseos', 'success');
       }
-    } catch (err: any) {
-      showMessage(err.message || 'Error al actualizar lista de deseos', 'error');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error al actualizar lista de deseos';
+      showMessage(message, 'error');
     } finally {
       setActionLoading(null);
     }
@@ -134,14 +134,14 @@ const Juego = () => {
         setCartItemId(null);
         showMessage('Eliminado del carrito', 'success');
       } else {
-        const userId = Number((session?.user as any)?.id);
-        const res = await addToCart(game.id, userId);
+        const res = await addToCart(game.id);
         setInCart(true);
         setCartItemId(res.id);
         showMessage('Añadido al carrito', 'success');
       }
-    } catch (err: any) {
-      showMessage(err.message || 'Error al actualizar carrito', 'error');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error al actualizar carrito';
+      showMessage(message, 'error');
     } finally {
       setActionLoading(null);
     }

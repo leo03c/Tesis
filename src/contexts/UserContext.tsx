@@ -41,7 +41,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     user: session?.user || null,
     isLoading: status === 'loading',
     isAuthenticated: !!session?.user,
-    provider: (session as any)?.provider,
+    provider: session?.provider,
     refreshSession,
   };
 

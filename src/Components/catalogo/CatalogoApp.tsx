@@ -10,13 +10,13 @@ import ModalCrearProyecto from "./ModalCrearProyecto";
 const filters = ["todos", "publicado", "en desarrollo", "en revisión", "borrador"];
 const placeholderImage = "/pic4.jpg";
 
-// Map de filtros con los valores exactos del backend
-const filterMap: Record<string, string | null> = {
+// Map de filtros con los valores exactos del backend (en inglés)
+const filterMap: Record<string, Project["status"] | null> = {
   todos: null,
-  publicado: "publicado",
-  "en desarrollo": "en_desarrollo",
-  "en revisión": "en_revision",
-  borrador: "borrador",
+  publicado: "published",
+  "en desarrollo": "in_development",
+  "en revisión": "in_review",
+  borrador: "draft",
 };
 
 const CatalogoApp: React.FC = () => {
@@ -114,15 +114,30 @@ const CatalogoApp: React.FC = () => {
 
   const getStatusColor = (status: Project["status"]) => {
     switch (status) {
-      case "publicado":
+      case "published":
         return "bg-green-600";
-      case "en_desarrollo":
+      case "in_development":
         return "bg-blue-600";
-      case "en_revision":
+      case "in_review":
         return "bg-yellow-600";
-      case "borrador":
+      case "draft":
       default:
         return "bg-gray-600";
+    }
+  };
+
+  // Mostrar texto amigable para el estado
+  const getStatusDisplay = (status: Project["status"]) => {
+    switch (status) {
+      case "published":
+        return "Publicado";
+      case "in_development":
+        return "En desarrollo";
+      case "in_review":
+        return "En revisión";
+      case "draft":
+      default:
+        return "Borrador";
     }
   };
 
@@ -202,7 +217,7 @@ const CatalogoApp: React.FC = () => {
                       proyecto.status
                     )}`}
                   >
-                    {proyecto.status_display || proyecto.status}
+                    {proyecto.status_display || getStatusDisplay(proyecto.status)}
                   </div>
                 </div>
 

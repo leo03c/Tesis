@@ -12,6 +12,7 @@ export interface Project {
   description?: string;
   image?: string;
   status: 'draft' | 'in_development' | 'in_review' | 'published';
+  status_display?: string;
   progress: number;
   last_updated?: string;
   created_at?: string;

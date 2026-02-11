@@ -50,9 +50,9 @@ export const getWishlist = async (
  * Add a game to wishlist
  * Requires authentication
  */
-export const addToWishlist = async (gameId: number, userId: number): Promise<WishlistItem> => {
+export const addToWishlist = async (gameId: number): Promise<WishlistItem> => {
   try {
-    return await api.post<WishlistItem>('/wishlist/', { id_juego: gameId, id_usuario: userId });
+    return await api.post<WishlistItem>('/wishlist/', { id_juego: gameId });
   } catch (error) {
     if (error instanceof APIError && error.status === 401) {
       throw new Error('Debes iniciar sesión para añadir a la lista de deseos');

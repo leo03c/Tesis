@@ -11,7 +11,7 @@ import { useSession } from "next-auth/react"; // <-- importamos useSession
 const pic4 = "/pic4.jpg";
 
 const LibreriaApp = () => {
-  const { data: session, status } = useSession(); // <-- obtenemos sesión
+  const { status } = useSession(); // <-- obtenemos estado de sesión
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [filter, setFilter] = useState("todos");
   const [libreria, setLibreria] = useState<LibraryGame[]>([]);
@@ -40,7 +40,7 @@ const LibreriaApp = () => {
           } else {
             setError(err.message);
           }
-          setApiUrl(err.url);
+          setApiUrl(err.url ?? null);
         } else {
           setError("No se pudo cargar la librería");
           setApiUrl(null);

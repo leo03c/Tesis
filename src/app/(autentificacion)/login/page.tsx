@@ -44,9 +44,10 @@ export default function LoginPage() {
           router.refresh(); // Forzar refresco de la página
         }, 1000);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      setError(error.message || "Error durante el inicio de sesión");
+      const message = error instanceof Error ? error.message : "Error durante el inicio de sesión";
+      setError(message);
     } finally {
       setLoading(false);
     }
