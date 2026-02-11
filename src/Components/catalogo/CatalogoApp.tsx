@@ -217,7 +217,7 @@ const CatalogoApp: React.FC = () => {
                       proyecto.status
                     )}`}
                   >
-                    {getStatusDisplay(proyecto.status)}
+                    {proyecto.status_display || getStatusDisplay(proyecto.status)}
                   </div>
                 </div>
 

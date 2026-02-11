@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useUser } from "@/contexts/UserContext";
 import { signIn } from "next-auth/react";
 import settingsService, { UserSettings } from "@/services/settingsService";
+import { APIError } from "@/services/api";
 
 const ConfiguracionApp = () => {
   const { isAuthenticated, refreshSession } = useUser();
@@ -95,7 +96,21 @@ const ConfiguracionApp = () => {
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: unknown) {
       console.error("Error updating profile:", err);
-      const message = err instanceof Error ? err.message : "Error al actualizar el perfil";
+      let message = "Error al actualizar el perfil";
+      if (err instanceof APIError && err.data) {
+        // Intentar extraer mensaje de error detallado del backend
+        const data = err.data;
+        if (typeof data === 'object' && data !== null) {
+          const errorDetails = Object.entries(data)
+            .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+            .join('; ');
+          if (errorDetails) {
+            message = errorDetails;
+          }
+        }
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
       setError(message);
     } finally {
       setLoading(false);
