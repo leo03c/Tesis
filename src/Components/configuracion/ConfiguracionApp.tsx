@@ -7,8 +7,7 @@ import { signIn } from "next-auth/react";
 import settingsService, { UserSettings } from "@/services/settingsService";
 
 const ConfiguracionApp = () => {
-  const { user, isAuthenticated, refreshSession } = useUser();
-  const [activeTab, setActiveTab] = useState("cuenta");
+  const { isAuthenticated, refreshSession } = useUser();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -24,19 +23,6 @@ const ConfiguracionApp = () => {
     profile: {},
   });
 
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    updates: false,
-    newsletter: true,
-  });
-
-  const tabs = [
-    { id: "cuenta", label: "Cuenta", icon: "/setting.svg" },
-    { id: "notificaciones", label: "Notificaciones", icon: "/setting.svg" },
-    { id: "privacidad", label: "Privacidad", icon: "/setting.svg" },
-  ];
-
   // Cargar perfil del usuario
   useEffect(() => {
     const loadProfile = async () => {
@@ -44,7 +30,7 @@ const ConfiguracionApp = () => {
       try {
         const profile = await settingsService.getSettings();
         setProfileData(profile);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Error loading profile:", err);
         setError("No se pudo cargar el perfil");
       }
@@ -90,36 +76,31 @@ const ConfiguracionApp = () => {
   };
 
   // Guardar cambios del perfil
- const handleSaveProfile = async () => {
-  setLoading(true);
-  setError(null);
-  setSuccess(null);
+  const handleSaveProfile = async () => {
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
 
-  try {
-    // Construimos los datos evitando undefined
-    const payload: Partial<UserSettings> = {
-      first_name: profileData.first_name || "",
-      last_name: profileData.last_name || "",
-    };
+    try {
+      // Construimos los datos evitando undefined
+      const payload: Partial<UserSettings> = {
+        first_name: profileData.first_name || "",
+        last_name: profileData.last_name || "",
+      };
 
-    await settingsService.updateSettings(payload);
+      await settingsService.updateSettings(payload);
 
-    setSuccess("Perfil actualizado correctamente");
-    await refreshSession();
-    setTimeout(() => setSuccess(null), 3000);
-  } catch (err: any) {
-    console.error("Error updating profile:", err);
-
-    if (err.response?.data) {
-      // Si backend devuelve errores detallados
-      setError(JSON.stringify(err.response.data));
-    } else {
-      setError(err.message || "Error al actualizar el perfil");
+      setSuccess("Perfil actualizado correctamente");
+      await refreshSession();
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: unknown) {
+      console.error("Error updating profile:", err);
+      const message = err instanceof Error ? err.message : "Error al actualizar el perfil";
+      setError(message);
+    } finally {
+      setLoading(false);
     }
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   const handleInputChange = (field: string, value: string) => {
@@ -141,9 +122,8 @@ const ConfiguracionApp = () => {
 
         {/* Content */}
         <div className="flex-1 bg-deep rounded-2xl p-6">
-          {activeTab === "cuenta" && (
-            <div className="space-y-6">
-              <h2 className="text-xl font-semibold mb-4">Información de la cuenta</h2>
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold mb-4">Información de la cuenta</h2>
 
               {!isAuthenticated ? (
                 <div className="p-8 bg-subdeep rounded-xl text-center">
@@ -286,9 +266,6 @@ const ConfiguracionApp = () => {
                 </>
               )}
             </div>
-          )}
-
-          {/* Aquí puedes mantener los tabs de notificaciones y privacidad igual */}
         </div>
       </div>
     </div>

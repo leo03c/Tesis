@@ -1,14 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getNewsById, getNews } from "@/services/newsService";
 import type { NewsArticle } from "@/services/newsService";
 import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
 
-export default function NoticiaPage() {
+function NoticiaContent() {
   const searchParams = useSearchParams();
   const idParam = searchParams.get("id");
   const articleId = idParam ? Number(idParam) : null;
@@ -60,55 +60,73 @@ export default function NoticiaPage() {
   const description = article?.description || "";
   const content = article?.content || "";
 
+  if (loading) {
+    return (
+      <div className="py-10">
+        <Loading message="Cargando noticia..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-texInactivo mb-2">{error}</p>
+        {apiUrl && (
+          <p className="text-texInactivo text-xs">
+            URL: <span className="text-primary">{apiUrl}</span>
+          </p>
+        )}
+      </div>
+    );
+  }
+
+  if (!article) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-texInactivo">No se encontro la noticia</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* HERO - Banner principal */}
+      <div className="relative w-full h-96 md:h-[550px] rounded-2xl overflow-hidden">
+        <Image src={banner} alt={title} fill className="object-cover block" />
+      </div>
+
+      {/* CONTENIDO */}
+      <section className="mt-12 space-y-10">
+        <p className="text-2xl leading-relaxed font-bold text-text font-primary">
+          {title}
+        </p>
+        {description && (
+          <p className="font-primary text-m text-texInactivo">{description}</p>
+        )}
+
+        {content && (
+          <div className="space-y-4">
+            <p className="font-primary text-m text-texInactivo whitespace-pre-line">
+              {content}
+            </p>
+          </div>
+        )}
+
+        <div className="relative w-full h-96 md:h-[150px] overflow-hidden">
+          <Image src={banner2} alt="Imagen secundaria" fill className="object-cover block" />
+        </div>
+      </section>
+    </>
+  );
+}
+
+export default function NoticiaPage() {
   return (
     <main className="w-full min-h-screen px-6 py-10 font-[Nunito_Sans] bg-[var(--color-dark)] text-[var(--color-text)]">
-      {loading ? (
-        <div className="py-10">
-          <Loading message="Cargando noticia..." />
-        </div>
-      ) : error ? (
-        <div className="text-center py-10">
-          <p className="text-texInactivo mb-2">{error}</p>
-          {apiUrl && (
-            <p className="text-texInactivo text-xs">
-              URL: <span className="text-primary">{apiUrl}</span>
-            </p>
-          )}
-        </div>
-      ) : !article ? (
-        <div className="text-center py-10">
-          <p className="text-texInactivo">No se encontro la noticia</p>
-        </div>
-      ) : (
-        <>
-          {/* HERO - Banner principal */}
-          <div className="relative w-full h-96 md:h-[550px] rounded-2xl overflow-hidden">
-            <Image src={banner} alt={title} fill className="object-cover block" />
-          </div>
-
-          {/* CONTENIDO */}
-          <section className="mt-12 space-y-10">
-            <p className="text-2xl leading-relaxed font-bold text-text font-primary">
-              {title}
-            </p>
-            {description && (
-              <p className="font-primary text-m text-texInactivo">{description}</p>
-            )}
-
-            {content && (
-              <div className="space-y-4">
-                <p className="font-primary text-m text-texInactivo whitespace-pre-line">
-                  {content}
-                </p>
-              </div>
-            )}
-
-            <div className="relative w-full h-96 md:h-[150px] overflow-hidden">
-              <Image src={banner2} alt="Imagen secundaria" fill className="object-cover block" />
-            </div>
-          </section>
-        </>
-      )}
+      <Suspense fallback={<Loading message="Cargando..." />}>
+        <NoticiaContent />
+      </Suspense>
     </main>
   );
 }

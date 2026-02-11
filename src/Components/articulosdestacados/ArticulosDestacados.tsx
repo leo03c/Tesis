@@ -2,10 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from "next/image";
-import { getFeaturedNews } from "@/services/newsService";
 import type { NewsArticle } from "@/services/newsService";
-import { APIError } from "@/services/api";
-import Loading from "@/Components/loading/Loading";
 
 const der = "/icons/derecha.svg";
 const izq = "/icons/izquierda.svg";
@@ -52,9 +49,10 @@ const ArticulosDestacados = () => {
         const featuredArticles = (data.results || []).slice(0, 3);
         
         setArticles(featuredArticles);
-      } catch (err) {
+      } catch (err: unknown) {
         console.error('Error fetching articles:', err);
-        setError(err.message);
+        const message = err instanceof Error ? err.message : 'Error desconocido';
+        setError(message);
         setArticles([]);
       } finally {
         setLoading(false);

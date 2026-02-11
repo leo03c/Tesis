@@ -50,7 +50,7 @@ const JuegosGratis = () => {
         console.error('Error fetching free games:', err);
         if (err instanceof APIError) {
           setError(err.message);
-          setApiUrl(err.url);
+          setApiUrl(err.url ?? null);
         } else {
           setError('No se pudieron cargar los juegos gratis');
           setApiUrl(null);

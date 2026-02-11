@@ -134,14 +134,14 @@ const Juego = () => {
         setCartItemId(null);
         showMessage('Eliminado del carrito', 'success');
       } else {
-        const userId = Number((session?.user as any)?.id);
-        const res = await addToCart(game.id, userId);
+        const res = await addToCart(game.id);
         setInCart(true);
         setCartItemId(res.id);
         showMessage('Añadido al carrito', 'success');
       }
-    } catch (err: any) {
-      showMessage(err.message || 'Error al actualizar carrito', 'error');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error al actualizar carrito';
+      showMessage(message, 'error');
     } finally {
       setActionLoading(null);
     }

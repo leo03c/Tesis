@@ -7,7 +7,7 @@
  */
 
 // Base API client
-export { api, API_BASE_URL, APIError } from './api';
+export { default as api, APIError } from './api';
 
 // Auth services
 export * from './authService';

@@ -2,22 +2,22 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import followService, { UserProfile } from "@/services/followService";
+import followService, { SocialUserProfile } from "@/services/followService";
 import Loading from "@/Components/loading/Loading";
-import { useSession } from "next-auth/react"; // <-- importamos useSession
+import { useSession } from "next-auth/react";
 
 const pic4 = "/pic4.jpg"; // imagen por defecto
 
 const SiguiendoApp: React.FC = () => {
-  const { data: session, status } = useSession(); // <-- obtenemos sesión
+  const { status } = useSession();
   const [activeTab, setActiveTab] = useState<"siguiendo" | "sugerencias">("siguiendo");
-  const [followingList, setFollowingList] = useState<UserProfile[]>([]);
-  const [suggestions, setSuggestions] = useState<UserProfile[]>([]);
+  const [followingList, setFollowingList] = useState<SocialUserProfile[]>([]);
+  const [suggestions, setSuggestions] = useState<SocialUserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Construye el nombre completo
-  const getFullName = (user: UserProfile) => {
+  const getFullName = (user: SocialUserProfile) => {
     if (user.first_name && user.last_name) {
       return `${user.first_name} ${user.last_name}`.trim();
     }
@@ -40,7 +40,7 @@ const SiguiendoApp: React.FC = () => {
         ]);
 
         // ---- Mapear Siguiendo ----
-        const followingFlattened: UserProfile[] = (followingRes.results || []).map(f => {
+        const followingFlattened: SocialUserProfile[] = (followingRes.results || []).map(f => {
           const u = f.user || f;
           return {
             id: u.id,
@@ -57,7 +57,7 @@ const SiguiendoApp: React.FC = () => {
         });
 
         // ---- Mapear Sugerencias ----
-        const suggestionsFlattened: UserProfile[] = (suggestionsRes.results || []).map(u => ({
+        const suggestionsFlattened: SocialUserProfile[] = (suggestionsRes.results || []).map(u => ({
           id: u.id,
           username: u.username,
           first_name: u.first_name,
@@ -98,7 +98,7 @@ const SiguiendoApp: React.FC = () => {
     setSuggestions(suggestions.filter(u => u.id !== id));
   };
 
-  const renderUserCard = (user: UserProfile, followingTab: boolean) => (
+  const renderUserCard = (user: SocialUserProfile, followingTab: boolean) => (
     <div key={user.id} className="bg-subdeep rounded-xl p-4 flex items-center gap-4 hover:bg-categorico transition">
       <div className="w-14 h-14 relative flex-shrink-0">
         <Image
