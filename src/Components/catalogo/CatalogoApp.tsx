@@ -7,6 +7,7 @@ import Loading from "@/Components/loading/Loading";
 import { useUser } from "@/contexts/UserContext";
 import ModalCrearProyecto from "./ModalCrearProyecto";
 import ModalEditarProyecto from "./ModalEditarProyecto";
+import ConfirmModal from "@/Components/modals/ConfirmModal";
 
 const filters = ["todos", "publicado", "en desarrollo", "en revisión", "borrador"];
 const placeholderImage = "/pic4.jpg";
@@ -29,6 +30,11 @@ const CatalogoApp: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean; projectId: number | null; isLoading: boolean }>({
+    open: false,
+    projectId: null,
+    isLoading: false,
+  });
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -59,13 +65,19 @@ const CatalogoApp: React.FC = () => {
   }, [isAuthenticated, user]);
 
   const handleDeleteProject = async (id: number) => {
-    if (!window.confirm("¿Estás seguro de que deseas eliminar este proyecto de tu catálogo? Esta acción no se puede deshacer.")) return;
+    setConfirmDelete({ open: true, projectId: id, isLoading: false });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete.projectId) return;
+    setConfirmDelete((prev) => ({ ...prev, isLoading: true }));
     try {
-      await deleteProject(id);
-      setMiCatalogo((prev) => prev.filter((p) => p.id !== id));
+      await deleteProject(confirmDelete.projectId);
+      setMiCatalogo((prev) => prev.filter((p) => p.id !== confirmDelete.projectId));
+      setConfirmDelete({ open: false, projectId: null, isLoading: false });
     } catch (err) {
       console.error("Error al eliminar el proyecto:", err);
-      alert("Hubo un error al eliminar el proyecto.");
+      setConfirmDelete((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -333,6 +345,17 @@ const CatalogoApp: React.FC = () => {
           }
         />
       )}
+
+      <ConfirmModal
+        isOpen={confirmDelete.open}
+        onClose={() => setConfirmDelete({ open: false, projectId: null, isLoading: false })}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar proyecto"
+        message="¿Estás seguro de que deseas eliminar este proyecto de tu catálogo? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        type="danger"
+        isLoading={confirmDelete.isLoading}
+      />
     </div>
   );
 };

@@ -9,6 +9,7 @@ import { getFavorites } from "@/services/favoritesService";
 import type { Game } from "@/services/gamesService";
 import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
+import ConfirmModal from "@/Components/modals/ConfirmModal";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
@@ -26,6 +27,11 @@ const FavoritosApp = () => {
   const [allGames, setAllGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [apiUrl, setApiUrl] = useState<string | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<{ open: boolean; game: Game | null; isLoading: boolean }>({
+    open: false,
+    game: null,
+    isLoading: false,
+  });
 
   // Debug logs
   useEffect(() => {
@@ -100,6 +106,13 @@ const FavoritosApp = () => {
   }, []);
 
   const totalPages = Math.ceil(favoritos.length / itemsPerPage);
+
+  const handleConfirmRemoveFavorite = async () => {
+    if (!confirmRemove.game) return;
+    setConfirmRemove((prev) => ({ ...prev, isLoading: true }));
+    await toggleFavorite(confirmRemove.game.id);
+    setConfirmRemove({ open: false, game: null, isLoading: false });
+  };
 
   const nextPage = () => {
     if (currentPage < totalPages - 1) {
@@ -222,7 +235,7 @@ const FavoritosApp = () => {
                           <button
                             onClick={(e) => {
                               e.preventDefault();
-                              toggleFavorite(juego.id);
+                              setConfirmRemove({ open: true, game: juego, isLoading: false });
                             }}
                             type="button"
                             className="absolute right-3 top-3 z-10"
@@ -317,6 +330,17 @@ const FavoritosApp = () => {
           }
         `}</style>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmRemove.open}
+        onClose={() => setConfirmRemove({ open: false, game: null, isLoading: false })}
+        onConfirm={handleConfirmRemoveFavorite}
+        title="Quitar de favoritos"
+        message={`¿Estás seguro de que deseas quitar "${confirmRemove.game?.title}" de tus favoritos?`}
+        confirmText="Quitar"
+        type="warning"
+        isLoading={confirmRemove.isLoading}
+      />
     </div>
   );
 };
