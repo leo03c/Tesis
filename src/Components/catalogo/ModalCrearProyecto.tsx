@@ -100,6 +100,8 @@ const ModalCrearProyecto: React.FC<ModalCrearProyectoProps> = ({
     .filter((platform) => selectedPlatforms.includes(platform.id))
     .map((platform) => platform.nombre);
 
+  const maxVisibleChips = 3;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -168,7 +170,7 @@ const ModalCrearProyecto: React.FC<ModalCrearProyectoProps> = ({
         role="presentation"
       >
         <div
-          className={`w-full max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-deep via-subdeep to-deep shadow-2xl transition-all duration-200 ${
+          className={`flex w-full max-w-5xl max-h-[95vh] flex-col overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-deep via-subdeep to-deep shadow-2xl transition-all duration-200 ${
             isVisible
               ? "translate-y-0 scale-100 opacity-100"
               : "translate-y-2 scale-95 opacity-0"
@@ -177,9 +179,9 @@ const ModalCrearProyecto: React.FC<ModalCrearProyectoProps> = ({
           role="dialog"
           aria-modal="true"
         >
-          <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
+          <div className="flex items-center justify-between border-b border-white/10 px-5 py-3">
             <div>
-              <h2 className="text-2xl font-bold">Nuevo proyecto</h2>
+              <h2 className="text-xl font-bold">Nuevo proyecto</h2>
               <p className="text-texInactivo text-sm">
                 Completa los datos basicos para crear tu proyecto.
               </p>
@@ -194,128 +196,147 @@ const ModalCrearProyecto: React.FC<ModalCrearProyectoProps> = ({
             </button>
           </div>
 
-          <div className="flex max-h-[80vh] flex-col">
-            <div className="px-6 py-5 overflow-y-auto">
-              {error && <p className="mb-4 text-red-500">{error}</p>}
+          <div className="flex min-h-0 flex-1 flex-col">
+            <form
+              onSubmit={handleSubmit}
+              className="flex min-h-0 flex-1 flex-col"
+            >
+              <div className="flex-1 min-h-0 overflow-y-auto px-5 py-3">
+                {error && <p className="mb-4 text-red-500">{error}</p>}
 
-              <form
-                onSubmit={handleSubmit}
-                className="grid grid-cols-1 gap-4 lg:grid-cols-3"
-              >
-                <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-deep/70 p-4">
-                  <div className="mb-4">
-                    <p className="text-sm font-semibold">Detalles del proyecto</p>
-                    <p className="text-xs text-texInactivo">
-                      Informacion principal visible para los usuarios.
-                    </p>
+                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                  <div className="md:col-span-1 rounded-2xl border border-white/10 bg-deep/70 p-3">
+                    <div className="mb-2">
+                      <p className="text-sm font-semibold">Detalles del proyecto</p>
+                      <p className="text-xs text-texInactivo">
+                        Informacion principal visible para los usuarios.
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
+                      <div className="md:col-span-2">
+                        <label className="mb-1 block text-sm font-medium">Titulo *</label>
+                        <input
+                          type="text"
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          className="w-full rounded-xl border border-white/10 bg-deep px-3 py-1.5 text-white focus:border-primary focus:ring-1 focus:ring-primary"
+                          required
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <label className="mb-1 block text-sm font-medium">Descripcion</label>
+                        <textarea
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          className="w-full resize-none rounded-xl border border-white/10 bg-deep px-3 py-1.5 text-white focus:border-primary focus:ring-1 focus:ring-primary"
+                          rows={2}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">Estado</label>
+                        <select
+                          value={status}
+                          onChange={(e) =>
+                            setStatus(e.target.value as Project["status"])
+                          }
+                          className="w-full rounded-xl border border-white/10 bg-deep px-3 py-1.5 text-white focus:border-primary"
+                        >
+                          {statusOptions.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="mb-1 block text-sm font-medium">Progreso (%)</label>
+                        <input
+                          type="number"
+                          value={progress}
+                          onChange={(e) => setProgress(Number(e.target.value))}
+                          min={0}
+                          max={100}
+                          className="w-full rounded-xl border border-white/10 bg-deep px-3 py-1.5 text-white focus:border-primary"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+                  <div className="md:col-span-1 rounded-2xl border border-white/10 bg-deep/70 p-3">
+                    <div className="mb-2">
+                      <p className="text-sm font-semibold">Publicacion</p>
+                      <p className="text-xs text-texInactivo">
+                        Configura la categoria, plataformas y precio.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                     <div className="md:col-span-2">
-                      <label className="mb-1 block text-sm font-medium">Titulo *</label>
-                      <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-2 text-white focus:border-primary focus:ring-1 focus:ring-primary"
-                        required
-                      />
-                    </div>
-
-                    <div className="md:col-span-2">
-                      <label className="mb-1 block text-sm font-medium">Descripcion</label>
-                      <textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="w-full resize-none rounded-xl border border-white/10 bg-deep px-3 py-2 text-white focus:border-primary focus:ring-1 focus:ring-primary"
-                        rows={3}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-sm font-medium">Estado</label>
-                      <select
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value as Project["status"])}
-                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-2 text-white focus:border-primary"
-                      >
-                        {statusOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="mb-1 block text-sm font-medium">Progreso (%)</label>
-                      <input
-                        type="number"
-                        value={progress}
-                        onChange={(e) => setProgress(Number(e.target.value))}
-                        min={0}
-                        max={100}
-                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-2 text-white focus:border-primary"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-deep/70 p-4">
-                  <div className="mb-4">
-                    <p className="text-sm font-semibold">Publicacion</p>
-                    <p className="text-xs text-texInactivo">
-                      Configura la categoria, plataformas y precio.
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
                       <label className="mb-1 block text-sm font-medium">Categoria/Tag</label>
                       <button
                         type="button"
                         onClick={() => setShowTagModal(true)}
-                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-2 text-left text-sm text-white transition hover:border-primary"
+                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-1.5 text-left text-sm text-white transition hover:border-primary"
                       >
                         Seleccionar categorias
                       </button>
                       {selectedTagNames.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {selectedTagNames.map((name) => (
-                            <span
-                              key={name}
-                              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white"
-                            >
-                              {name}
-                            </span>
-                          ))}
+                        <div className="mt-2">
+                          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                            {selectedTagNames.slice(0, maxVisibleChips).map((name) => (
+                              <span
+                                key={name}
+                                className="shrink-0 max-w-[140px] truncate rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white"
+                              >
+                                {name}
+                              </span>
+                            ))}
+                            {selectedTagNames.length > maxVisibleChips && (
+                              <span className="shrink-0 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs text-white">
+                                +{selectedTagNames.length - maxVisibleChips}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    <div>
+                    <div className="md:col-span-2">
                       <label className="mb-1 block text-sm font-medium">Plataformas</label>
                       <button
                         type="button"
                         onClick={() => setShowPlatformModal(true)}
-                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-2 text-left text-sm text-white transition hover:border-primary"
+                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-1.5 text-left text-sm text-white transition hover:border-primary"
                       >
                         Seleccionar plataformas
                       </button>
                       {selectedPlatformNames.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                          {selectedPlatformNames.map((name) => (
-                            <span
-                              key={name}
-                              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white"
-                            >
-                              {name}
-                            </span>
-                          ))}
+                        <div className="mt-2">
+                          <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                            {selectedPlatformNames
+                              .slice(0, maxVisibleChips)
+                              .map((name) => (
+                                <span
+                                  key={name}
+                                  className="shrink-0 max-w-[140px] truncate rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white"
+                                >
+                                  {name}
+                                </span>
+                              ))}
+                            {selectedPlatformNames.length > maxVisibleChips && (
+                              <span className="shrink-0 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs text-white">
+                                +{selectedPlatformNames.length - maxVisibleChips}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    <div>
+                    <div className="md:col-span-1">
                       <label className="mb-1 block text-sm font-medium">Precio</label>
                       <input
                         type="number"
@@ -323,12 +344,12 @@ const ModalCrearProyecto: React.FC<ModalCrearProyectoProps> = ({
                         step="0.01"
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-2 text-white focus:border-primary"
+                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-1.5 text-white focus:border-primary"
                         placeholder="0.00"
                       />
                     </div>
 
-                    <div>
+                    <div className="md:col-span-1">
                       <label className="mb-1 block text-sm font-medium">Descuento (%)</label>
                       <input
                         type="number"
@@ -337,12 +358,12 @@ const ModalCrearProyecto: React.FC<ModalCrearProyectoProps> = ({
                         step="1"
                         value={discount}
                         onChange={(e) => setDiscount(e.target.value)}
-                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-2 text-white focus:border-primary"
+                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-1.5 text-white focus:border-primary"
                         placeholder="0"
                       />
                     </div>
 
-                    <div>
+                    <div className="md:col-span-2">
                       <label className="mb-1 block text-sm font-medium">Imagen</label>
                       <input
                         type="file"
@@ -350,31 +371,32 @@ const ModalCrearProyecto: React.FC<ModalCrearProyectoProps> = ({
                         onChange={(e) =>
                           setImage(e.target.files ? e.target.files[0] : null)
                         }
-                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-2 text-white file:mr-4 file:rounded-lg file:border-0 file:bg-subdeep file:px-3 file:py-2 file:text-sm file:text-white"
+                        className="w-full rounded-xl border border-white/10 bg-deep px-3 py-1.5 text-white file:mr-4 file:rounded-lg file:border-0 file:bg-subdeep file:px-3 file:py-1.5 file:text-sm file:text-white"
                       />
                     </div>
                   </div>
                 </div>
-
-                <div className="lg:col-span-3 flex flex-wrap justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    className="rounded-xl border border-white/10 bg-white/5 px-5 py-2 text-sm text-white transition hover:bg-white/10"
-                    disabled={loading}
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="rounded-xl bg-primary px-6 py-2 text-sm font-semibold text-white transition hover:bg-subprimary"
-                    disabled={loading}
-                  >
-                    {loading ? "Creando..." : "Crear"}
-                  </button>
                 </div>
-              </form>
-            </div>
+              </div>
+
+              <div className="flex flex-wrap justify-end gap-3 border-t border-white/10 bg-deep/90 px-5 py-3">
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="rounded-xl border border-white/10 bg-white/5 px-5 py-1.5 text-sm text-white transition hover:bg-white/10"
+                  disabled={loading}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-xl bg-primary px-6 py-1.5 text-sm font-semibold text-white transition hover:bg-subprimary"
+                  disabled={loading}
+                >
+                  {loading ? "Creando..." : "Crear"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
