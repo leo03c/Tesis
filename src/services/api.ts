@@ -76,12 +76,12 @@ async function request<T>(
 
   url = ensureTrailingSlash(url);
 
-  const headers: HeadersInit = {};
+  const headers = new Headers();
   const isFormData = body instanceof FormData;
 
   // Solo establecer Content-Type si no es FormData
   if (!isFormData) {
-    headers['Content-Type'] = 'application/json';
+    headers.set('Content-Type', 'application/json');
   }
 
   // 🔐 Autenticación SOLO si el endpoint no es público
@@ -94,7 +94,7 @@ async function request<T>(
       throw new APIError('Not authenticated', 401, null, endpoint);
     }
 
-    headers.Authorization = `Bearer ${accessToken}`;
+    headers.set('Authorization', `Bearer ${accessToken}`);
   }
 
   const controller = new AbortController();

@@ -2,10 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { getProjects, Project } from "@/services/catalogService";
+import { getProjects, Project, deleteProject } from "@/services/catalogService";
 import Loading from "@/Components/loading/Loading";
 import { useUser } from "@/contexts/UserContext";
 import ModalCrearProyecto from "./ModalCrearProyecto";
+import ModalEditarProyecto from "./ModalEditarProyecto";
 
 const filters = ["todos", "publicado", "en desarrollo", "en revisión", "borrador"];
 const placeholderImage = "/pic4.jpg";
@@ -26,6 +27,8 @@ const CatalogoApp: React.FC = () => {
   const [isForbidden, setIsForbidden] = useState(false);
   const [filter, setFilter] = useState("todos");
   const [showModal, setShowModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -54,6 +57,17 @@ const CatalogoApp: React.FC = () => {
 
     fetchProjects();
   }, [isAuthenticated, user]);
+
+  const handleDeleteProject = async (id: number) => {
+    if (!window.confirm("¿Estás seguro de que deseas eliminar este proyecto de tu catálogo? Esta acción no se puede deshacer.")) return;
+    try {
+      await deleteProject(id);
+      setMiCatalogo((prev) => prev.filter((p) => p.id !== id));
+    } catch (err) {
+      console.error("Error al eliminar el proyecto:", err);
+      alert("Hubo un error al eliminar el proyecto.");
+    }
+  };
 
   // Mostrar loading mientras se verifica la sesión
   if (isLoading) {
@@ -251,9 +265,23 @@ const CatalogoApp: React.FC = () => {
                           )
                         : "Sin fecha"}
                     </span>
-                    <button className="text-primary hover:text-subprimary text-sm font-medium">
-                      Editar →
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white text-sm font-medium transition-colors"
+                        onClick={() => {
+                          setSelectedProject(proyecto);
+                          setShowEditModal(true);
+                        }}
+                      >
+                        Editar
+                      </button>
+                      <button
+                        className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white text-sm font-medium transition-colors"
+                        onClick={() => handleDeleteProject(proyecto.id)}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -285,6 +313,23 @@ const CatalogoApp: React.FC = () => {
           onClose={() => setShowModal(false)}
           onCreated={(newProject) =>
             setMiCatalogo((prev) => [newProject, ...prev])
+          }
+        />
+      )}
+
+      {showEditModal && selectedProject && (
+        <ModalEditarProyecto
+          project={selectedProject}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedProject(null);
+          }}
+          onUpdated={(updatedProject) =>
+            setMiCatalogo((prev) =>
+              prev.map((item) =>
+                item.id === updatedProject.id ? updatedProject : item
+              )
+            )
           }
         />
       )}

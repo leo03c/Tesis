@@ -3,20 +3,35 @@ import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { getGameBySlug, getGames } from "@/services/gamesService";
-import type { Game } from "@/services/gamesService";
+import { getGameBySlug, getGames, createReview } from "@/services/gamesService";
+import type { Game, CreateReviewInput } from "@/services/gamesService";
 import { APIError } from "@/services/api";
 import { addToWishlist, getWishlist, removeFromWishlist } from "@/services/wishlistService";
 import { addToCart, getCart, removeFromCart } from "@/services/cartService";
 import { useSession } from 'next-auth/react';
 import Loading from "@/Components/loading/Loading";
+import { FaWindows, FaApple, FaLinux, FaXbox, FaPlaystation } from 'react-icons/fa';
+import { BsNintendoSwitch } from 'react-icons/bs';
+import { MdGamepad } from 'react-icons/md';
 
 const der = "/icons/derecha.svg";
 const izq = "/icons/izquierda.svg";
-const win = "/windows.svg";
+
 import StarRating from "@/Components/StarRating";
 const yt = "/yt.svg";
 const pic4 = "/pic4.jpg";
+
+const renderPlatformIcon = (iconoName: string, nombreName: string, w: number = 16) => {
+  const name = (iconoName || nombreName || '').toLowerCase();
+  
+  if (name.includes('windows') || name.includes('pc')) return <FaWindows size={w} title={nombreName} />;
+  if (name.includes('apple') || name.includes('mac')) return <FaApple size={w} title={nombreName} />;
+  if (name.includes('linux')) return <FaLinux size={w} title={nombreName} />;
+  if (name.includes('xbox')) return <FaXbox size={w} title={nombreName} />;
+  if (name.includes('playstation') || name.includes('ps')) return <FaPlaystation size={w} title={nombreName} />;
+  if (name.includes('nintendo') || name.includes('switch')) return <BsNintendoSwitch size={w} title={nombreName} />;
+  return <MdGamepad size={w} title={nombreName} />;
+};
 
 const Juego = () => {
   const params = useParams();
@@ -42,6 +57,9 @@ const Juego = () => {
   const [cartItemId, setCartItemId] = useState<number | null>(null);
   const [actionLoading, setActionLoading] = useState<'wishlist' | 'cart' | null>(null);
   const [actionMessage, setActionMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -165,6 +183,44 @@ const Juego = () => {
     }
   };
 
+  const handleDownloadTxt = () => {
+    if (!game) return;
+    
+    const content = `
+Título: ${game.title}
+Desarrollador: ${game.developer_name || 'Desconocido'}
+Editor: ${game.editor || 'Desconocido'}
+Fecha de estreno: ${new Date(game.release_date).toLocaleDateString()}
+Clasificación: ${game.rating} / 5 Estrellas
+Precio: ${game.price ? `$${game.price}` : 'Gratis'}
+${game.discount && game.discount > 0 ? `Descuento: ${game.discount}%` : ''}
+
+Descripción:
+${game.description || 'Sin descripción.'}
+
+Etiquetas:
+${game.tags?.map(t => t.name).join(', ') || 'Ninguna'}
+
+Plataformas:
+${game.plataformas?.map(p => p.nombre).join(', ') || 'Ninguna'}
+`.trim();
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${game.title.replace(/[^a-zA-Z0-9]/g, '_')}_datos.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    // Show the review modal after download
+    setTimeout(() => {
+      setShowReviewModal(true);
+    }, 500);
+  };
+
   const scroll = (dir: "left" | "right") => {
     if (scrollRef.current) {
       const scrollAmount = 140;
@@ -176,6 +232,39 @@ const Juego = () => {
   };
 
   const youtube = () => window.open("https://www.youtube.com", "_blank");
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (reviewRating === 0) {
+      showMessage("Por favor, selecciona una puntuación", "error");
+      return;
+    }
+    
+    if (status !== 'authenticated') {
+      window.location.href = '/login';
+      return;
+    }
+
+    if (!game) return;
+
+    try {
+      const reviewPayload: CreateReviewInput = {
+        game: game.id,
+        rating: reviewRating,
+        comment: reviewText
+      };
+      
+      await createReview(reviewPayload);
+      
+      showMessage("¡Gracias por tu reseña!", "success");
+      setShowReviewModal(false);
+      setReviewText("");
+      setReviewRating(0);
+    } catch (err: unknown) {
+      const desc = err instanceof APIError ? err.message : 'Error al enviar reseña';
+      showMessage(desc, "error");
+    }
+  };
 
   if (loading) {
     return (
@@ -279,7 +368,10 @@ const Juego = () => {
           </p>
 
           <div className="space-y-2">
-            <button className="w-full bg-primary text-white py-3 rounded-lg font-bold text-sm shadow-md">
+            <button 
+              onClick={handleDownloadTxt}
+              className="w-full bg-primary text-white py-3 rounded-lg font-bold text-sm shadow-md transition-colors hover:bg-primary/90"
+            >
               DESCARGAR
             </button>
             <button
@@ -336,13 +428,9 @@ const Juego = () => {
           <p className="flex items-center gap-2 border-b border-deep py-1">
             <span className="text-white">PLATAFORMA:</span>
             {game.plataformas.map((plat) => (
-              <Image
-                key={plat.id}
-                src={normalizeImageSrc(plat.icono, win)}
-                alt={plat.nombre}
-                width={14}
-                height={14}
-              />
+              <span key={plat.id} className="text-gray-400 hover:text-white transition-colors">
+                {renderPlatformIcon(plat.icono, plat.nombre, 18)}
+              </span>
             ))}
           </p>
           {game.tags && game.tags.length > 0 && (
@@ -359,6 +447,60 @@ const Juego = () => {
           )}
         </div>
       </div>
+
+      {/* Modal de Reseñas */}
+      {showReviewModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-deep rounded-2xl w-full max-w-md p-6 shadow-2xl border border-white/10 relative transform scale-100 animate-in zoom-in-95 duration-200">
+            <button
+              onClick={() => { setShowReviewModal(false); setReviewRating(0); setReviewText(''); }}
+              className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+            >
+              ✕
+            </button>
+            <h3 className="text-xl font-bold text-white mb-2">¡Gracias por descargar!</h3>
+            <p className="text-sm text-texInactivo mb-6">Nos encantaría saber qué te parece {game.title}. Por favor, deja una reseña.</p>
+            
+            <form onSubmit={handleSubmitReview} className="space-y-6">
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-sm font-medium text-white/80">Tu puntuación</span>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className={`text-3xl transition-transform hover:scale-110 active:scale-95 ${
+                        star <= reviewRating ? 'text-[#e5d63f] drop-shadow-[0_0_8px_rgba(229,214,63,0.5)]' : 'text-gray-600'
+                      }`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-white/80" htmlFor="review">Comentario (opcional)</label>
+                <textarea
+                  id="review"
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="¿Qué te gustó del juego?"
+                  className="w-full bg-subdeep/50 border border-white/10 rounded-xl p-3 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all resize-none h-24"
+                ></textarea>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 rounded-xl transition-colors shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]"
+              >
+                Enviar reseña
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

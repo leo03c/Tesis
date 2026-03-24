@@ -5,6 +5,7 @@
  * NOTE: Frontend was calling /api/developer/projects which should be /api/catalog/
  */
 import api from './api';
+import type { Platform, Tag } from './gamesService';
 
 export interface Project {
   id: number;
@@ -14,6 +15,10 @@ export interface Project {
   status: 'borrador' | 'en_desarrollo' | 'en_revision' | 'publicado';
   status_display?: string;
   progress: number;
+  price?: string;
+  discount?: number;
+  tags?: Tag[];
+  plataformas?: Platform[];
   last_updated?: string;
   created_at?: string;
 }
@@ -31,6 +36,10 @@ export interface CreateProjectData {
   image?: File | string | null;
   status?: Project['status'];
   progress?: number;
+  price?: string;
+  discount?: number;
+  tags?: number[];
+  plataformas?: number[];
 }
 
 export interface UpdateProjectData {
@@ -39,20 +48,38 @@ export interface UpdateProjectData {
   image?: File | string | null;
   status?: Project['status'];
   progress?: number;
+  price?: string;
+  discount?: number;
+  tags?: number[];
+  plataformas?: number[];
 }
 
-const toCatalogPayload = (data: CreateProjectData | UpdateProjectData | Partial<UpdateProjectData>) => {
-  if (data.image instanceof File) {
-    const formData = new FormData();
-    if (data.title) formData.append('title', data.title);
-    if (data.description) formData.append('description', data.description);
-    if (data.status) formData.append('status', data.status);
-    if (typeof data.progress === 'number') formData.append('progress', String(data.progress));
-    formData.append('image', data.image);
-    return formData;
+const toCatalogPayload = (
+  data: CreateProjectData | UpdateProjectData | Partial<UpdateProjectData>
+) => {
+  const formData = new FormData();
+
+  if (typeof data.title === 'string') formData.append('title', data.title);
+  if (typeof data.description === 'string') formData.append('description', data.description);
+  if (typeof data.status === 'string') formData.append('status', data.status);
+  if (typeof data.progress === 'number') formData.append('progress', String(data.progress));
+  if (typeof data.price === 'string') formData.append('price', data.price);
+  if (typeof data.discount === 'number') formData.append('discount', String(data.discount));
+  if (Array.isArray(data.tags)) {
+    // Limpiamos los arrays para evitar pasar valores undefined o nulos
+    const cleanTags = data.tags.filter(t => t !== undefined && t !== null);
+    formData.append('tags', JSON.stringify(cleanTags));
   }
 
-  return data;
+  if (Array.isArray(data.plataformas)) {
+    const cleanPlatforms = data.plataformas.filter(p => p !== undefined && p !== null);
+    formData.append('plataformas', JSON.stringify(cleanPlatforms));
+  }
+  if (data.image instanceof File) {
+    formData.append('image', data.image);
+  }
+
+  return formData;
 };
 
 /**

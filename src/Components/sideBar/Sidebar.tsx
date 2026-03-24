@@ -36,12 +36,11 @@ const Sidebar = () => {
                     <SidebarItem title="ME GUSTAN" icon='/heart.svg' />
                     <SidebarItem title="MI LIBRERIA" icon='/gameboy.svg' />
                     <SidebarItem title="SIGUIENDO" icon='/user-octagon.svg' />
+                     <SidebarItem title="CONFIGURACIÓN" icon='/setting.svg' />
+                    <SidebarItem title="AYUDA" icon='/message-question.svg' />
                 </nav>
 
-                <div className="mt-6 border-t border-gray-600 pt-4 space-y-2">
-                    <SidebarItem title="CONFIGURACIÓN" icon='/setting.svg' />
-                    <SidebarItem title="AYUDA" icon='/message-question.svg' />
-                </div>
+                
             </div>
 
             {/* ===== Mobile header con botón ===== */}
