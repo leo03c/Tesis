@@ -9,6 +9,7 @@ import { addToLibrary, getLibrary } from "@/services/libraryService";
 import { APIError } from "@/services/api";
 import type { CartItem } from "@/services/cartService";
 import Loading from "@/Components/loading/Loading";
+import ConfirmModal from "@/Components/modals/ConfirmModal";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
@@ -30,6 +31,11 @@ const CarritoApp = () => {
   const [cardCvc, setCardCvc] = useState('');
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState<{ open: boolean; item: CartItem | null; isLoading: boolean }>({
+    open: false,
+    item: null,
+    isLoading: false,
+  });
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -54,12 +60,21 @@ const CarritoApp = () => {
     fetchCart();
   }, [status]);
 
-  const handleRemove = async (item: CartItem) => {
+  const handleRemove = (item: CartItem) => {
+    setConfirmRemove({ open: true, item, isLoading: false });
+  };
+
+  const handleConfirmRemove = async () => {
+    if (!confirmRemove.item) return;
+    const item = confirmRemove.item;
+    setConfirmRemove((prev) => ({ ...prev, isLoading: true }));
     try {
       await removeFromCart(item.id);
       setItems(prev => prev.filter(i => i.id !== item.id));
+      setConfirmRemove({ open: false, item: null, isLoading: false });
     } catch (err) {
       console.error('Error removing from cart:', err);
+      setConfirmRemove((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -552,6 +567,17 @@ const CarritoApp = () => {
           }
         `}</style>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmRemove.open}
+        onClose={() => setConfirmRemove({ open: false, item: null, isLoading: false })}
+        onConfirm={handleConfirmRemove}
+        title="Quitar del carrito"
+        message={`¿Estás seguro de que deseas quitar "${confirmRemove.item?.juego?.title}" del carrito?`}
+        confirmText="Quitar"
+        type="warning"
+        isLoading={confirmRemove.isLoading}
+      />
     </div>
   );
 };

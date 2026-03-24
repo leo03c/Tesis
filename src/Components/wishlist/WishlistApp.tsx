@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react';
 import { getWishlist, removeFromWishlist } from "@/services/wishlistService";
 import type { WishlistItem } from "@/services/wishlistService";
 import Loading from "@/Components/loading/Loading";
+import ConfirmModal from "@/Components/modals/ConfirmModal";
 
 const izq = "/icons/izquierdaC.svg";
 const der = "/icons/derechaC.svg";
@@ -20,6 +21,11 @@ const WishlistApp = () => {
   const [direction, setDirection] = useState(0);
   const [items, setItems] = useState<WishlistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [confirmRemove, setConfirmRemove] = useState<{ open: boolean; item: WishlistItem | null; isLoading: boolean }>({
+    open: false,
+    item: null,
+    isLoading: false,
+  });
 
   useEffect(() => {
     const fetchWishlist = async () => {
@@ -53,12 +59,21 @@ const WishlistApp = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleRemove = async (item: WishlistItem) => {
+  const handleRemove = (item: WishlistItem) => {
+    setConfirmRemove({ open: true, item, isLoading: false });
+  };
+
+  const handleConfirmRemove = async () => {
+    if (!confirmRemove.item) return;
+    const item = confirmRemove.item;
+    setConfirmRemove((prev) => ({ ...prev, isLoading: true }));
     try {
       await removeFromWishlist(item.id);
       setItems(prev => prev.filter(i => i.id !== item.id));
+      setConfirmRemove({ open: false, item: null, isLoading: false });
     } catch (err) {
       console.error('Error removing from wishlist:', err);
+      setConfirmRemove((prev) => ({ ...prev, isLoading: false }));
     }
   };
 
@@ -266,6 +281,17 @@ const WishlistApp = () => {
           }
         `}</style>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmRemove.open}
+        onClose={() => setConfirmRemove({ open: false, item: null, isLoading: false })}
+        onConfirm={handleConfirmRemove}
+        title="Quitar de la lista de deseos"
+        message={`¿Estás seguro de que deseas quitar "${confirmRemove.item?.juego?.title}" de tu lista de deseos?`}
+        confirmText="Quitar"
+        type="warning"
+        isLoading={confirmRemove.isLoading}
+      />
     </div>
   );
 };

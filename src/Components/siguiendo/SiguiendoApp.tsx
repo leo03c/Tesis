@@ -5,6 +5,7 @@ import Image from "next/image";
 import followService, { SocialUserProfile } from "@/services/followService";
 import Loading from "@/Components/loading/Loading";
 import { useSession } from "next-auth/react";
+import ConfirmModal from "@/Components/modals/ConfirmModal";
 
 const pic4 = "/pic4.jpg"; // imagen por defecto
 
@@ -15,6 +16,10 @@ const SiguiendoApp: React.FC = () => {
   const [suggestions, setSuggestions] = useState<SocialUserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmUnfollow, setConfirmUnfollow] = useState<{ open: boolean; user: SocialUserProfile | null }>({
+    open: false,
+    user: null,
+  });
 
   // Construye el nombre completo
   const getFullName = (user: SocialUserProfile) => {
@@ -87,8 +92,15 @@ const SiguiendoApp: React.FC = () => {
   const handleUnfollow = (id: number) => {
     const user = followingList.find(u => u.id === id);
     if (!user) return;
-    setFollowingList(followingList.filter(u => u.id !== id));
+    setConfirmUnfollow({ open: true, user });
+  };
+
+  const handleConfirmUnfollow = () => {
+    if (!confirmUnfollow.user) return;
+    const user = confirmUnfollow.user;
+    setFollowingList(followingList.filter(u => u.id !== user.id));
     setSuggestions(prev => [...prev, { ...user, is_following: false }]);
+    setConfirmUnfollow({ open: false, user: null });
   };
 
   const handleFollow = (id: number) => {
@@ -224,6 +236,16 @@ const SiguiendoApp: React.FC = () => {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={confirmUnfollow.open}
+        onClose={() => setConfirmUnfollow({ open: false, user: null })}
+        onConfirm={handleConfirmUnfollow}
+        title="Dejar de seguir"
+        message={`¿Estás seguro de que deseas dejar de seguir a ${confirmUnfollow.user?.name ?? 'este usuario'}?`}
+        confirmText="Dejar de seguir"
+        type="warning"
+      />
     </div>
   );
 };
