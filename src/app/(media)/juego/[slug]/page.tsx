@@ -3,8 +3,8 @@ import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { getGameBySlug, getGames, createReview } from "@/services/gamesService";
-import type { Game, CreateReviewInput } from "@/services/gamesService";
+import { getGameBySlug, getGames, createReview, getReviewsByGameId } from "@/services/gamesService";
+import type { Game, CreateReviewInput, Review } from "@/services/gamesService";
 import { APIError } from "@/services/api";
 import { addToWishlist, getWishlist, removeFromWishlist } from "@/services/wishlistService";
 import { addToCart, getCart, removeFromCart } from "@/services/cartService";
@@ -57,6 +57,7 @@ const Juego = () => {
   const [cartItemId, setCartItemId] = useState<number | null>(null);
   const [actionLoading, setActionLoading] = useState<'wishlist' | 'cart' | null>(null);
   const [actionMessage, setActionMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
@@ -69,6 +70,15 @@ const Juego = () => {
         // Juego actual
         const gameData = await getGameBySlug(slug);
         setGame(gameData);
+
+        if (gameData && gameData.id) {
+          try {
+            const revs = await getReviewsByGameId(gameData.id);
+            if (revs && revs.results) {
+              setReviews(revs.results);
+            }
+          } catch (err) { console.error('Error fetching reviews', err); }
+        }
 
         // Todos los juegos para el carrusel
         const allGames = await getGames();
@@ -248,11 +258,7 @@ ${game.plataformas?.map(p => p.nombre).join(', ') || 'Ninguna'}
     if (!game) return;
 
     try {
-      const reviewPayload: CreateReviewInput = {
-        game: game.id,
-        rating: reviewRating,
-        comment: reviewText
-      };
+      const reviewPayload: CreateReviewInput = { id_juego: game.id, id_usuario: Number(session?.user?.id), calificacion: Math.max(1, reviewRating * 2), comentario: reviewText, titulo: 'Reseña de ' + game.title };
       
       await createReview(reviewPayload);
       
@@ -260,6 +266,16 @@ ${game.plataformas?.map(p => p.nombre).join(', ') || 'Ninguna'}
       setShowReviewModal(false);
       setReviewText("");
       setReviewRating(0);
+
+      // Actualizar vista local (estrellas y lista de reseñas)
+      try {
+        const updatedGame = await getGameBySlug(slug);
+        setGame(updatedGame);
+        const upRevs = await getReviewsByGameId(updatedGame.id);
+        if (upRevs && upRevs.results) {
+          setReviews(upRevs.results);
+        }
+      } catch (err) {}
     } catch (err: unknown) {
       const desc = err instanceof APIError ? err.message : 'Error al enviar reseña';
       showMessage(desc, "error");
@@ -446,6 +462,66 @@ ${game.plataformas?.map(p => p.nombre).join(', ') || 'Ninguna'}
             </div>
           )}
         </div>
+      </div>
+
+      {/* SECCIÓN DE RESEÑAS */}
+      <div className="md:col-span-3 mt-8 border-t border-deep pt-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <h3 className="text-2xl font-bold">Reseñas de Usuarios ({reviews.length})</h3>
+            <button
+                onClick={() => {
+                   if (status !== 'authenticated') { window.location.href = '/login'; return; }
+                   setShowReviewModal(true);
+                }}
+                className="bg-primary/90 hover:bg-primary text-white font-bold py-2 px-6 rounded-xl transition-colors shadow-md text-sm border border-primary/50"
+            >
+                Dejar una reseña
+            </button>
+        </div>
+        
+        {reviews.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {reviews.map((rev, idx) => (
+              <div key={rev.id || idx} className="bg-subdeep/40 border border-white/5 p-5 rounded-2xl flex flex-col">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0">
+                    {rev.usuario?.username?.[0]?.toUpperCase() ?? rev.username_display?.[0]?.toUpperCase() ?? 'U'}
+                  </div>
+                  <div className="flex-1">
+                      <span className="font-semibold block leading-tight text-white/90">
+                        {rev.usuario?.username || rev.username_display || 'Usuario anónimo'}
+                      </span>
+                      <span className="text-gray-500 text-xs">
+                        {rev.fecha_creacion ? new Date(rev.fecha_creacion).toLocaleDateString() : 'Reciente'}
+                      </span>
+                  </div>
+                  <div className="bg-dark/50 p-1.5 rounded-lg border border-white/5">
+                    <StarRating rating={rev.calificacion / 2} size="text-sm" />
+                  </div>
+                </div>
+                {rev.titulo && <h4 className="font-bold text-white mb-2">{rev.titulo}</h4>}
+                {rev.comentario ? (
+                  <p className="text-sm text-gray-300 leading-relaxed max-h-32 overflow-y-auto pr-2 custom-scrollbar">{rev.comentario}</p>
+                ) : (
+                  <p className="text-sm text-gray-500 italic mt-auto pt-2">Sin comentarios.</p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-subdeep/30 border border-white/5 rounded-2xl p-8 text-center text-gray-400">
+             <p className="mb-4">Este juego aún no tiene reseñas.</p>
+             <button
+                onClick={() => {
+                   if (status !== 'authenticated') { window.location.href = '/login'; return; }
+                   setShowReviewModal(true);
+                }}
+                className="text-primary hover:text-white transition-colors underline decoration-primary/30 underline-offset-4"
+             >
+                ¡Sé el primero en dejar tu opinión!
+             </button>
+          </div>
+        )}
       </div>
 
       {/* Modal de Reseñas */}

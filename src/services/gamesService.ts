@@ -26,9 +26,11 @@ export interface Review {
 }
 
 export interface CreateReviewInput {
-  game: number;
-  rating: number;
-  comment: string;
+  id_usuario: number;
+  id_juego: number;
+  calificacion: number;
+  titulo?: string;
+  comentario: string;
 }
 
 export interface Game {
@@ -53,6 +55,13 @@ export interface Game {
   reviews: Review[];
   created_at: string;
   updated_at: string;
+}
+
+export interface ReviewsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Review[];
 }
 
 export interface GamesResponse {
@@ -173,10 +182,17 @@ export const getTagBySlug = (tagSlug: string) =>
 
 /**
  * Create a review
- * Backend endpoint: /api/games/reviews/
+ * Backend endpoint: /api/reviews/resenas/
  */
 export const createReview = (payload: CreateReviewInput) =>
-  api.post<Review>("/games/reviews/", payload);
+  api.post<Review>("/reviews/resenas/", payload);
+
+/**
+ * Get reviews by game
+ * Backend endpoint: /api/reviews/resenas/
+ */
+export const getReviewsByGameId = (gameId: number) =>
+  api.get<ReviewsResponse>("/reviews/resenas/", { id_juego: gameId });
 
 const gamesService = {
   getGames,
@@ -193,6 +209,7 @@ const gamesService = {
   getGamesByTagSlug,
   getTagBySlug,
   createReview,
+  getReviewsByGameId,
 };
 
 export default gamesService;
