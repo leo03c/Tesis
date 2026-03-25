@@ -5,19 +5,46 @@ import Link from 'next/link';
 import Image from 'next/image';
 import SidebarModal from './SidebarModal';
 import SidebarItem from './SidebarItem';
+import { useUser } from '@/contexts/UserContext';
+import settingsService from '@/services/settingsService';
 
 const mas = "/icons/mas.svg";
 const notf = "/icons/notf.svg";
 
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const { isAuthenticated } = useUser();
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    React.useEffect(() => {
+        const loadRole = async () => {
+            if (!isAuthenticated) {
+                setIsAdmin(false);
+                return;
+            }
+
+            try {
+                const profile = await settingsService.getSettings();
+                const role = String(profile?.profile?.rol ?? '').toUpperCase();
+                const hasAdminRole = role === 'ADMIN' || role === 'ADMINISTRADOR';
+                const hasAdminFlags = Boolean(
+                    profile?.profile?.es_administrador || profile?.is_staff || profile?.is_superuser
+                );
+                setIsAdmin(hasAdminRole || hasAdminFlags);
+            } catch {
+                setIsAdmin(false);
+            }
+        };
+
+        loadRole();
+    }, [isAuthenticated]);
 
     return (
         <>
             {/* ===== Desktop sidebar ===== */}
-            <div className="hidden md:block w-64 bg-gray-800 text-white p-4 h-[calc(100vh-1rem)] rounded-md my-2">
+            <div className="hidden md:flex md:flex-col w-64 bg-gray-800 text-white p-4 h-[calc(100vh-1rem)] rounded-md my-2 overflow-hidden">
                 {/* Logo */}
-                <Link href="/" className="mb-8 p-4">
+                <Link href="/" className="mb-4 px-2 pt-2 pb-3 shrink-0">
                     <Image 
                         width={205} 
                         height={51} 
@@ -29,15 +56,16 @@ const Sidebar = () => {
                 </Link>
 
                 {/* Navegación */}
-                <nav className="space-y-2">
-                    <SidebarItem title="TIENDA DE JUEGOS" icon='/game.svg' />
-                    <SidebarItem title="CATEGORÍAS" icon='/category.svg' />
-                    <SidebarItem title="MI CATALOGO" icon='/code-circle.svg' />
-                    <SidebarItem title="ME GUSTAN" icon='/heart.svg' />
-                    <SidebarItem title="MI LIBRERIA" icon='/gameboy.svg' />
-                    <SidebarItem title="SIGUIENDO" icon='/user-octagon.svg' />
-                     <SidebarItem title="CONFIGURACIÓN" icon='/setting.svg' />
-                    <SidebarItem title="AYUDA" icon='/message-question.svg' />
+                <nav className={`${isAdmin ? 'space-y-4' : 'space-y-2'} flex-1 overflow-y-auto pr-1 custom-scrollbar`}>
+                    <SidebarItem title="TIENDA DE JUEGOS" icon='/game.svg' compact={isAdmin} />
+                    <SidebarItem title="CATEGORÍAS" icon='/category.svg' compact={isAdmin} />
+                    <SidebarItem title="MI CATALOGO" icon='/code-circle.svg' compact={isAdmin} />
+                    <SidebarItem title="ME GUSTAN" icon='/heart.svg' compact={isAdmin} />
+                    <SidebarItem title="MI LIBRERIA" icon='/gameboy.svg' compact={isAdmin} />
+                    <SidebarItem title="SIGUIENDO" icon='/user-octagon.svg' compact={isAdmin} />
+                    {isAdmin && <SidebarItem title="PANEL ADMIN" icon='/setting.svg' compact={isAdmin} />}
+                     <SidebarItem title="CONFIGURACIÓN" icon='/setting.svg' compact={isAdmin} />
+                    <SidebarItem title="AYUDA" icon='/message-question.svg' compact={isAdmin} />
                 </nav>
 
                 

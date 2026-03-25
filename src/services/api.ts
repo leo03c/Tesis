@@ -61,6 +61,7 @@ async function request<T>(
   canRetry = true
 ): Promise<T> {
   const { method = 'GET', body, params } = options;
+  const isPublicReadRequest = method === 'GET' && isPublicEndpoint(endpoint);
 
   let url = `${API_BASE_URL}${endpoint}`;
 
@@ -84,10 +85,16 @@ async function request<T>(
     headers.set('Content-Type', 'application/json');
   }
 
-  // 🔐 Autenticación SOLO si el endpoint no es público
-  if (!isPublicEndpoint(endpoint)) {
+  // 🔐 Solo GET de endpoints públicos puede ir sin token.
+  // Mutaciones (POST/PUT/PATCH/DELETE) siempre requieren Authorization.
+  if (!isPublicReadRequest) {
     const session = await getSession();
-    const accessToken = cachedAccessToken || session?.accessToken;
+    const sessionAccessToken = (session as any)?.accessToken as string | undefined;
+    const accessToken = sessionAccessToken || cachedAccessToken;
+
+    if (sessionAccessToken) {
+      cachedAccessToken = sessionAccessToken;
+    }
 
     // ⛔ NO hay sesión → NO hacer request
     if (!accessToken) {
@@ -161,7 +168,7 @@ async function request<T>(
 
     // 🔒 401 = estado normal (sesión expirada / backend reiniciado)
     if (response.status === 401) {
-      if (!isPublicEndpoint(endpoint) && canRetry) {
+      if (!isPublicReadRequest && canRetry) {
         const newAccessToken = await tryRefreshToken();
         if (newAccessToken) {
           return request<T>(endpoint, options, false);

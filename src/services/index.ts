@@ -52,3 +52,7 @@ export { default as cartService } from './cartService';
 // Wishlist services
 export * from './wishlistService';
 export { default as wishlistService } from './wishlistService';
+
+// Admin services
+export * from './adminService';
+export { default as adminService } from './adminService';

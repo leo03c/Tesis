@@ -5,8 +5,13 @@ import { FiX } from 'react-icons/fi';
 import SidebarItem from './SidebarItem';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useUser } from '@/contexts/UserContext';
+import settingsService from '@/services/settingsService';
 
 const SidebarModal = ({ onClose }: { onClose: () => void }) => {
+    const { isAuthenticated } = useUser();
+    const [isAdmin, setIsAdmin] = React.useState(false);
+
     // Evitar scroll del body cuando el modal está abierto
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -14,6 +19,29 @@ const SidebarModal = ({ onClose }: { onClose: () => void }) => {
             document.body.style.overflow = 'unset';
         };
     }, []);
+
+    useEffect(() => {
+        const loadRole = async () => {
+            if (!isAuthenticated) {
+                setIsAdmin(false);
+                return;
+            }
+
+            try {
+                const profile = await settingsService.getSettings();
+                const role = String(profile?.profile?.rol ?? '').toUpperCase();
+                const hasAdminRole = role === 'ADMIN' || role === 'ADMINISTRADOR';
+                const hasAdminFlags = Boolean(
+                    profile?.profile?.es_administrador || profile?.is_staff || profile?.is_superuser
+                );
+                setIsAdmin(hasAdminRole || hasAdminFlags);
+            } catch {
+                setIsAdmin(false);
+            }
+        };
+
+        loadRole();
+    }, [isAuthenticated]);
 
     // Cerrar al teclear escape (accesibilidad)
     useEffect(() => {
@@ -60,22 +88,23 @@ const SidebarModal = ({ onClose }: { onClose: () => void }) => {
                     <div className="px-4 pb-2 pt-2">
                         <p className="text-[10px] font-extrabold text-white/30 uppercase tracking-widest">Descubrir</p>
                     </div>
-                    <nav className="space-y-1" aria-label="Navegación primaria">
-                        <SidebarItem title="TIENDA DE JUEGOS" icon='/game.svg' onClick={onClose} />
-                        <SidebarItem title="CATEGORÍAS" icon='/category.svg' onClick={onClose} />
-                        <SidebarItem title="MI CATALOGO" icon='/code-circle.svg' onClick={onClose} />
+                    <nav className={`${isAdmin ? 'space-y-0.5' : 'space-y-1'}`} aria-label="Navegación primaria">
+                        <SidebarItem title="TIENDA DE JUEGOS" icon='/game.svg' onClick={onClose} compact={isAdmin} />
+                        <SidebarItem title="CATEGORÍAS" icon='/category.svg' onClick={onClose} compact={isAdmin} />
+                        <SidebarItem title="MI CATALOGO" icon='/code-circle.svg' onClick={onClose} compact={isAdmin} />
                     </nav>
 
                     <div className="px-4 pb-2 pt-6">
                         <p className="text-[10px] font-extrabold text-white/30 uppercase tracking-widest">Tu Actividad</p>
                     </div>
-                    <nav className="space-y-1" aria-label="Navegación secundaria">
-                        <SidebarItem title="ME GUSTAN" icon='/heart.svg' onClick={onClose} />
-                        <SidebarItem title="LISTA DE DESEOS" icon='/heart.svg' onClick={onClose} />
-                        <SidebarItem title="MI LIBRERIA" icon='/gameboy.svg' onClick={onClose} />
-                        <SidebarItem title="SIGUIENDO" icon='/user-octagon.svg' onClick={onClose} />
-                        <SidebarItem title="CONFIGURACIÓN" icon='/setting.svg' onClick={onClose} />
-                        <SidebarItem title="AYUDA" icon='/message-question.svg' onClick={onClose} />
+                    <nav className={`${isAdmin ? 'space-y-0.5' : 'space-y-1'}`} aria-label="Navegación secundaria">
+                        <SidebarItem title="ME GUSTAN" icon='/heart.svg' onClick={onClose} compact={isAdmin} />
+                        <SidebarItem title="LISTA DE DESEOS" icon='/heart.svg' onClick={onClose} compact={isAdmin} />
+                        <SidebarItem title="MI LIBRERIA" icon='/gameboy.svg' onClick={onClose} compact={isAdmin} />
+                        <SidebarItem title="SIGUIENDO" icon='/user-octagon.svg' onClick={onClose} compact={isAdmin} />
+                        {isAdmin && <SidebarItem title="PANEL ADMIN" icon='/setting.svg' onClick={onClose} compact={isAdmin} />}
+                        <SidebarItem title="CONFIGURACIÓN" icon='/setting.svg' onClick={onClose} compact={isAdmin} />
+                        <SidebarItem title="AYUDA" icon='/message-question.svg' onClick={onClose} compact={isAdmin} />
                     </nav>
 
                 </div>
