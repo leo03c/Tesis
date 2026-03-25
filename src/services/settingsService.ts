@@ -15,6 +15,7 @@ export interface UserSettings {
     nombre_estudio?: string;
     sitio_web?: string;
     descripcion?: string;
+    rol?: string;
     es_desarrollador?: boolean;
     verificado?: boolean;
   };

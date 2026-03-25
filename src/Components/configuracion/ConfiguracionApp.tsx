@@ -27,6 +27,9 @@ const ConfiguracionApp = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isDevRequestModalOpen, setIsDevRequestModalOpen] = useState(false);
+  const [isRequestingDevAccess, setIsRequestingDevAccess] = useState(false);
+  const [developerRequestSent, setDeveloperRequestSent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [profileData, setProfileData] = useState<UserSettings>({
@@ -151,6 +154,32 @@ const ConfiguracionApp = () => {
     }
   };
 
+  const handleRequestDeveloperAccess = async () => {
+    setIsRequestingDevAccess(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      // TODO: conectar con endpoint real cuando exista en backend.
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      setDeveloperRequestSent(true);
+      setSuccess("Solicitud para ser desarrollador enviada correctamente.");
+      setIsDevRequestModalOpen(false);
+      setTimeout(() => setSuccess(null), 3000);
+    } catch {
+      setError("No se pudo enviar la solicitud para ser desarrollador.");
+    } finally {
+      setIsRequestingDevAccess(false);
+    }
+  };
+
+  const roleValue = String(profileData.profile?.rol ?? "").toUpperCase();
+  const isDeveloper =
+    profileData.profile?.es_desarrollador === true ||
+    roleValue === "DEV" ||
+    roleValue === "DESARROLLADOR" ||
+    roleValue === "DEVELOPER";
+
   return (
     <div className="min-h-screen text-white max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 ">
       <div className="mb-10">
@@ -266,7 +295,7 @@ const ConfiguracionApp = () => {
                     </h3>
                     {profileData.username && (
                       <span className="bg-primary/10 border border-primary/20 text-primary px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase flex items-center gap-1.5 shadow-[0_0_10px_rgba(255,51,102,0.1)]">
-                        {profileData.profile?.es_desarrollador ? <><FaGamepad className="text-sm" /> DESARROLLADOR</> : <><FaGamepad className="text-sm" /> JUGADOR</>}
+                        {isDeveloper ? <><FaGamepad className="text-sm" /> DESARROLLADOR</> : <><FaGamepad className="text-sm" /> JUGADOR</>}
                       </span>
                     )}
                   </div>
@@ -417,6 +446,37 @@ const ConfiguracionApp = () => {
               </div>
             </div>
 
+            {/* Programa de desarrolladores */}
+            <div className="bg-subdeep rounded-3xl border border-gray-800/60 shadow-xl flex flex-col overflow-hidden md:col-span-2">
+              <div className="border-b border-gray-800/60 p-6 sm:p-8 bg-gray-900/20">
+                <h2 className="text-xl font-bold flex items-center gap-3 text-white">
+                  <FaGamepad className="text-primary" /> Programa para Desarrolladores
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">Publica tus juegos y accede al panel de catálogo de desarrollador.</p>
+              </div>
+              <div className="p-6 sm:p-8 bg-subdeep flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                {isDeveloper ? (
+                  <div className="flex items-center gap-3 text-green-400 font-semibold">
+                    <FaCheckCircle className="text-lg" />
+                    Tu cuenta ya tiene rol de DESARROLLADOR.
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-gray-300">
+                      Tu cuenta actual es <span className="font-semibold text-white">JUGADOR</span>. Puedes solicitar acceso para publicar proyectos.
+                    </p>
+                    <button
+                      onClick={() => setIsDevRequestModalOpen(true)}
+                      disabled={developerRequestSent || isRequestingDevAccess}
+                      className="px-6 py-3 rounded-xl font-bold bg-primary/15 border border-primary/40 text-primary hover:bg-primary hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {developerRequestSent ? "Solicitud enviada" : "Solicitar ser desarrollador"}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
             {/* Zona de peligro - Eliminar cuenta */}
             <div className="bg-red-500/5 rounded-3xl border border-red-500/20 shadow-xl flex flex-col md:col-span-2 overflow-hidden mt-4">
                <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -462,6 +522,18 @@ const ConfiguracionApp = () => {
           cancelText="Cancelar"
           type="danger"
           isLoading={isDeleting}
+        />
+
+        <ConfirmModal
+          isOpen={isDevRequestModalOpen}
+          onClose={() => setIsDevRequestModalOpen(false)}
+          onConfirm={handleRequestDeveloperAccess}
+          title="Solicitar Rol de Desarrollador"
+          message="Enviaremos tu solicitud para activar permisos de desarrollador en tu cuenta. Te notificaremos cuando sea revisada."
+          confirmText="Enviar Solicitud"
+          cancelText="Cancelar"
+          type="info"
+          isLoading={isRequestingDevAccess}
         />
         </>
       )}

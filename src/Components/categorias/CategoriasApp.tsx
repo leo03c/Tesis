@@ -13,6 +13,7 @@ const CategoriasApp = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [apiUrl, setApiUrl] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -47,6 +48,9 @@ const CategoriasApp = () => {
     ];
     return colors[index % colors.length];
   };
+
+  const hasGames = (categoria: Tag) => Number(categoria.games_count ?? 0) > 0;
+  const visibleCategories = showAll ? categorias : categorias.filter(hasGames);
 
   if (loading) {
     return (
@@ -86,15 +90,41 @@ const CategoriasApp = () => {
   return (
     <div className="min-h-screen text-white">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Categorías</h1>
-        <p className="text-texInactivo">Explora juegos por género</p>
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Categorías</h1>
+          <p className="text-texInactivo">Explora juegos por género</p>
+        </div>
+
+        <div className="inline-flex items-center rounded-xl border border-categorico bg-subdeep p-1">
+          <button
+            onClick={() => setShowAll(false)}
+            className={`px-3 py-1.5 text-sm rounded-lg transition ${
+              !showAll ? "bg-primary text-white" : "text-texInactivo hover:text-white"
+            }`}
+          >
+            Solo disponibles
+          </button>
+          <button
+            onClick={() => setShowAll(true)}
+            className={`px-3 py-1.5 text-sm rounded-lg transition ${
+              showAll ? "bg-primary text-white" : "text-texInactivo hover:text-white"
+            }`}
+          >
+            Ver todas
+          </button>
+        </div>
       </div>
 
       {/* Categories Grid */}
       <div className="rounded-3xl bg-deep py-10 px-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {categorias.map((categoria, i) => (
+        {visibleCategories.length === 0 ? (
+          <div className="text-center py-12 text-texInactivo">
+            No hay categorías con juegos disponibles por ahora.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {visibleCategories.map((categoria, i) => (
             <Link key={categoria.id} href={`/categoria/${categoria.slug}`}>
               <div className="group bg-subdeep hover:bg-categorico rounded-2xl p-6 cursor-pointer transition-all duration-300 transform hover:scale-105">
                 <div className="flex items-center gap-4">
@@ -119,15 +149,16 @@ const CategoriasApp = () => {
               </div>
             </Link>
           ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Popular Categories */}
-      {categorias.length > 0 && (
+      {visibleCategories.length > 0 && (
         <div className="mt-8 rounded-3xl bg-deep py-10 px-6">
           <h2 className="text-xl font-bold mb-6">Categorías Populares</h2>
           <div className="flex flex-wrap gap-3">
-            {categorias.slice(0, 6).map((cat) => (
+            {visibleCategories.slice(0, 6).map((cat) => (
               <Link key={cat.id} href={`/categoria/${cat.slug}`}>
                 <span className="bg-primary/20 text-primary px-4 py-2 rounded-full text-sm font-medium hover:bg-primary hover:text-white cursor-pointer transition">
                   {cat.name}
