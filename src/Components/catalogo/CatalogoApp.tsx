@@ -279,7 +279,7 @@ const CatalogoApp: React.FC = () => {
                     </span>
                     <div className="flex gap-2">
                       <button
-                        className="px-3 py-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white text-sm font-medium transition-colors"
+                        className="px-3 py-1.5 rounded-lg bg-primary/15 border border-primary/30 text-primary hover:bg-primary hover:border-primary hover:text-white text-sm font-semibold transition-all duration-200"
                         onClick={() => {
                           setSelectedProject(proyecto);
                           setShowEditModal(true);
@@ -288,7 +288,7 @@ const CatalogoApp: React.FC = () => {
                         Editar
                       </button>
                       <button
-                        className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white text-sm font-medium transition-colors"
+                        className="px-3 py-1.5 rounded-lg bg-deep border border-categorico text-texInactivo hover:text-white hover:border-primary/40 hover:bg-subdeep text-sm font-semibold transition-all duration-200"
                         onClick={() => handleDeleteProject(proyecto.id)}
                       >
                         Eliminar

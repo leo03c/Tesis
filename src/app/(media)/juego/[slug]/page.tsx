@@ -341,7 +341,7 @@ ${game.plataformas?.map(p => p.nombre).join(', ') || 'Ninguna'}
               <Link
                 key={g.id}
                 href={`/juego/${g.slug}`}
-                className="relative w-28 h-20 rounded-xl overflow-hidden border border-deep flex-shrink-0"
+                className="relative w-28 h-20 rounded-xl overflow-hidden border border-deep shrink-0"
               >
                 <Image
                   src={normalizeImageSrc(g.image)}
@@ -485,14 +485,14 @@ ${game.plataformas?.map(p => p.nombre).join(', ') || 'Ninguna'}
               <div key={rev.id || idx} className="bg-subdeep/40 border border-white/5 p-5 rounded-2xl flex flex-col">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="bg-primary/20 text-primary w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg shrink-0">
-                    {rev.usuario?.username?.[0]?.toUpperCase() ?? rev.username_display?.[0]?.toUpperCase() ?? 'U'}
+                    {rev.username?.[0]?.toUpperCase() ?? 'U'}
                   </div>
                   <div className="flex-1">
                       <span className="font-semibold block leading-tight text-white/90">
-                        {rev.usuario?.username || rev.username_display || 'Usuario anónimo'}
+                        {rev.username || 'Usuario anónimo'}
                       </span>
                       <span className="text-gray-500 text-xs">
-                        {rev.fecha_creacion ? new Date(rev.fecha_creacion).toLocaleDateString() : 'Reciente'}
+                        {rev.fecha_publicacion ? new Date(rev.fecha_publicacion).toLocaleDateString() : 'Reciente'}
                       </span>
                   </div>
                   <div className="bg-dark/50 p-1.5 rounded-lg border border-white/5">

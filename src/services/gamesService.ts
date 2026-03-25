@@ -19,10 +19,15 @@ export interface Platform {
 
 export interface Review {
   id: number;
-  user: string;
-  rating: number;
-  comment: string;
-  created_at: string;
+  id_usuario: number;
+  username?: string;
+  id_juego: number;
+  calificacion: number;
+  titulo?: string;
+  comentario?: string;
+  fecha_publicacion: string;
+  recomendado?: boolean | null;
+  total_me_gustas?: string;
 }
 
 export interface CreateReviewInput {

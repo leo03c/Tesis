@@ -33,9 +33,11 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
 
     try {
       const newReview = await createReview({
-        game: gameId,
-        rating,
-        comment,
+        id_usuario: Number(session?.user?.id) || 1, // Need the user ID. Fallback for testing
+        id_juego: gameId,
+        calificacion: rating * 2, // Converting 5 stars to 10 points
+        titulo: "Reseña",
+        comentario: comment,
       });
       onReviewAdded(newReview);
       setComment("");
@@ -123,15 +125,15 @@ const ReviewsSection: React.FC<ReviewsSectionProps> = ({
                     <FaUserCircle className="text-gray-400 text-xl" />
                   </div>
                   <div>
-                    <span className="text-sm font-semibold block">{review.user || "Usuario"}</span>
+                    <span className="text-sm font-semibold block">{review.username || "Usuario"}</span>
                     <span className="text-xs text-texInactivo">
-                      {new Date(review.created_at).toLocaleDateString()}
+                      {new Date(review.fecha_publicacion).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
-                <StarRating rating={review.rating} size="text-xs" showValue={false} />
+                <StarRating rating={review.calificacion / 2} size="text-xs" showValue={false} />
               </div>
-              <p className="text-sm text-gray-300 ml-10">{review.comment}</p>
+              <p className="text-sm text-gray-300 ml-10">{review.comentario}</p>
             </div>
           ))
         )}

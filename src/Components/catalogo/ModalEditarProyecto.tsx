@@ -193,7 +193,7 @@ const ModalEditarProyecto: React.FC<ModalEditarProyectoProps> = ({
         role="presentation"
       >
         <div
-          className={`flex w-full max-w-5xl max-h-[95vh] flex-col overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-deep via-subdeep to-deep shadow-2xl transition-all duration-200 ${
+          className={`flex w-full max-w-5xl max-h-[95vh] flex-col overflow-hidden rounded-3xl border border-white/10 bg-linear-to-br from-deep via-subdeep to-deep shadow-2xl transition-all duration-200 ${
             isVisible ? "translate-y-0 scale-100 opacity-100" : "translate-y-2 scale-95 opacity-0"
           }`}
           onClick={(e) => e.stopPropagation()}

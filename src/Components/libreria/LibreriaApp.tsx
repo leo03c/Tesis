@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { getLibrary } from "@/services/libraryService";
+import { getLibrary, updateLibraryGame } from "@/services/libraryService";
 import type { LibraryGame } from "@/services/libraryService";
 import { APIError } from "@/services/api";
 import Loading from "@/Components/loading/Loading";
@@ -102,6 +102,30 @@ const LibreriaApp = () => {
     return `Hace ${Math.floor(diffDays / 30)} meses`;
   };
 
+  const handleInstallToggle = async (gameId: number, currentStatus: boolean) => {
+    // Si ya está instalado, simulamos abrir el juego (o podrías invertir el proceso para desinstalar)
+    if (currentStatus) {
+      alert("Iniciando juego...");
+      return;
+    }
+
+    try {
+      // Actualización optimista
+      setLibreria(prev =>
+        prev.map(g => (g.id === gameId ? { ...g, installed: true } : g))
+      );
+      
+      await updateLibraryGame(gameId, { installed: true });
+    } catch (err) {
+      console.error("Error al instalar el juego:", err);
+      // Revertimos si falla
+      setLibreria(prev =>
+        prev.map(g => (g.id === gameId ? { ...g, installed: false } : g))
+      );
+      alert("No se pudo instalar el juego en este momento.");
+    }
+  };
+
   const totalHoursPlayed = libreria
     .filter((g) => g.installed)
     .reduce((acc, g) => acc + Number(g.hours_played || 0), 0);
@@ -182,7 +206,7 @@ const LibreriaApp = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredGames.map((game, i) => (
                 <div key={i} className="bg-subdeep rounded-2xl overflow-hidden group">
-                  <div className="w-full aspect-[4/3] relative">
+                  <div className="w-full aspect-4/3 relative">
                     <Image
                       src={game.image || pic4}
                       alt={game.title || `Imagen de ${game.title || 'juego'}`}
@@ -191,7 +215,10 @@ const LibreriaApp = () => {
                       className="object-cover group-hover:scale-105 transition duration-300"
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
-                      <button className="bg-primary text-white px-6 py-2 rounded-xl font-semibold hover:bg-subprimary transition">
+                      <button 
+                        onClick={() => handleInstallToggle(game.id, game.installed)}
+                        className="bg-primary text-white px-6 py-2 rounded-xl font-semibold hover:bg-subprimary transition"
+                      >
                         {game.installed ? "Jugar" : "Instalar"}
                       </button>
                     </div>
@@ -216,7 +243,7 @@ const LibreriaApp = () => {
                   key={i}
                   className="bg-subdeep rounded-xl p-4 flex items-center gap-4 hover:bg-categorico transition"
                 >
-                  <div className="w-20 h-14 relative flex-shrink-0">
+                  <div className="w-20 h-14 relative shrink-0">
                     <Image
                       src={game.image || pic4}
                       alt={game.title || `Imagen de ${game.title || 'juego'}`}
@@ -241,7 +268,10 @@ const LibreriaApp = () => {
                         Instalado
                       </span>
                     )}
-                    <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-subprimary transition">
+                    <button 
+                      onClick={() => handleInstallToggle(game.id, game.installed)}
+                      className="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-subprimary transition"
+                    >
                       {game.installed ? "Jugar" : "Instalar"}
                     </button>
                   </div>

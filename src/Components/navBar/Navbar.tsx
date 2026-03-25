@@ -80,10 +80,10 @@ const Navbar = () => {
         <header className={`bg-[#0D171F]/80 backdrop-blur-md border-b border-white/5 transition-all duration-300 ${mobileMenuOpen ? 'relative' : 'sticky top-0 z-40'}`}>
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Desktop Navbar */}
-                <div className="hidden md:flex items-center justify-between py-4">
-                    <div className='flex items-center flex-1'>
+                <div className="hidden md:flex items-center justify-between w-full py-4">
+                    <div className='flex items-center flex-1 min-w-0'>
                         {/* Search Bar */}
-                        <div className="relative w-full max-w-lg mr-8 group">
+                        <div className="relative w-full max-w-lg group">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                 <FiSearch className="text-gray-400 group-focus-within:text-primary transition-colors" />
                             </div>
@@ -167,7 +167,7 @@ const Navbar = () => {
                         </div>
 
                         {/* Navigation Links */}
-                        <nav className="flex space-x-8 ml-6">
+                        <nav className="flex space-x-8 ml-8">
                             <Link href="/descubrir" className="px-3 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors">
                                 Descubrir
                             </Link>
@@ -178,7 +178,7 @@ const Navbar = () => {
                     </div>
                     
                     {/* User Actions */}
-                    <div className="flex items-center gap-6 group/nav">
+                    <div className="ml-8 flex items-center gap-6 group/nav shrink-0">
                         <div className='flex gap-4'>
                             {/* carrito */}
                             <Link
